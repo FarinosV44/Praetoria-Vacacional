@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getRepository } from "@/lib/repository";
 import { getPropertyById } from "@/domains/properties/registry";
 import { formatMoney, formatDateLong, guestsLabel, nightsLabel } from "@/lib/format";
+import { getCheckoutStrings } from "@/i18n/checkout";
+import { localizedPath } from "@/i18n/config";
 import { ConfirmationTracker } from "./ConfirmationTracker";
 
 export const metadata: Metadata = {
@@ -13,16 +15,17 @@ export const metadata: Metadata = {
 export default async function ExitoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string }>;
+  searchParams: Promise<{ code?: string; lang?: string }>;
 }) {
-  const { code } = await searchParams;
+  const { code, lang } = await searchParams;
+  const locale = lang === "en" ? "en" : "es";
+  const t = getCheckoutStrings(locale);
   const reservation = code ? await getRepository().getReservationByCode(code) : null;
   const property = reservation ? getPropertyById(reservation.propertyId) : null;
-
   const confirmed = reservation?.status === "confirmed";
 
   return (
-    <div className="container-page py-16">
+    <div className="container-page py-16" lang={locale === "en" ? "en" : undefined}>
       <div className="mx-auto max-w-lg rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-8 text-center">
         {confirmed ? (
           <>
@@ -32,39 +35,35 @@ export default async function ExitoPage({
               code={reservation!.code}
             />
             <p className="text-4xl">✓</p>
-            <h1 className="mt-3 font-display text-2xl">Reserva confirmada</h1>
-            <p className="mt-2 text-[var(--color-ink-soft)]">
-              Hemos enviado la confirmación a tu correo. Guarda tu localizador.
-            </p>
+            <h1 className="mt-3 font-display text-2xl">{t.confirmedHeading}</h1>
+            <p className="mt-2 text-[var(--color-ink-soft)]">{t.confirmedSub}</p>
             <dl className="mt-6 space-y-2 text-left text-sm">
-              <Row label="Localizador" value={reservation!.code} strong />
-              <Row label="Alojamiento" value={property?.name ?? "—"} />
-              <Row label="Entrada" value={formatDateLong(reservation!.checkIn)} />
-              <Row label="Salida" value={formatDateLong(reservation!.checkOut)} />
+              <Row label={t.ref} value={reservation!.code} strong />
+              <Row label={t.property} value={property?.name ?? "—"} />
+              <Row label={t.checkIn} value={formatDateLong(reservation!.checkIn)} />
+              <Row label={t.checkOut} value={formatDateLong(reservation!.checkOut)} />
               <Row
-                label="Estancia"
+                label={t.stay}
                 value={`${nightsLabel(reservation!.nights)} · ${guestsLabel(reservation!.guests)}`}
               />
-              <Row label="Importe pagado" value={formatMoney(reservation!.totalCents)} strong />
+              <Row label={t.amountPaid} value={formatMoney(reservation!.totalCents)} strong />
             </dl>
           </>
         ) : (
           <>
             <p className="text-4xl">⏳</p>
-            <h1 className="mt-3 font-display text-2xl">Estamos confirmando tu pago</h1>
+            <h1 className="mt-3 font-display text-2xl">{t.confirmingHeading}</h1>
             <p className="mt-2 text-[var(--color-ink-soft)]">
-              {reservation
-                ? "En cuanto el pago quede verificado recibirás el email de confirmación. Puedes actualizar esta página en unos segundos."
-                : "No encontramos esta reserva. Si acabas de pagar, revisa tu correo en unos minutos."}
+              {reservation ? t.confirmingSub : t.notFoundSub}
             </p>
           </>
         )}
         <div className="mt-8 flex justify-center gap-3">
           <Link
-            href="/"
+            href={localizedPath(locale, "/")}
             className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white"
           >
-            Volver al inicio
+            {t.backHome}
           </Link>
         </div>
       </div>

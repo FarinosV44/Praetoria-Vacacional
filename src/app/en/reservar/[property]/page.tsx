@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { CheckoutPageView } from "@/components/checkout/CheckoutPageView";
 
-export const metadata: Metadata = { title: "Reservar", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Book", robots: { index: false, follow: false } };
 
-export default async function ReservarPage({
+export default async function EnReservarPage({
   params,
   searchParams,
 }: {
@@ -18,7 +18,7 @@ export default async function ReservarPage({
       checkIn={typeof sp.checkIn === "string" ? sp.checkIn : ""}
       checkOut={typeof sp.checkOut === "string" ? sp.checkOut : ""}
       guests={Number(typeof sp.guests === "string" ? sp.guests : "2") || 2}
-      locale="es"
+      locale="en"
     />
   );
 }

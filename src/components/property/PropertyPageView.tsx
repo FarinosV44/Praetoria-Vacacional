@@ -219,6 +219,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
             propertySlug={p.slug}
             maxGuests={p.capacity.guests}
             minNightsHint={getRateConfig(p.slug)?.minNights}
+            locale={locale}
           />
         </aside>
       </div>

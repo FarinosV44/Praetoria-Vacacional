@@ -56,6 +56,23 @@ for (const property of ["javalambre", "valencia"] as const) {
   });
 }
 
+test("English checkout flow completes and stays in English", async ({ page }) => {
+  const checkIn = futureDate(RUN_OFFSET + 20);
+  const checkOut = futureDate(RUN_OFFSET + 24);
+  await page.goto(`/en/reservar/valencia?checkIn=${checkIn}&checkOut=${checkOut}&guests=2`);
+
+  await page.getByRole("button", { name: /^continue$/i }).click();
+  await page.getByLabel(/full name/i).fill("QA English");
+  await page.getByLabel(/^email$/i).fill("qa-en@example.com");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: /go to payment/i }).click();
+  await page.getByRole("button", { name: /^pay /i }).click();
+
+  await expect(page.getByRole("heading", { name: /payment gateway/i })).toBeVisible();
+  await page.getByRole("button", { name: /simulate successful payment/i }).click();
+  await expect(page.getByRole("heading", { name: /booking confirmed/i })).toBeVisible();
+});
+
 test("occupied dates on one property do not block the other", async ({ page, request }) => {
   const checkIn = futureDate(RUN_OFFSET + 40);
   const checkOut = futureDate(RUN_OFFSET + 44);
