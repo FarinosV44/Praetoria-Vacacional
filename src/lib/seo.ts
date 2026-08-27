@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { publicEnv } from "./env";
 import type { PropertyContent } from "@/domains/properties/types";
 import { defaultLocale, locales, localizedPath, type Locale } from "@/i18n/config";
+import { propertyPhotos } from "@/content/properties/photos";
 
 const SITE = publicEnv.siteName;
 const BASE = publicEnv.siteUrl.replace(/\/$/, "");
@@ -92,15 +93,20 @@ export function websiteJsonLd() {
  */
 export function propertyJsonLd(p: PropertyContent, opts: { ratingValue?: number; reviewCount?: number }) {
   const geoReady = p.location.status === "authored";
+  const rating = opts.ratingValue ?? p.rating?.value;
+  const reviewCount = opts.reviewCount ?? p.rating?.count;
   return {
     "@context": "https://schema.org",
     "@type": "VacationRental",
     name: p.name,
     url: absoluteUrl(`/${p.slug}`),
     description: p.seo.metaDescription,
-    image: p.gallery.map((g) => (g.src.startsWith("http") ? g.src : absoluteUrl(g.src))),
+    image: propertyPhotos(p.slug).map((g) => absoluteUrl(g.src)),
     numberOfRooms: p.capacity.bedrooms,
     occupancy: { "@type": "QuantitativeValue", maxValue: p.capacity.guests },
+    floorSize: p.capacity.sizeSqm
+      ? { "@type": "QuantitativeValue", value: p.capacity.sizeSqm, unitCode: "MTK" }
+      : undefined,
     address: {
       "@type": "PostalAddress",
       addressLocality: p.location.city,
@@ -112,12 +118,12 @@ export function propertyJsonLd(p: PropertyContent, opts: { ratingValue?: number;
     ...(geoReady
       ? { geo: { "@type": "GeoCoordinates", latitude: p.location.geo.lat, longitude: p.location.geo.lng } }
       : {}),
-    ...(opts.ratingValue && opts.reviewCount
+    ...(rating && reviewCount
       ? {
           aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: opts.ratingValue,
-            reviewCount: opts.reviewCount,
+            ratingValue: rating,
+            reviewCount,
             bestRating: 10,
           },
         }

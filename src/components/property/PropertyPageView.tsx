@@ -4,64 +4,62 @@ import { propertyJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Gallery } from "@/components/property/Gallery";
-import { ContentStatusNote } from "@/components/property/ContentStatusNote";
 import { BookingWidget } from "@/components/booking/BookingWidget";
-import { ReviewsBlock, reviewStats } from "@/components/ReviewsBlock";
+import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
-import { guestsLabel } from "@/lib/format";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
 import { getRateConfig } from "@/content/rates";
+import { propertyPhotos } from "@/content/properties/photos";
 import { localizedPath, type Locale } from "@/i18n/config";
 
 const T = {
   es: {
     home: "Inicio",
-    gallery: "Galería de fotos",
     theProperty: "El alojamiento",
     guests: "Huéspedes",
-    bedrooms: "Habitaciones",
+    bedrooms: "Dormitorios",
     beds: "Camas",
     bathrooms: "Baños",
+    size: "Superficie",
     amenities: "Equipamiento",
-    amenitiesPending:
-      "El listado detallado de equipamiento se publicará con la información definitiva del propietario.",
-    amenitiesWhat: "Listado de equipamiento",
     location: "Ubicación y cómo llegar",
-    locatedAt: (name: string, area: string, city: string, region: string) =>
-      `${name} está en ${area}, ${city} (${region}).`,
-    distancePending: "distancia por confirmar",
-    distancesWhat: "Distancias exactas",
+    gettingThere: "Cómo llegar",
+    nearby: "Qué tienes cerca",
+    stayInfo: "Información de la estancia",
+    checkIn: "Entrada",
+    checkOut: "Salida",
+    deposit: "Fianza",
+    rules: "Normas",
+    license: "Número de licencia",
     cancellation: "Política de cancelación",
-    cancellationWhat: "Condiciones exactas de cancelación",
-    more: "Más sobre esta escapada",
-    faqHeading: (name: string) => `Preguntas frecuentes sobre ${name}`,
+    more: "Sigue descubriendo",
+    faqHeading: (n: string) => `Preguntas frecuentes sobre ${n}`,
     stickyCta: "Consultar fechas y reservar",
-    translationNote: null as string | null,
+    ratingOn: (n: number) => `${n} opiniones en Booking`,
   },
   en: {
     home: "Home",
-    gallery: "Photo gallery",
     theProperty: "The property",
     guests: "Guests",
     bedrooms: "Bedrooms",
     beds: "Beds",
     bathrooms: "Bathrooms",
+    size: "Size",
     amenities: "Amenities",
-    amenitiesPending:
-      "The full amenities list will be published with the owner's final information.",
-    amenitiesWhat: "Amenities list",
     location: "Location & how to get there",
-    locatedAt: (name: string, area: string, city: string, region: string) =>
-      `${name} is in ${area}, ${city} (${region}).`,
-    distancePending: "distance to be confirmed",
-    distancesWhat: "Exact distances",
+    gettingThere: "How to get here",
+    nearby: "What's nearby",
+    stayInfo: "Stay information",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    deposit: "Deposit",
+    rules: "House rules",
+    license: "Licence number",
     cancellation: "Cancellation policy",
-    cancellationWhat: "Exact cancellation terms",
-    more: "More about this getaway",
-    faqHeading: (name: string) => `Frequently asked questions about ${name}`,
+    more: "Keep exploring",
+    faqHeading: (n: string) => `Frequently asked questions about ${n}`,
     stickyCta: "Check dates & book",
-    translationNote:
-      "Some sections below are shown in Spanish while the reviewed English version is prepared.",
+    ratingOn: (n: number) => `${n} reviews on Booking`,
   },
 } as const;
 
@@ -70,17 +68,26 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
   if (!raw) return null;
   const p = localizedProperty(raw, locale);
   const t = T[locale];
-  const stats = reviewStats(p.reviews);
-  const path = (neutral: string) => localizedPath(locale, neutral);
-  // Landings and guides are Spanish-only for V1 — only surface them on the ES site
-  // so the English pages never link to a non-existent localized URL.
-  const landings =
-    locale === "es" ? [...landingLinksFor(p.slug), ...guideLinksFor(p.slug)] : [];
-  const usingEsFallback = locale === "en" && !raw.en?.sections;
+  const photos = propertyPhotos(slug);
+  const path = (n: string) => localizedPath(locale, n);
+  const links = locale === "es" ? [...landingLinksFor(slug), ...guideLinksFor(slug)] : [];
+
+  const facts: [string, string | number][] = [
+    [t.guests, p.capacity.guests],
+    [t.bedrooms, p.capacity.bedrooms],
+    [t.beds, p.capacity.bedConfig],
+    [t.bathrooms, p.capacity.bathrooms],
+  ];
+  if (p.capacity.sizeSqm) facts.push([t.size, `${p.capacity.sizeSqm} m²`]);
 
   return (
     <div data-experience={p.experience} lang={locale === "en" ? "en" : undefined}>
-      <JsonLd data={[propertyJsonLd(p, stats ?? {}), faqJsonLd(p.faq)]} />
+      <JsonLd
+        data={[
+          propertyJsonLd(p, p.rating ? { ratingValue: p.rating.value, reviewCount: p.rating.count } : {}),
+          faqJsonLd(p.faq),
+        ]}
+      />
       <Breadcrumbs
         items={[
           { name: t.home, path: path("/") },
@@ -93,35 +100,34 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           {p.location.city} · {p.location.region}
         </p>
         <h1 className="mt-2 font-display text-3xl sm:text-4xl">{p.seo.h1}</h1>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
+          {p.rating && (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="rounded-md bg-[var(--accent-700)] px-1.5 py-0.5 text-xs font-semibold text-white">
+                {p.rating.value.toFixed(1)}
+              </span>
+              {t.ratingOn(p.rating.count)}
+            </span>
+          )}
+          <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
+        </div>
         <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{p.shortIntro}</p>
-        {usingEsFallback && t.translationNote && (
-          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            {t.translationNote}
-          </p>
-        )}
       </header>
 
-      <Gallery images={p.gallery} name={p.name} />
-      <div className="container-page">
-        <ContentStatusNote status={p.galleryStatus} what={t.gallery} />
-      </div>
+      <Gallery photos={photos} name={p.name} />
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-10">
+        <div className="space-y-12">
+          {/* Quick facts */}
           <section aria-labelledby="cap-heading">
             <h2 id="cap-heading" className="font-display text-2xl">
               {t.theProperty}
             </h2>
-            <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {[
-                [t.guests, guestsLabel(p.capacity.guests)],
-                [t.bedrooms, p.capacity.bedrooms],
-                [t.beds, p.capacity.beds],
-                [t.bathrooms, p.capacity.bathrooms],
-              ].map(([label, value]) => (
-                <div key={String(label)} className="rounded-xl border border-[var(--color-line)] p-4">
+            <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {facts.map(([label, value]) => (
+                <div key={label} className="rounded-xl border border-[var(--color-line)] p-4">
                   <dt className="text-xs text-[var(--color-ink-soft)]">{label}</dt>
-                  <dd className="mt-1 text-lg font-medium">{value}</dd>
+                  <dd className="mt-1 font-medium">{value}</dd>
                 </div>
               ))}
             </dl>
@@ -138,68 +144,89 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
             </section>
           ))}
 
+          {/* Amenities grouped */}
           <section aria-labelledby="amenities-heading">
             <h2 id="amenities-heading" className="font-display text-2xl">
               {t.amenities}
             </h2>
-            {p.amenities.length > 0 ? (
-              <ul className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-                {p.amenities.map((a) => (
-                  <li key={a.key} className="flex items-center gap-2">
-                    <span aria-hidden className="text-[var(--accent-600)]">
-                      ✓
-                    </span>
-                    {a.label}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-[var(--color-ink-soft)]">{t.amenitiesPending}</p>
-            )}
-            <ContentStatusNote status={p.amenitiesStatus} what={t.amenitiesWhat} />
+            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+              {p.amenityGroups.map((g) => (
+                <div key={g.category}>
+                  <p className="text-sm font-semibold text-[var(--color-ink)]">{g.category}</p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-[var(--color-ink-soft)]">
+                    {g.items.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
+                        <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
+                          ✓
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
 
+          {/* Location */}
           <section aria-labelledby="loc-heading">
             <h2 id="loc-heading" className="font-display text-2xl">
               {t.location}
             </h2>
             <p className="mt-3 text-[var(--color-ink-soft)]">
-              {t.locatedAt(p.name, p.location.area, p.location.city, p.location.region)}
+              {p.name} — {p.location.addressLine}, {p.location.postalCode} {p.location.city}.
             </p>
-            {p.distances.length > 0 && (
-              <ul className="mt-4 space-y-2 text-sm">
-                {p.distances.map((d) => (
-                  <li
-                    key={d.label}
-                    className="flex justify-between border-b border-[var(--color-line)] pb-2"
-                  >
-                    <span>{d.label}</span>
-                    <span className="text-[var(--color-ink-soft)]">
-                      {d.km ? `${d.km} km` : ""}
-                      {d.minutes ? ` · ${d.minutes} min` : d.km ? "" : t.distancePending}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <ContentStatusNote status={p.distancesStatus} what={t.distancesWhat} />
+
+            <h3 className="mt-6 text-sm font-semibold">{t.gettingThere}</h3>
+            {p.location.gettingThere.map((para, i) => (
+              <p key={i} className="mt-2 text-sm text-[var(--color-ink-soft)]">
+                {para}
+              </p>
+            ))}
+
+            <h3 className="mt-6 text-sm font-semibold">{t.nearby}</h3>
+            <ul className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)] text-sm">
+              {p.nearby.map((n) => (
+                <li key={n.name} className="flex justify-between gap-4 py-2">
+                  <span>{n.name}</span>
+                  <span className="shrink-0 text-[var(--color-ink-soft)]">{n.distance}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
+              Distancias estimadas (fuente: Booking.com / OpenStreetMap).
+            </p>
           </section>
 
-          <section aria-labelledby="cancel-heading">
-            <h2 id="cancel-heading" className="font-display text-2xl">
-              {t.cancellation}
+          {/* Stay info */}
+          <section aria-labelledby="stay-heading">
+            <h2 id="stay-heading" className="font-display text-2xl">
+              {t.stayInfo}
             </h2>
-            <p className="mt-3 text-[var(--color-ink-soft)]">{p.cancellationPolicy.summary}</p>
-            <ContentStatusNote status={p.cancellationPolicy.status} what={t.cancellationWhat} />
+            <dl className="mt-4 space-y-2 text-sm">
+              <Row label={t.checkIn} value={p.stayInfo.checkIn} />
+              <Row label={t.checkOut} value={p.stayInfo.checkOut} />
+              {p.stayInfo.deposit && <Row label={t.deposit} value={p.stayInfo.deposit} />}
+              {p.stayInfo.licenseNumber && (
+                <Row label={t.license} value={p.stayInfo.licenseNumber} />
+              )}
+            </dl>
+            <ul className="mt-3 space-y-1 text-sm text-[var(--color-ink-soft)]">
+              {p.stayInfo.notes.map((n) => (
+                <li key={n}>· {n}</li>
+              ))}
+            </ul>
+            <h3 className="mt-6 text-sm font-semibold">{t.cancellation}</h3>
+            <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{p.cancellationPolicy.summary}</p>
           </section>
 
-          {landings.length > 0 && (
+          {links.length > 0 && (
             <section aria-labelledby="more-heading">
               <h2 id="more-heading" className="font-display text-2xl">
                 {t.more}
               </h2>
               <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {landings.map((l) => (
+                {links.map((l) => (
                   <li key={l.path}>
                     <Link
                       href={l.path}
@@ -224,7 +251,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
         </aside>
       </div>
 
-      <ReviewsBlock reviews={p.reviews} propertyName={p.name} />
+      <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
       <FaqBlock items={p.faq} heading={t.faqHeading(p.name)} />
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
@@ -235,6 +262,15 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           {t.stickyCta}
         </a>
       </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-b border-[var(--color-line)] pb-2 sm:flex-row sm:justify-between sm:gap-4">
+      <dt className="shrink-0 text-[var(--color-ink-soft)]">{label}</dt>
+      <dd className="sm:text-right">{value}</dd>
     </div>
   );
 }

@@ -1,21 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import type { PropertyImage } from "@/domains/properties/types";
+import type { ResponsivePhoto } from "@/content/properties/photos";
+import { srcSet } from "@/content/properties/photos";
 
 /**
- * Full-screen, keyboard- and swipe-navigable gallery (issue #17).
- * The grid thumbnails are server-rendered by <Gallery/>; this component only
- * mounts the overlay when opened, so it costs nothing on first paint.
+ * Full-screen, keyboard-navigable gallery (issue #17/#38). Mounts only when
+ * opened, so it costs nothing on first paint.
  */
 export function GalleryLightbox({
-  images,
+  photos,
   name,
   openIndex,
   onClose,
 }: {
-  images: PropertyImage[];
+  photos: ResponsivePhoto[];
   name: string;
   openIndex: number | null;
   onClose: () => void;
@@ -27,10 +26,10 @@ export function GalleryLightbox({
   }, [openIndex]);
 
   const prev = useCallback(
-    () => setIndex((i) => (i - 1 + images.length) % images.length),
-    [images.length],
+    () => setIndex((i) => (i - 1 + photos.length) % photos.length),
+    [photos.length],
   );
-  const next = useCallback(() => setIndex((i) => (i + 1) % images.length), [images.length]);
+  const next = useCallback(() => setIndex((i) => (i + 1) % photos.length), [photos.length]);
 
   useEffect(() => {
     if (openIndex === null) return;
@@ -48,8 +47,8 @@ export function GalleryLightbox({
   }, [openIndex, onClose, prev, next]);
 
   if (openIndex === null) return null;
-  const img = images[index];
-  if (!img) return null;
+  const photo = photos[index];
+  if (!photo) return null;
 
   return (
     <div
@@ -60,7 +59,7 @@ export function GalleryLightbox({
     >
       <div className="flex items-center justify-between p-4 text-white">
         <span className="text-sm">
-          {index + 1} / {images.length}
+          {index + 1} / {photos.length}
         </span>
         <button
           onClick={onClose}
@@ -78,16 +77,15 @@ export function GalleryLightbox({
         >
           ‹
         </button>
-        <div className="relative h-full max-h-[80vh] w-full max-w-5xl">
-          <Image
-            src={img.src}
-            alt={img.alt}
-            fill
-            sizes="100vw"
-            className="object-contain"
-            priority
+        <picture className="flex h-full max-h-[80vh] w-full max-w-5xl items-center justify-center">
+          <source type="image/avif" srcSet={srcSet(photo, "avif")} sizes="100vw" />
+          <source type="image/webp" srcSet={srcSet(photo, "webp")} sizes="100vw" />
+          <img
+            src={`${photo.dir}/${photo.base}-${Math.max(...photo.widths)}.webp`}
+            alt={photo.alt}
+            className="max-h-[80vh] w-auto object-contain"
           />
-        </div>
+        </picture>
         <button
           onClick={next}
           aria-label="Siguiente"
@@ -96,7 +94,7 @@ export function GalleryLightbox({
           ›
         </button>
       </div>
-      <p className="pb-4 text-center text-sm text-white/70">{img.alt}</p>
+      <p className="pb-4 text-center text-sm text-white/70">{photo.alt}</p>
     </div>
   );
 }

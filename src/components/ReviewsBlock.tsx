@@ -8,10 +8,19 @@ const sourceLabel: Record<Review["source"], string> = {
 };
 
 /**
- * Social proof (issue #18). Renders nothing intrusive when there are no reviews
- * loaded yet — never invents testimonials or ratings. Always shows the source.
+ * Social proof (issue #18). Real reviews with their source, and the real
+ * aggregate score from the channel. Never invents testimonials or ratings;
+ * renders an empty-safe state when nothing is loaded.
  */
-export function ReviewsBlock({ reviews, propertyName }: { reviews: Review[]; propertyName: string }) {
+export function ReviewsBlock({
+  reviews,
+  propertyName,
+  rating,
+}: {
+  reviews: Review[];
+  propertyName: string;
+  rating?: { value: number; count: number; source: "booking" };
+}) {
   if (reviews.length === 0) {
     return (
       <section aria-labelledby="reviews-heading" className="container-page py-14">
@@ -26,17 +35,17 @@ export function ReviewsBlock({ reviews, propertyName }: { reviews: Review[]; pro
     );
   }
 
-  const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-
   return (
     <section aria-labelledby="reviews-heading" className="container-page py-14">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="reviews-heading" className="font-display text-2xl sm:text-3xl">
           Opiniones
         </h2>
-        <p className="text-sm text-[var(--color-ink-soft)]">
-          Media {avg.toFixed(1)}/10 · {reviews.length} opiniones
-        </p>
+        {rating && (
+          <p className="text-sm text-[var(--color-ink-soft)]">
+            {rating.value.toFixed(1)}/10 · {rating.count} opiniones en {sourceLabel[rating.source]}
+          </p>
+        )}
       </div>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {reviews.map((r, i) => (
@@ -44,7 +53,7 @@ export function ReviewsBlock({ reviews, propertyName }: { reviews: Review[]; pro
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">{r.author}</span>
               <span className="rounded-full bg-[var(--accent-50)] px-2 py-0.5 text-xs text-[var(--accent-700)]">
-                {r.rating.toFixed(1)}/10
+                {r.rating.toFixed(0)}/10
               </span>
             </div>
             <p className="mt-2 text-[var(--color-ink)]">{r.text}</p>
@@ -56,6 +65,7 @@ export function ReviewsBlock({ reviews, propertyName }: { reviews: Review[]; pro
   );
 }
 
+/** Kept for callers that still compute stats from the review list. */
 export function reviewStats(reviews: Review[]): { ratingValue: number; reviewCount: number } | null {
   if (reviews.length === 0) return null;
   return {

@@ -3,13 +3,11 @@ import type { PropertyContent } from "@/domains/properties/types";
 /**
  * Valencia Frente al Mar — the SEA property.
  *
- * Content status (decision D-004): the real Booking listing, exact address,
- * verified amenities, distances, photos and reviews were NOT provided. Every
- * non-obvious fact is marked `status: "placeholder"` and labelled in the UI as
- * pending owner confirmation. Nothing invented is shown to guests as verified.
- *
- * To finish: replace placeholder blocks with owner-authorised content and flip
- * the `status` flags to "authored". No code change needed.
+ * Content extracted (issue #35) from the owner's Booking listing:
+ * https://www.booking.com/hotel/es/valencia-frente-al-mar.es.html
+ * The apartment is in Mareny de Barraquetes (Sueca), on the quiet beach south
+ * of Valencia city, right on the Mediterranean. Photos live in
+ * public/images/properties/valencia and are served locally.
  */
 export const valencia: PropertyContent = {
   slug: "valencia",
@@ -17,90 +15,136 @@ export const valencia: PropertyContent = {
   name: "Valencia Frente al Mar",
   experience: "sea",
   currency: "EUR",
-  tagline: "Playa, sol y mar Mediterráneo en Valencia",
+  tagline: "Apartamento en primera línea de la playa Les Palmeretes, al sur de Valencia",
   shortIntro:
-    "Un apartamento junto al mar en Valencia para vacaciones de playa, escapadas de fin de semana y días de sol mediterráneo, con la ciudad y su gastronomía a un paso.",
+    "Un apartamento de 75 m² a 3 minutos a pie de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), con vistas al mar desde el balcón, zona privada de playa y parking gratis. Un tramo de litoral tranquilo junto a la Albufera, a media hora de Valencia capital.",
 
   location: {
-    city: "Valencia",
+    city: "Mareny de Barraquetes (Sueca), Valencia",
     region: "Comunidad Valenciana",
     area: "Frente al mar",
-    addressLine: null,
-    postalCode: null,
+    addressLine: "Carrer del Mestre Navarro 1, pta 3",
+    postalCode: "46419",
     country: "ES",
-    // Approximate coordinates of the Valencia seafront (public).
-    geo: { lat: 39.4699, lng: -0.3246 },
-    status: "placeholder",
+    geo: { lat: 39.3243, lng: -0.294 },
+    status: "authored",
+    gettingThere: [
+      "En coche desde Valencia por la V-31 y la CV-500, unos 30 minutos hasta Mareny de Barraquetes.",
+      "En tren, las estaciones de Sueca (8 km) y Cullera (11 km) son las más cercanas; desde allí, taxi o bus local hasta la playa.",
+      "El Aeropuerto de Valencia está a 34 km. La Ciudad de las Artes y las Ciencias y el Oceanográfic quedan a unos 24 km.",
+    ],
   },
 
   capacity: {
     guests: 4,
-    bedrooms: 2,
+    bedrooms: 3,
     beds: 3,
     bathrooms: 1,
+    bedConfig: "1 cama doble extragrande · 2 literas",
+    sizeSqm: 75,
   },
 
-  amenities: [],
-  amenitiesStatus: "placeholder",
-
-  distances: [
-    { label: "Playa", mode: "walk" },
-    { label: "Centro histórico de Valencia", mode: "transit" },
-  ],
-  distancesStatus: "placeholder",
-
-  gallery: [
+  amenityGroups: [
     {
-      src: "/images/placeholders/valencia-hero.svg",
-      alt: "Apartamento Praetoria Vacacional frente al mar en Valencia — imagen pendiente de confirmación",
-      width: 1600,
-      height: 1067,
-      order: 0,
-      hero: true,
-    },
-    {
-      src: "/images/placeholders/valencia-2.svg",
-      alt: "Playa de Valencia junto al apartamento",
-      width: 1600,
-      height: 1067,
-      order: 1,
-    },
-    {
-      src: "/images/placeholders/valencia-3.svg",
-      alt: "Paseo marítimo del Mediterráneo en Valencia",
-      width: 1600,
-      height: 1067,
-      order: 2,
-    },
-  ],
-  galleryStatus: "placeholder",
-
-  sections: [
-    {
-      heading: "Vacaciones de playa en Valencia, con la ciudad al lado",
-      body: [
-        "Praetoria Vacacional frente al mar es el sitio para desconectar con el sonido del Mediterráneo: mañanas de playa, comidas de arroz y tardes de paseo marítimo.",
-        "Valencia combina como pocas ciudades la playa urbana con un centro histórico vivo, la Ciudad de las Artes y las Ciencias y el parque natural de la Albufera a un corto trayecto.",
+      category: "Mar y playa",
+      items: [
+        "Situado frente a la playa Les Palmeretes",
+        "Zona privada de playa",
+        "Balcón con vistas al mar",
+        "Terraza",
       ],
     },
     {
-      heading: "Un destino que funciona todo el año",
+      category: "Confort",
+      items: [
+        "Calefacción",
+        "Recepción 24 horas",
+        "Ropa de cama y toallas incluidas",
+        "Habitaciones sin humo",
+        "Apto para familias",
+      ],
+    },
+    {
+      category: "Cocina",
+      items: ["Cocina totalmente equipada", "Zona de comedor", "Frigorífico"],
+    },
+    {
+      category: "Conectividad",
+      items: ["WiFi gratis en todo el alojamiento", "TV de pantalla plana vía satélite"],
+    },
+    {
+      category: "Aparcamiento",
+      items: ["Parking gratis"],
+    },
+  ],
+  amenitiesStatus: "authored",
+
+  nearby: [
+    { name: "Playa Les Palmeretes", category: "beach", distance: "3 min a pie" },
+    { name: "Restaurante La Manduca Maresa", category: "food", distance: "500 m" },
+    { name: "Bar Autónomo", category: "food", distance: "950 m" },
+    { name: "Restaurante Llobarro", category: "food", distance: "1,7 km" },
+    { name: "Platja del Mareny de Barraquetes", category: "beach", distance: "1,8 km" },
+    { name: "Parque Natural de la Albufera", category: "nature", distance: "8 km" },
+    { name: "Estación de tren de Sueca", category: "transport", distance: "8 km" },
+    { name: "Faro de Cullera", category: "landmark", distance: "9 km" },
+    { name: "Estación de tren de Cullera", category: "transport", distance: "11 km" },
+    { name: "Ciudad de las Artes y las Ciencias / Oceanográfic", category: "landmark", distance: "24 km" },
+    { name: "Aeropuerto de Valencia", category: "airport", distance: "34 km" },
+  ],
+  distancesStatus: "authored",
+  headlineDistance: { label: "A la playa Les Palmeretes", value: "3 min a pie" },
+
+  galleryStatus: "authored",
+
+  sections: [
+    {
+      heading: "Primera línea de mar en un tramo de costa tranquilo",
       body: [
-        "Más allá del verano, el clima suave de Valencia hace que las escapadas de primavera y otoño junto al mar sean igual de agradables, con menos gente y precios más contenidos.",
+        "El apartamento está en Mareny de Barraquetes, en el municipio de Sueca, en la playa Les Palmeretes: un arenal amplio y tranquilo del litoral sur de Valencia, lejos del bullicio de la playa urbana.",
+        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y un balcón con vistas directas al Mediterráneo. Nada más bajar del edificio estás en la arena, y el alojamiento cuenta con zona privada de playa y recepción 24 horas.",
+        "A las parejas les encanta la ubicación —Booking la valora con un 9,4 para viajes de dos personas— y el barrio es especialmente tranquilo, con un horario sin ruido de 22:00 a 9:00.",
+      ],
+    },
+    {
+      heading: "La Albufera, Cullera y Valencia, muy cerca",
+      body: [
+        "El Parque Natural de la Albufera queda a 8 km: paseos en barca al atardecer y arroces en El Palmar. El faro y el castillo de Cullera están a unos 9 km.",
+        "Valencia capital, con su casco histórico, la Ciudad de las Artes y las Ciencias y el Oceanográfic, está a una media hora en coche.",
+      ],
+    },
+    {
+      heading: "Trato directo con los anfitriones",
+      body: [
+        "Los anfitriones —Lucía y Paula gestionan el día a día— son muy valorados por su atención: siempre disponibles para cualquier duda antes o durante la estancia. El propietario atiende en catalán, español, inglés, francés e italiano.",
       ],
     },
   ],
 
   faq: [
     {
-      question: "¿El apartamento está frente a la playa?",
+      question: "¿El apartamento está realmente frente a la playa?",
       answer:
-        "El alojamiento está en la zona de primera línea de mar de Valencia. La distancia exacta al agua se confirmará con los datos definitivos del propietario.",
+        "Sí. Está en primera línea de la playa Les Palmeretes, a unos 3 minutos a pie de la arena, con vistas al mar desde el balcón y zona privada de playa.",
     },
     {
-      question: "¿Es fácil llegar al centro de Valencia desde el apartamento?",
+      question: "¿Dónde está exactamente?",
       answer:
-        "Sí. El frente marítimo de Valencia está bien conectado con el centro en transporte público y bicicleta; los tiempos concretos se añadirán con la información definitiva.",
+        "En Mareny de Barraquetes, en el municipio de Sueca, en el litoral sur de la provincia de Valencia, junto al Parque Natural de la Albufera. Valencia capital está a una media hora en coche.",
+    },
+    {
+      question: "¿Cuántas personas caben?",
+      answer:
+        "Hasta 4 personas en 3 dormitorios: 1 cama doble extragrande y 2 literas. El apartamento tiene 75 m² y 1 baño.",
+    },
+    {
+      question: "¿Hay parking?",
+      answer: "Sí, el apartamento dispone de parking gratuito.",
+    },
+    {
+      question: "¿Cuál es el horario de entrada y salida?",
+      answer:
+        "Entrada de 17:00 a 23:00 (con documento de identidad y tarjeta) y salida de 10:00 a 11:00. Hay recepción 24 horas y se pide avisar de la hora de llegada.",
     },
     {
       question: "¿La reserva se confirma al instante?",
@@ -109,7 +153,64 @@ export const valencia: PropertyContent = {
     },
   ],
 
-  reviews: [],
+  reviews: [
+    {
+      author: "Ana",
+      rating: 10,
+      text: "Increíbles vistas al mar. Paula es un encanto, siempre disponible y dispuesta a ayudar en lo que necesites. Camas súper cómodas y el apartamento tiene todas las comodidades que te puedas imaginar.",
+      date: "2025-06-14",
+      source: "booking",
+      locale: "es",
+    },
+    {
+      author: "Jose",
+      rating: 9,
+      text: "Los anfitriones súper amables, el piso bien equipado, unas vistas espectaculares debido a su proximidad al mar: nada más bajar estabas en la playa.",
+      date: "2025-07-02",
+      source: "booking",
+      locale: "es",
+    },
+    {
+      author: "Jonathan",
+      rating: 10,
+      text: "La ubicación es muy buena y tus mañanas serán de ensueño con vista al mar. Sector tranquilo. Lucía muy atenta siempre para cualquier situación. Agradable estancia.",
+      date: "2025-05-20",
+      source: "booking",
+      locale: "es",
+    },
+    {
+      author: "María",
+      rating: 9,
+      text: "El apartamento tiene todo lo necesario para estar a gusto, en una zona privilegiada de playa y un barrio muy tranquilo.",
+      date: "2025-08-11",
+      source: "booking",
+      locale: "es",
+    },
+    {
+      author: "Janeth",
+      rating: 10,
+      text: "Todo súper limpio, la vista me ha encantado, la atención un 10. 100% recomendado, todo de maravilla.",
+      date: "2025-06-30",
+      source: "booking",
+      locale: "es",
+    },
+  ],
+  rating: { value: 8.7, count: 50, source: "booking" },
+
+  stayInfo: {
+    checkIn: "De 17:00 a 23:00 (documento de identidad y tarjeta de crédito)",
+    checkOut: "De 10:00 a 11:00",
+    deposit:
+      "Podría solicitarse un pago de hasta 300 € tras la salida en caso de daños, según las condiciones del alojamiento.",
+    notes: [
+      "No se puede fumar.",
+      "No se admiten mascotas.",
+      "No se pueden celebrar fiestas ni despedidas.",
+      "Horario sin ruido de 22:00 a 9:00.",
+      "Los menores de 18 años solo pueden alojarse acompañados de un progenitor o tutor.",
+    ],
+    licenseNumber: "VT-56539-V2 / VT-56539-V",
+  },
 
   cancellationPolicy: {
     summary:
@@ -123,56 +224,41 @@ export const valencia: PropertyContent = {
   },
 
   seo: {
-    metaTitle: "Apartamento frente al mar en Valencia | Praetoria Vacacional",
+    metaTitle: "Apartamento frente al mar en la playa Les Palmeretes (Valencia) | Praetoria Vacacional",
     metaDescription:
-      "Apartamento junto a la playa en Valencia para vacaciones y escapadas de fin de semana. Reserva directa, disponibilidad real y confirmación inmediata.",
-    h1: "Apartamento frente al mar en Valencia",
-    ogImage: "/images/og/valencia.svg",
+      "Apartamento de 75 m² a 3 min de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), litoral sur de Valencia. Vistas al mar, zona privada de playa y parking gratis. Reserva directa.",
+    h1: "Apartamento frente al mar en la playa Les Palmeretes, al sur de Valencia",
+    ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
   },
 
   icalImportUrls: [{ channel: "booking", url: "" }],
 
   en: {
-    tagline: "Beach, sun and Mediterranean sea in Valencia",
+    tagline: "Beachfront apartment on Les Palmeretes beach, south of Valencia",
     shortIntro:
-      "A seafront apartment in Valencia for beach holidays, weekend getaways and days of Mediterranean sun, with the city and its food a step away.",
+      "A 75 m² apartment a 3-minute walk from Les Palmeretes beach in Mareny de Barraquetes (Sueca), with sea views from the balcony, a private beach area and free parking. A quiet stretch of coast next to the Albufera, half an hour from Valencia city.",
     seo: {
-      metaTitle: "Seafront apartment in Valencia | Praetoria Vacacional",
+      metaTitle: "Beachfront apartment on Les Palmeretes beach (Valencia) | Praetoria Vacacional",
       metaDescription:
-        "Apartment by the beach in Valencia for holidays and weekend getaways. Book direct, real availability and instant confirmation.",
-      h1: "Seafront apartment in Valencia",
-      ogImage: "/images/og/valencia.svg",
+        "75 m² apartment 3 min from Les Palmeretes beach, Mareny de Barraquetes (Sueca), south of Valencia. Sea views, private beach area, free parking. Book direct.",
+      h1: "Beachfront apartment on Les Palmeretes beach, south of Valencia",
+      ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
     },
     sections: [
       {
-        heading: "A beach holiday in Valencia, with the city right there",
+        heading: "Right on the sea, on a quiet stretch of coast",
         body: [
-          "Praetoria Vacacional by the sea is the place to switch off to the sound of the Mediterranean: beach mornings, rice lunches and evening walks along the promenade.",
-          "Few cities combine an urban beach with a living historic centre, the City of Arts and Sciences and the Albufera natural park a short trip away like Valencia does.",
+          "The apartment is in Mareny de Barraquetes, in the municipality of Sueca, on Les Palmeretes beach: a wide, calm stretch of sand on the coast south of Valencia, away from the bustle of the city beach.",
+          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a balcony with direct Mediterranean views. Step out of the building and you are on the sand, and the property has a private beach area and 24-hour reception.",
+          "Couples love the location — Booking rates it 9.4 for two-person trips — and the neighbourhood is especially quiet, with a no-noise window from 22:00 to 9:00.",
         ],
       },
       {
-        heading: "A destination that works all year round",
+        heading: "The Albufera, Cullera and Valencia, all close",
         body: [
-          "Beyond summer, Valencia's mild climate makes spring and autumn seaside getaways just as pleasant, with fewer people and lower prices.",
+          "The Albufera natural park is 8 km away: boat trips at sunset and rice dishes in El Palmar. The Cullera lighthouse and castle are about 9 km away.",
+          "Valencia city, with its old town, the City of Arts and Sciences and the Oceanogràfic, is about half an hour by car.",
         ],
-      },
-    ],
-    faq: [
-      {
-        question: "Is the apartment on the beachfront?",
-        answer:
-          "The property is in Valencia's seafront area. The exact distance to the water will be confirmed with the owner's final details.",
-      },
-      {
-        question: "Is it easy to reach the centre of Valencia from the apartment?",
-        answer:
-          "Yes. Valencia's seafront is well connected to the centre by public transport and bike; exact times will be added with the final information.",
-      },
-      {
-        question: "Is the booking confirmed instantly?",
-        answer:
-          "Yes. After the secure payment you receive a confirmation email with your booking reference and the dates are blocked automatically.",
       },
     ],
     cancellationSummary:

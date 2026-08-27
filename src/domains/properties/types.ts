@@ -37,6 +37,20 @@ export interface Amenity {
   icon?: string;
 }
 
+/** Amenities grouped by category for the boutique property page (issue #38). */
+export interface AmenityGroup {
+  category: string;
+  items: string[];
+}
+
+/** A nearby point of interest with a real, source-backed distance (issue #26). */
+export interface NearbyPoint {
+  name: string;
+  category: "beach" | "ski" | "transport" | "food" | "nature" | "landmark" | "airport";
+  /** e.g. "0 m", "500 m", "14 km", "~20 min en coche". Verbatim from source. */
+  distance: string;
+}
+
 export interface FaqItem {
   question: string;
   answer: string;
@@ -95,17 +109,18 @@ export interface PropertyContent {
   shortIntro: string;
 
   location: {
+    /** Locality shown to guests (e.g. "Camarena de la Sierra"). */
     city: string;
     region: string;
-    /** Neighbourhood / resort area. */
+    /** Short area/positioning phrase (e.g. "Sierra de Javalambre", "Frente al mar"). */
     area: string;
-    /** Nullable until the owner confirms the exact address (issue #20/#26). */
     addressLine: string | null;
     postalCode: string | null;
     country: string;
     geo: GeoPoint;
-    /** Whether geo/address are real or approximate placeholders. */
     status: ContentStatus;
+    /** Human "how to get here" paragraphs (issue #26/#38). */
+    gettingThere: string[];
   };
 
   capacity: {
@@ -113,20 +128,38 @@ export interface PropertyContent {
     bedrooms: number;
     beds: number;
     bathrooms: number;
+    /** Free-text bed configuration, verbatim-ish from source. */
+    bedConfig: string;
+    /** Interior size in m². */
+    sizeSqm?: number;
   };
 
-  amenities: Amenity[];
+  amenityGroups: AmenityGroup[];
   amenitiesStatus: ContentStatus;
 
-  distances: Distance[];
+  /** Nearby points of interest with real distances (issue #26/#37/#38). */
+  nearby: NearbyPoint[];
   distancesStatus: ContentStatus;
 
-  gallery: PropertyImage[];
+  /** The single most important distance, for the destination card (issue #37). */
+  headlineDistance: { label: string; value: string };
+
   galleryStatus: ContentStatus;
 
   sections: ContentSection[];
   faq: FaqItem[];
   reviews: Review[];
+  /** Real aggregate rating from the source channel (issue #18). */
+  rating?: { value: number; count: number; source: "booking" };
+
+  /** Stay rules surfaced before booking (issue #20). */
+  stayInfo: {
+    checkIn: string;
+    checkOut: string;
+    deposit: string | null;
+    notes: string[];
+    licenseNumber: string | null;
+  };
 
   cancellationPolicy: CancellationPolicy;
 

@@ -1,23 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import type { PropertyImage } from "@/domains/properties/types";
+import type { ResponsivePhoto } from "@/content/properties/photos";
+import { Picture } from "@/components/media/Picture";
 import { GalleryLightbox } from "./GalleryLightbox";
 
 /**
- * Property gallery (issues #17, #27). Hero image is eager + high priority for
- * LCP; the rest lazy-load. Click any tile to open the full-screen lightbox.
- * Single reusable component — only ever receives one property's images.
+ * Boutique property gallery (issues #17, #27, #38). Real photos, pre-encoded to
+ * AVIF+WebP at responsive widths. Hero eager for LCP; the rest lazy. Click any
+ * tile for the full-screen lightbox. One reusable component — it only ever
+ * receives one property's photos.
  */
-export function Gallery({ images, name }: { images: PropertyImage[]; name: string }) {
-  const sorted = [...images].sort((a, b) => a.order - b.order);
+export function Gallery({ photos, name }: { photos: ResponsivePhoto[]; name: string }) {
   const [open, setOpen] = useState<number | null>(null);
-  const [hero, ...rest] = sorted;
+  const [hero, ...rest] = photos;
   if (!hero) return null;
 
-  const tile = "group relative overflow-hidden rounded-xl";
-  const imgCls = "object-cover transition-transform duration-500 group-hover:scale-[1.03]";
+  const tile = "group relative block overflow-hidden rounded-xl";
+  const img = "transition-transform duration-500 group-hover:scale-[1.03]";
 
   return (
     <section aria-label={`Galería de ${name}`} className="container-page pt-6">
@@ -27,41 +27,35 @@ export function Gallery({ images, name }: { images: PropertyImage[]; name: strin
           onClick={() => setOpen(0)}
           className={`${tile} aspect-[4/3] sm:col-span-2 lg:row-span-2`}
         >
-          <Image
-            src={hero.src}
-            alt={hero.alt}
-            fill
+          <Picture
+            photo={hero}
             priority
-            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className={imgCls}
+            imgClassName={`h-full w-full object-cover ${img}`}
           />
         </button>
-        {rest.slice(0, 4).map((img, i) => (
+        {rest.slice(0, 4).map((photo, i) => (
           <button
-            key={img.src}
+            key={photo.base}
             type="button"
             onClick={() => setOpen(i + 1)}
             className={`${tile} aspect-[4/3]`}
           >
-            <Image
-              src={img.src}
-              alt={img.alt}
-              fill
-              loading="lazy"
+            <Picture
+              photo={photo}
               sizes="(max-width: 1024px) 50vw, 25vw"
-              className={imgCls}
+              imgClassName={`h-full w-full object-cover ${img}`}
             />
-            {i === 3 && sorted.length > 5 && (
+            {i === 3 && photos.length > 5 && (
               <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-medium text-white">
-                +{sorted.length - 5} fotos
+                +{photos.length - 5} fotos
               </span>
             )}
           </button>
         ))}
       </div>
 
-      <GalleryLightbox images={sorted} name={name} openIndex={open} onClose={() => setOpen(null)} />
+      <GalleryLightbox photos={photos} name={name} openIndex={open} onClose={() => setOpen(null)} />
     </section>
   );
 }
