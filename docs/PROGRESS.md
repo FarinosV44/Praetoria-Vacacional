@@ -90,9 +90,10 @@ Remaining before V1 "done" (issue #22):
 
 ## Branches
 
-`develop` is pushed to origin and holds all work. `main` has only the initial
-commit and is **not** pushed / not updated — the `develop → main` merge and the
-Vercel deploy are the user's call (nothing reaches users until then).
+Both `develop` and `main` are on origin. `main` was merged from `develop` at the
+user's explicit request (release commit `b5ee968`, "Praetoria Vacacional V1 + V2").
+Ongoing work continues on `develop`; merge to `main` again for the next release.
+The Vercel deploy itself is still the user's to trigger.
 
 ## Open items / blocks
 
