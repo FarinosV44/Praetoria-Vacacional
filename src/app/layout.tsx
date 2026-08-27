@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Analytics } from "@/components/Analytics";
+import { ExperimentTracker } from "@/components/ExperimentTracker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <SiteFooter />
         <Analytics />
+        <ExperimentTracker />
       </body>
     </html>
   );
