@@ -11,22 +11,23 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
 
-  --color-ink: oklch(0.22 0.02 260);
-  --color-ink-soft: oklch(0.44 0.02 260);
+  --color-ink: oklch(0.21 0.02 260);
+  --color-ink-soft: oklch(0.40 0.02 260);
   --color-paper: oklch(0.99 0.005 260);
   --color-paper-warm: oklch(0.985 0.012 80);
   --color-line: oklch(0.9 0.01 260);
 
-  --color-sea-50: oklch(0.97 0.03 220);
-  --color-sea-500: oklch(0.68 0.13 225);
-  --color-sea-600: oklch(0.58 0.13 230);
-  --color-sea-700: oklch(0.47 0.11 235);
+  /* 600 is the CTA background: dark enough for white text ≥ 4.5:1 (AA). */
+  --color-sea-50: oklch(0.96 0.03 225);
+  --color-sea-500: oklch(0.60 0.13 235);
+  --color-sea-600: oklch(0.50 0.12 238);
+  --color-sea-700: oklch(0.41 0.10 240);
   --color-sea-accent: oklch(0.78 0.14 85);
 
-  --color-ski-50: oklch(0.97 0.02 240);
-  --color-ski-500: oklch(0.62 0.11 255);
-  --color-ski-600: oklch(0.52 0.11 260);
-  --color-ski-700: oklch(0.42 0.09 265);
+  --color-ski-50: oklch(0.96 0.02 250);
+  --color-ski-500: oklch(0.54 0.12 260);
+  --color-ski-600: oklch(0.46 0.11 263);
+  --color-ski-700: oklch(0.39 0.09 266);
   --color-ski-accent: oklch(0.72 0.12 200);
 
   --radius-card: 1rem;
@@ -102,26 +103,27 @@
   color: var(--accent-700);
 }
 
-/* Subtle scroll-in reveal. Disabled under prefers-reduced-motion by the base rule. */
-@utility reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  animation: reveal-in linear both;
-  animation-timeline: view();
-  animation-range: entry 0% cover 22%;
-}
-
+/*
+ * Subtle scroll-in reveal — progressive enhancement only. Content is always
+ * visible by default; the hidden-then-animate behaviour is applied ONLY where
+ * scroll-driven timelines are supported AND motion is not reduced, so a browser
+ * without support (or a user who prefers reduced motion) simply sees the content.
+ */
 @keyframes reveal-in {
+  from {
+    transform: translateY(14px);
+  }
   to {
-    opacity: 1;
     transform: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    animation: none;
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
   }
 }

@@ -36,47 +36,44 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | S2 · Data model | #6 | ✅ | migrations (exclusion constraint + trigger + RPCs), seed, TS types, repository abstraction (supabase + in-memory) |
 | S3 · Availability + calendars | #7 | ✅ | pure engine + tests; `/api/availability/search`, `/api/properties/[p]/calendar`; double-booking → 409 verified in DEMO |
 | S4 · Pricing engine | #8 | ✅ | server-only engine (seasons/weekend/min-stay/LOS discount/extra guest), 11 tests, browser never sends price |
-| S5 · Design system + branding | #2, #24 | 🟡 | tokens + ski/sea theming + core components (Button, cards, gallery, FAQ, reviews). Premium visual pass still pending |
+| S5 · Design system + branding | #2, #24 | 🟡 | tokens + ski/sea theming, LogoMark, editorial hero + cards, storytelling sections, scroll-reveal, full-screen gallery lightbox. Deeper micro-interaction/skeleton pass remains |
 | S6 · Home + search | #3 | 🟡 | split hero, Playa/Nieve selector, live global search with per-property price+CTA, sticky mobile CTA, FAQ+JSON-LD |
-| S7 · Property pages | #4, #5 | 🟡 | full functional pages (gallery, capacity, sections, distances, cancellation, booking widget, reviews, FAQ). Content = placeholder (D-004) |
-| S8 · Galleries + reviews | #17, #18, #27 | 🟡 | reusable Gallery (LCP hero eager, rest lazy), empty-safe ReviewsBlock w/ source attribution. Needs real photos + WebP pipeline |
-| S9 · Checkout (3 steps) | #10, #23 | 🟡 | 3-step flow, server re-quote + re-check, pending hold w/ expiry, idempotency key (refresh/back safe), success/error pages. Verified E2E in DEMO |
-| S10 · Stripe + webhooks | #11 | 🟡 VERIFY | Checkout Session w/ metadata, signed idempotent webhook, confirm only via webhook. Needs real test keys to verify |
+| S7 · Property pages | #4, #5 | 🟡 | full functional pages via shared PropertyPageView (ES+EN). Content = placeholder (D-004) |
+| S8 · Galleries + reviews | #17, #18, #27 | 🟡 | Gallery lightbox (LCP hero eager, rest lazy), empty-safe ReviewsBlock w/ source attribution. Needs real photos + WebP pipeline |
+| S9 · Checkout (3 steps) | #10, #23 | 🟡 | 3-step flow, server re-quote + re-check, pending hold w/ expiry, idempotency key (refresh/back safe), success/error pages. E2E verified both properties |
+| S10 · Stripe + webhooks | #11 | 🟡 VERIFY | Checkout Session w/ metadata, signed idempotent webhook, confirm only via webhook. Needs real test keys |
 | S11 · Emails | #12 | 🟡 VERIFY | Resend module, per-property confirmation + payment-failed templates, 3× retry, email failure never changes reservation state |
-| S12 · Admin panel | #13 | 🟡 | signed-cookie auth, dashboard (revenue/occupancy), reservations list+filter+cancel(confirm), manual blocks, sync health. Server-guarded |
-| S13 · iCal sync | #9 | 🟡 | parser+generator (7 tests, idempotent), per-property export feed (token), import endpoint+cron, dedup by (property,source,uid) |
-| S14 · Technical SEO | #14, #28, #32 | 🟡 | dynamic sitemap/robots from route registry, canonical, OG, JSON-LD (Org/WebSite/VacationRental/Breadcrumb/FAQ), noindex admin/checkout, breadcrumbs |
-| S15 · Keyword arch + SEO landings | #15, #16, #25, #26, #31 | 🟡 | 6 transactional landings live w/ distinct intent + real copy. Content clusters/guides + copy polish pending |
-| S16 · Analytics + Search Console | #19, #33 | 🟡 | GA4 loader (consent-default-denied), typed event wrapper w/ PII filter, events wired (search/select/begin_checkout/payment_started/confirmed). Needs GA4 id + GSC |
+| S12 · Admin panel | #13 | 🟡 | auth, dashboard, reservations (filter/cancel w/ confirm), manual blocks, **price & rules editor → live on site**, sync health |
+| S13 · iCal sync | #9 | 🟡 | parser+generator (7 tests, idempotent), per-property export feed (token), import endpoint+cron, dedup by (property,source,uid). Needs real Booking feed URLs to VERIFY |
+| S14 · Technical SEO | #14, #28, #32 | 🟡 | dynamic sitemap/robots, per-locale canonical, OG, JSON-LD (Org/WebSite/VacationRental/Breadcrumb/FAQ), noindex, breadcrumbs, **bidirectional hreflang + x-default** |
+| S15 · Keyword arch + SEO landings | #15, #16, #25, #26, #31 | 🟡→✅ | 6 transactional landings + **12 destination guides (hub & spoke)**, all real copy, distinct intent. Keyword→URL map doc still to formalise (#15) |
+| S16 · Analytics + Search Console | #19, #33 | 🟡 | GA4 loader (consent-default-denied), typed event wrapper w/ PII filter, events wired, **GSC verification meta**. Needs GA4 id + live GSC + evolution dashboard (#33) |
 | S17 · Legal pages | #20 | 🟡 | 4 configurable legal docs, `[[PENDIENTE]]` markers, checkout terms checkbox, per-property cancellation policy |
-| S18 · i18n ES/EN | #29 | ⬜ | architecture is locale-ready; EN routing + content not built |
-| S19 · CRO | #30 | 🟡 | direct-booking block near CTA, total price up front, trust signals, no false urgency. A/B experiments not built |
-| S20 · Perf/a11y/security hardening | #21 | 🟡 | security headers, rate limiting, server validation (zod), skip-link, focus styles, reduced-motion. Full Lighthouse/axe pass pending |
-| S21 · Final E2E QA | #22 | ⬜ | partial DEMO E2E passed; full both-property checklist pending real services |
+| S18 · i18n ES/EN | #29 | 🟡 | ES root + `/en` for home & property pages, dictionaries, hreflang, LanguageSwitcher, reviewed EN property copy. EN checkout copy + EN landings/guides pending |
+| S19 · CRO | #30 | 🟡 | direct-booking block near CTA, total price up front, trust signals, no false urgency. A/B experiment scaffolding not built |
+| S20 · Perf/a11y/security hardening | #21 | 🟡 | **CSP** + security headers, rate limiting, server validation (zod), skip-link, focus styles, reduced-motion. Full Lighthouse/axe pass pending |
+| S21 · Final E2E QA | #22 | 🟡 | **Playwright critical-path E2E green for BOTH properties + independence** (DEMO). Full checklist w/ real services + security scenarios pending |
 
 ## Exact position
 
-First vertical slice committed: the platform builds, all pure-logic engines are
-tested, and the **full booking flow works end-to-end in DEMO mode** for both
-properties (search → hold → guest → pay(sim) → confirm → blocked dates → admin).
-Double-booking, idempotent checkout and hold expiry verified.
+Working `develop` (pushed). 8 commits. Platform builds static (37 pages), 34 unit
++ 3 Playwright E2E green. Full booking flow verified end-to-end in DEMO for both
+properties. ES site substantially complete; EN priority pages live with correct
+hreflang/canonical. Admin can edit prices and they reach the public site.
 
-Next: S5/S6/S24 visual quality pass, then wire real Supabase/Stripe/Resend and
-run S21 QA. Then S15 content, S18 i18n, S20 hardening.
+Remaining before V1 "done" (issue #22):
+1. User adds real Supabase + Stripe(test) + Resend keys + Booking iCal URLs → then
+   S10/S11/S13 move VERIFY→done and S21 runs the full checklist.
+2. User provides real property photos/content → S7/S8 content, WebP pipeline.
+3. EN checkout copy + EN landings/guides; #15 keyword map doc; #33 SEO dashboard;
+   deeper visual + Lighthouse/axe pass; #30 experiment scaffolding.
+4. `develop → main` merge + Vercel deploy (user's call).
 
-## Unpushed commits (action needed)
+## Branches
 
-The Claude Code auto-mode classifier blocks `git push` without explicit user
-approval, so commits are local-only for now. To publish:
-
-```bash
-git push -u origin main
-git push -u origin develop
-```
-
-Branches: `main` (initial commit `3ec2de2`), `develop` (checked out — commits
-`3ec2de2`, `ced1b6a`, `0361a12`). Nothing reaches users until you merge
-`develop → main` yourself.
+`develop` is pushed to origin and holds all work. `main` has only the initial
+commit and is **not** pushed / not updated — the `develop → main` merge and the
+Vercel deploy are the user's call (nothing reaches users until then).
 
 ## Open items / blocks
 
