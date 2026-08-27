@@ -15,6 +15,7 @@ const nav = [
   { href: "/admin/calendario", label: "Calendario y bloqueos" },
   { href: "/admin/precios", label: "Precios y reglas" },
   { href: "/admin/sincronizacion", label: "Sincronización" },
+  { href: "/admin/seo", label: "SEO" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
