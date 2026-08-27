@@ -19,6 +19,9 @@ export interface Reservation {
   guestPhone: string | null;
   currency: "EUR";
   totalCents: number;
+  originalTotalCents: number | null;
+  discountCents: number;
+  couponCode: string | null;
   priceBreakdown: unknown;
   termsAcceptedAt: string | null;
   holdExpiresAt: string | null;

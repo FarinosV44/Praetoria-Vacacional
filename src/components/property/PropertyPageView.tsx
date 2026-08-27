@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getPropertyBySlug, localizedProperty } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { propertyJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Gallery } from "@/components/property/Gallery";
 import { BookingWidget } from "@/components/booking/BookingWidget";
+import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
@@ -36,6 +37,13 @@ const T = {
     faqHeading: (n: string) => `Preguntas frecuentes sobre ${n}`,
     stickyCta: "Consultar fechas y reservar",
     ratingOn: (n: number) => `${n} opiniones en Booking`,
+    bestOf: "Lo mejor de este alojamiento",
+    nearbyGuides: "Qué hacer cerca",
+    distances: "Distancias",
+    closingHeading: (n: string) => `¿Reservamos tu estancia en ${n}?`,
+    closingBody: "Consulta disponibilidad y precio total, sin comisiones y con confirmación inmediata.",
+    closingCta: "Ver fechas y precio",
+    closingContact: "Tengo una duda",
   },
   en: {
     home: "Home",
@@ -60,17 +68,34 @@ const T = {
     faqHeading: (n: string) => `Frequently asked questions about ${n}`,
     stickyCta: "Check dates & book",
     ratingOn: (n: number) => `${n} reviews on Booking`,
+    bestOf: "The best of this apartment",
+    nearbyGuides: "What to do nearby",
+    distances: "Distances",
+    closingHeading: (n: string) => `Shall we book your stay at ${n}?`,
+    closingBody: "Check availability and the full price — no fees, instant confirmation.",
+    closingCta: "See dates & price",
+    closingContact: "I have a question",
   },
 } as const;
 
-export function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
-  const raw = getPropertyBySlug(slug);
-  if (!raw) return null;
-  const p = localizedProperty(raw, locale);
+const NEARBY_ICON: Record<string, string> = {
+  beach: "🏖️",
+  ski: "⛷️",
+  transport: "🚉",
+  food: "🍽️",
+  nature: "🌿",
+  landmark: "📍",
+  airport: "✈️",
+};
+
+export async function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
+  const p = await resolveProperty(slug, locale === "en" ? "en" : "es");
+  if (!p) return null;
   const t = T[locale];
   const photos = propertyPhotos(slug);
   const path = (n: string) => localizedPath(locale, n);
-  const links = locale === "es" ? [...landingLinksFor(slug), ...guideLinksFor(slug)] : [];
+  const links =
+    locale === "es" ? [...landingLinksFor(slug), ...(await guideLinksFor(slug))] : [];
 
   const facts: [string, string | number][] = [
     [t.guests, p.capacity.guests],
@@ -112,6 +137,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
         </div>
         <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{p.shortIntro}</p>
+        <AvailabilityNote propertySlug={p.slug} locale={locale === "en" ? "en" : "es"} />
       </header>
 
       <Gallery photos={photos} name={p.name} />
@@ -132,6 +158,31 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
               ))}
             </dl>
           </section>
+
+          {/* Lo mejor de este alojamiento — real, property-specific (issue #44) */}
+          {p.highlights.length > 0 && (
+            <section aria-labelledby="best-heading">
+              <h2 id="best-heading" className="font-display text-2xl">
+                {t.bestOf}
+              </h2>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+                {p.highlights.map((h) => (
+                  <li
+                    key={h.title}
+                    className="rounded-xl border border-[var(--color-line)] p-4"
+                  >
+                    <p className="flex items-start gap-2 font-medium">
+                      <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
+                        ◆
+                      </span>
+                      {h.title}
+                    </p>
+                    <p className="mt-1.5 pl-6 text-sm text-[var(--color-ink-soft)]">{h.body}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {p.sections.map((s) => (
             <section key={s.heading}>
@@ -184,15 +235,25 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
               </p>
             ))}
 
-            <h3 className="mt-6 text-sm font-semibold">{t.nearby}</h3>
-            <ul className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)] text-sm">
-              {p.nearby.map((n) => (
-                <li key={n.name} className="flex justify-between gap-4 py-2">
-                  <span>{n.name}</span>
-                  <span className="shrink-0 text-[var(--color-ink-soft)]">{n.distance}</span>
-                </li>
-              ))}
-            </ul>
+            <h3 className="mt-6 text-sm font-semibold">{t.distances}</h3>
+            <table className="mt-3 w-full border-collapse text-sm">
+              <caption className="sr-only">{t.nearby}</caption>
+              <tbody>
+                {p.nearby.map((n) => (
+                  <tr key={n.name} className="border-b border-[var(--color-line)]">
+                    <td className="py-2 pr-4">
+                      <span aria-hidden className="mr-2">
+                        {NEARBY_ICON[n.category]}
+                      </span>
+                      {n.name}
+                    </td>
+                    <td className="py-2 text-right font-medium tabular-nums whitespace-nowrap text-[var(--color-ink-soft)]">
+                      {n.distance}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
               Distancias estimadas (fuente: Booking.com / OpenStreetMap).
             </p>
@@ -241,7 +302,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="contenido" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
           <BookingWidget
             propertySlug={p.slug}
             maxGuests={p.capacity.guests}
@@ -251,8 +312,35 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
         </aside>
       </div>
 
-      <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
+      <div id="opiniones" className="scroll-mt-24">
+        <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
+      </div>
       <FaqBlock items={p.faq} heading={t.faqHeading(p.name)} />
+
+      {/* Closing CTA (issue #44 §14) */}
+      <section
+        data-experience={p.experience}
+        className="border-t border-[var(--color-line)] bg-[var(--accent-50)] py-14"
+      >
+        <div className="container-page">
+          <h2 className="font-display text-2xl sm:text-3xl">{t.closingHeading(p.name)}</h2>
+          <p className="mt-2 max-w-xl text-[var(--color-ink-soft)]">{t.closingBody}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="#contenido"
+              className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+            >
+              {t.closingCta}
+            </a>
+            <Link
+              href={path("/contacto")}
+              className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
+            >
+              {t.closingContact}
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
         <a

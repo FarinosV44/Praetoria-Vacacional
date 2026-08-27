@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
 export const dynamicParams = false;
+// ISR: keep the page static but refresh availability-derived content hourly (#49).
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return getAllProperties().map((p) => ({ property: p.slug }));
@@ -16,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ property: string }>;
 }): Promise<Metadata> {
   const { property } = await params;
-  const p = getPropertyBySlug(property);
+  const p = await resolveProperty(property, "es");
   if (!p) return {};
   return pageMetadata({
     title: p.seo.metaTitle,

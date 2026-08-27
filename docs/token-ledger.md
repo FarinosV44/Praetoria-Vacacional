@@ -11,3 +11,4 @@ _AI-time note: this session ≈ a full AI working day plus the supervision alrea
 given (the four setup answers). A traditional team would measure the same output
 in weeks — that comparison is not the unit used here._
 | 2026-08-27 | V2 batch (#34-#41): config-status, real Booking content+photos, home/cards/booking-module redesign, SEO corrected, polish. Released V1+V2 to main. | claude-sonnet-5 | long session | 34 unit + 14 e2e green; ~28 commits total |
+| 2026-08-27 | #42 production-ready: /api/health, error boundaries, email log + payments admin view, internal notification, iCal admin form, launch checklist. Merged to main. | claude-sonnet-5 | session | 34 unit + 18 e2e green; ~32 commits |

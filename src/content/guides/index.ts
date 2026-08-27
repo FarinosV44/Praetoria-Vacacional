@@ -492,3 +492,28 @@ export function publishedGuides(propertySlug?: string): Guide[] {
 export function pillarGuide(propertySlug: string): Guide | undefined {
   return guides.find((g) => g.propertySlug === propertySlug && g.pillar && g.published);
 }
+
+/* --- Hub-aware helpers (issue #46) --- */
+
+const HUB_TO_PROPERTY: Record<string, string> = {
+  javalambre: "javalambre",
+  "valencia-playa": "valencia",
+};
+
+export function propertyForHub(hubSlug: string): string | undefined {
+  return HUB_TO_PROPERTY[hubSlug];
+}
+export function hubForPropertySlug(propertySlug: string): string {
+  return propertySlug === "valencia" ? "valencia-playa" : propertySlug;
+}
+/** Satellite (non-pillar) published guides in a hub. */
+export function satelliteGuides(hubSlug: string): Guide[] {
+  const prop = HUB_TO_PROPERTY[hubSlug];
+  if (!prop) return [];
+  return guides.filter((g) => g.published && !g.pillar && g.propertySlug === prop);
+}
+export function getSatelliteGuide(hubSlug: string, slug: string): Guide | undefined {
+  const prop = HUB_TO_PROPERTY[hubSlug];
+  if (!prop) return undefined;
+  return guides.find((g) => g.published && !g.pillar && g.propertySlug === prop && g.slug === slug);
+}

@@ -34,13 +34,22 @@ export const dateRangeSchema = z
 
 export const propertySlugSchema = z.enum(propertySlugs() as [string, ...string[]]);
 
-export const searchSchema = dateRangeSchema;
+/** A promo code as typed by the user (server normalises + validates the rules). */
+const couponField = z
+  .string()
+  .trim()
+  .max(40)
+  .regex(/^[A-Za-z0-9_-]*$/, "Código no válido")
+  .optional();
+
+export const searchSchema = dateRangeSchema.and(z.object({ coupon: couponField }));
 
 export const quoteSchema = z.object({
   property: propertySlugSchema,
   checkIn: isoDate,
   checkOut: isoDate,
   guests: z.coerce.number().int().min(1).max(30),
+  coupon: couponField,
 });
 
 export const startCheckoutSchema = z.object({
@@ -48,6 +57,7 @@ export const startCheckoutSchema = z.object({
   checkIn: isoDate,
   checkOut: isoDate,
   guests: z.coerce.number().int().min(1).max(30),
+  coupon: couponField,
   /** Client-supplied idempotency key (UUID) to make refresh/back safe. */
   idempotencyKey: z.string().uuid(),
 });

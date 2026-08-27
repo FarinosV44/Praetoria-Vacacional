@@ -10,6 +10,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
   PropertyUnavailableError,
   type AttachGuestInput,
+  type CouponInput,
   type CreateBlockInput,
   type CreateHoldInput,
   type EmailLogEntry,
@@ -19,6 +20,7 @@ import {
   type ReservationFilter,
   type UpsertPaymentInput,
 } from "./types";
+import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -38,6 +40,9 @@ function mapReservation(row: any): Reservation {
     guestPhone: row.guest_phone,
     currency: row.currency,
     totalCents: Number(row.total_cents),
+    originalTotalCents: row.original_total_cents != null ? Number(row.original_total_cents) : null,
+    discountCents: Number(row.discount_cents ?? 0),
+    couponCode: row.coupon_code ?? null,
     priceBreakdown: row.price_breakdown,
     termsAcceptedAt: row.terms_accepted_at,
     holdExpiresAt: row.hold_expires_at,
@@ -83,6 +88,44 @@ function isUnavailable(error: { message?: string; code?: string } | null): boole
   return !!error && (error.message?.includes("PROPERTY_UNAVAILABLE") || error.code === "23P01");
 }
 
+function mapCoupon(row: any): Coupon {
+  return {
+    id: row.id,
+    code: row.code,
+    kind: row.kind,
+    value: row.value,
+    propertySlug: row.property_slug,
+    startsOn: row.starts_on,
+    endsOn: row.ends_on,
+    minNights: row.min_nights,
+    minTotalCents: Number(row.min_total_cents),
+    maxUses: row.max_uses,
+    usesCount: row.uses_count,
+    maxUsesPerEmail: row.max_uses_per_email,
+    autoApply: row.auto_apply,
+    active: row.active,
+    description: row.description,
+  };
+}
+
+function couponToRow(input: Partial<CouponInput>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  if (input.code !== undefined) row.code = normalizeCode(input.code);
+  if (input.kind !== undefined) row.kind = input.kind;
+  if (input.value !== undefined) row.value = input.value;
+  if (input.propertySlug !== undefined) row.property_slug = input.propertySlug;
+  if (input.startsOn !== undefined) row.starts_on = input.startsOn;
+  if (input.endsOn !== undefined) row.ends_on = input.endsOn;
+  if (input.minNights !== undefined) row.min_nights = input.minNights;
+  if (input.minTotalCents !== undefined) row.min_total_cents = input.minTotalCents;
+  if (input.maxUses !== undefined) row.max_uses = input.maxUses;
+  if (input.maxUsesPerEmail !== undefined) row.max_uses_per_email = input.maxUsesPerEmail;
+  if (input.autoApply !== undefined) row.auto_apply = input.autoApply;
+  if (input.active !== undefined) row.active = input.active;
+  if (input.description !== undefined) row.description = input.description;
+  return row;
+}
+
 export const supabaseRepository: Repository = {
   kind: "supabase",
 
@@ -122,6 +165,9 @@ export const supabaseRepository: Repository = {
       p_breakdown: input.priceBreakdown ?? {},
       p_hold_minutes: input.holdMinutes,
       p_idempotency_key: input.idempotencyKey,
+      p_original_total_cents: input.originalTotalCents ?? input.totalCents,
+      p_discount_cents: input.discountCents ?? 0,
+      p_coupon_code: input.couponCode ?? null,
     });
     if (isUnavailable(error)) throw new PropertyUnavailableError();
     if (error) throw error;
@@ -373,6 +419,37 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 
+  async getContentOverride(key: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("content_overrides")
+      .select("key, value, updated_at")
+      .eq("key", key)
+      .maybeSingle();
+    return data ? { key: data.key, value: data.value, updatedAt: data.updated_at } : null;
+  },
+
+  async listContentOverrides(prefix?: string) {
+    const db = supabaseAdmin();
+    let q = db.from("content_overrides").select("key, value, updated_at").order("key");
+    if (prefix) q = q.like("key", `${prefix}%`);
+    const { data } = await q;
+    return (data ?? []).map((r) => ({ key: r.key, value: r.value, updatedAt: r.updated_at }));
+  },
+
+  async setContentOverride(key: string, value: unknown | null) {
+    const db = supabaseAdmin();
+    if (value === null || value === undefined) {
+      const { error } = await db.from("content_overrides").delete().eq("key", key);
+      if (error) throw error;
+      return;
+    }
+    const { error } = await db
+      .from("content_overrides")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (error) throw error;
+  },
+
   async logEmail(entry: EmailLogEntry) {
     const db = supabaseAdmin();
     const { error } = await db.from("email_log").insert({
@@ -418,6 +495,94 @@ export const supabaseRepository: Repository = {
       .eq("direction", "import")
       .maybeSingle();
     return data?.feed_url ?? null;
+  },
+
+  async getCouponByCode(codeStr: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("coupons")
+      .select()
+      .eq("code", normalizeCode(codeStr))
+      .maybeSingle();
+    return data ? mapCoupon(data) : null;
+  },
+
+  async listCoupons() {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("coupons").select().order("code");
+    if (error) throw error;
+    return (data ?? []).map(mapCoupon);
+  },
+
+  async createCoupon(input: CouponInput) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("coupons")
+      .insert(couponToRow(input))
+      .select()
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new Error("COUPON_CODE_TAKEN");
+      throw error;
+    }
+    return mapCoupon(data);
+  },
+
+  async updateCoupon(id: string, patch: Partial<CouponInput>) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("coupons")
+      .update(couponToRow(patch))
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCoupon(data);
+  },
+
+  async deleteCoupon(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("coupons").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async countCouponRedemptionsByEmail(couponId: string, email: string) {
+    const db = supabaseAdmin();
+    const { count, error } = await db
+      .from("coupon_redemptions")
+      .select("id", { count: "exact", head: true })
+      .eq("coupon_id", couponId)
+      .ilike("guest_email", email.trim());
+    if (error) throw error;
+    return count ?? 0;
+  },
+
+  async redeemCoupon(couponId, reservationId, email, discountCents) {
+    const db = supabaseAdmin();
+    const { error } = await db.rpc("redeem_coupon", {
+      p_coupon: couponId,
+      p_reservation: reservationId,
+      p_email: email,
+      p_discount_cents: discountCents,
+    });
+    if (error && !error.message?.includes("COUPON_EXHAUSTED")) throw error;
+    if (error) throw new Error("COUPON_EXHAUSTED");
+  },
+
+  async couponRedemptions(couponId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("coupon_redemptions")
+      .select("discount_cents, guest_email, created_at, reservations(code)")
+      .eq("coupon_id", couponId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      reservationCode: r.reservations?.code ?? "—",
+      discountCents: Number(r.discount_cents),
+      email: r.guest_email,
+      createdAt: r.created_at,
+    }));
   },
 
   async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {

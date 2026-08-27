@@ -52,6 +52,7 @@ export function localizedProperty(p: PropertyContent, locale: "es" | "en"): Prop
     tagline: p.en.tagline,
     shortIntro: p.en.shortIntro,
     seo: p.en.seo,
+    highlights: p.en.highlights ?? p.highlights,
     sections: p.en.sections ?? p.sections,
     faq: p.en.faq ?? p.faq,
     cancellationPolicy: {

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   try {
     const { checkIn, checkOut, guests } = parsed.data;
-    const results = await searchAllProperties(checkIn, checkOut, guests);
+    const results = await searchAllProperties(checkIn, checkOut, guests, parsed.data.coupon);
     return apiOk({ checkIn, checkOut, guests, results });
   } catch (err) {
     console.error("availability/search failed", err);

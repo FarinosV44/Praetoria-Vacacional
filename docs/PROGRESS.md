@@ -67,6 +67,21 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V2g · Final visual polish | #40 | 🟡 | lighter header, hero gradient, palette AA, tactile buttons, skeletons, consistent radii/rhythm. Full manual breakpoint review (375→1920) pending — the screenshot tool was unreliable this session; e2e image-layout test added instead |
 | V2h · Production-ready | #42 | ✅ (code) | `/api/health` (status + integrations, no secrets), boot config banner (`instrumentation.ts`), `error.tsx` + `global-error.tsx`, email log persisted + shown in `/admin/pagos` (payments + emails), internal reservation notification, branded email templates, admin form to set Booking iCal import URLs + "Sincronizar ahora", `/api/admin/sync`. `docs/launch-checklist.md` + backup/recovery in SETUP.md. e2e/production.spec.ts (health, headers, no-secrets-in-bundle). **Ticking the launch checklist needs real credentials + a deploy.** |
 
+### V3 batch (issues #43–#52) — conversion + editorial depth
+
+| Sprint | Issues | Status | Notes |
+|--------|--------|--------|-------|
+| V3 · Discount codes | #45 | ✅ | pure `checkCoupon` (8 tests) + `applyCoupon`; server computes final total (client never sends price/discount); coupon persisted only if server applied it; redeemed exactly once on first confirmation, redemption failure never un-confirms; migration (coupons + redemptions + reservation cols + `redeem_coupon` RPC); memory + supabase repos; `CouponField` on widget & checkout; `/admin/promociones` CRUD; e2e/coupons.spec.ts |
+| V3 · Home premium | #43 | ✅ | continuous narrative: cinematic hero + double CTA → trust microblock → availability module → editorial "elige tu escapada" cards → per-destination story woven with **real property-specific advantages** (new `highlights` field, source-backed, ES+EN) → real Booking reviews strip → featured destination guides → direct-booking closing argument + contact CTA. Alternating white/accent backgrounds. Build + a11y (home, home-en) green |
+| V3 · Fichas V3 | #44 | 🟡 | "Lo mejor de este alojamiento" (real `highlights`) on property page; `#opiniones` anchor; coupon field already in sticky card (#45); guide links now hub-aware. Remaining: deeper per-property editorial identity pass |
+| V3 · SEO transaccional | #47 | ✅ | Landing model: primary `keyword` + `secondaryKeywords`; template rebuilt as a real commercial page (keyword hero + photo + advantages + availability first, then distances table, deep copy, reviews, specific FAQ + FAQPage/Breadcrumb JSON-LD, guide links). `docs/seo/canonical-map.md` (self-canonical everywhere, cannibalization watch-list, ≤3-click depth) |
+| V3 · Auditoría final | #51 | ✅ | `e2e/audit.spec.ts`: crawls all 26 sitemap URLs — 200, unique title, self-canonical, 1×h1, meta desc, indexable; + no-broken-internal-links crawl. axe 0 serious on 8 pages. `docs/audits/final-audit.md` (Lighthouse on deployed URL is the remaining manual gate) |
+| V3 · Mobile-first | #52 | ✅ | rebuilt mobile header (`MobileMenu` panel, truncating logo, CTA in panel); footer + lang switcher + coupon toggle tap targets ≥ ~32–40px; **0px horizontal overflow** at 320/360/375/390/414/768 on 6 page types (`e2e/mobile.spec.ts`, 36 assertions + menu + CTA). `docs/audits/mobile-audit.md`. WebKit e2e skipped (bundled WebKit doesn't load Tailwind v4 here — real Safari fine; manual iPhone pass on checklist) |
+| V3 · CMS ligero | #50 | ✅ | `content_overrides` KV (memory + supabase + migration); `/admin/contenido` edits property SEO/tagline/intro/highlights/nearby/FAQ (with live Google SERP preview + char counts) and guide title/excerpt/lead/**status draft↔published**/order — no deploy. Pure merge in `merge.ts` files (11 unit tests). All content routes ISR 1h + `revalidatePath` on save. Drafts: noindex + out of sitemap + unlinked + preview banner. Slugs immutable (no dup risk). `docs/cms.md` |
+| V3 · CRO avanzado | #49 | ✅ | checkout summary always shows breakdown + "pago seguro Stripe" + cancellation summary; quick contact CTA (secondary, non-competing) on home + property + property closing band; **real** scarcity from `occupancy()` (pure, tested) via `getAvailabilityInsight` + `<AvailabilityNote>`, property routes ISR 1h; funnel events `checkout_step`, `checkout_abandoned`, `contact_click`; `docs/cro/cro-v3.md` (events table + abandoned-checkout plan gated on explicit opt-in) |
+| V3 · SEO estacional | #48 | ✅ | `src/content/seasonal` + `/ofertas/[slug]`, hand-written pages only (no date×keyword combos, `dynamicParams=false`). `status: draft` → routable but `noindex` + out of sitemap; `published` → indexable + in sitemap + linked from guide hub. 2 published (Navidad Javalambre, verano Valencia) + 1 draft. e2e/seasonal.spec.ts (3 tests: indexable/noindex/404) |
+| V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
+
 ## Exact position
 
 Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34
@@ -107,4 +122,12 @@ The Vercel deploy itself is still the user's to trigger.
 
 ## Ready for `main`
 
-Nothing yet.
+**V3 batch (#43–#52) is complete on `develop`.** Home V3, property pages V3,
+guide hubs + 301s, discount codes, transactional SEO consolidation, seasonal
+pages, CRO, light CMS, final audit and mobile-first pass — all committed, with
+`tsc` + `next lint` + `npm run build` + 56 unit + 64 chromium e2e green.
+
+Merged to `main` at the user's explicit request (2026-08-27). Post-merge manual
+gates remain (real service keys + `docs/launch-checklist.md`, Lighthouse on the
+deployed URL, iOS Safari flow pass) — see `docs/audits/final-audit.md`. The
+Vercel deploy is the owner's call.

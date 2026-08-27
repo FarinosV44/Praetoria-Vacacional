@@ -1,7 +1,10 @@
 import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings, landings as allLandings } from "@/content/landings";
-import { guides as allGuides, publishedGuides } from "@/content/guides";
+import { hubForPropertySlug } from "@/content/guides";
+import { resolveGuides, resolvePublishedGuides } from "@/content/guides/overrides";
+import { guideHubs } from "@/content/guides/hubs";
 import { legalDocs } from "@/content/legal";
+import { seasonalPages } from "@/content/seasonal";
 import { getIndexableRoutes } from "./navigation";
 
 /**
@@ -20,7 +23,7 @@ export interface SeoRow {
   hasHreflang: boolean;
 }
 
-export function buildSeoInventory(): SeoRow[] {
+export async function buildSeoInventory(): Promise<SeoRow[]> {
   const rows: SeoRow[] = [];
 
   for (const p of getAllProperties()) {
@@ -54,22 +57,49 @@ export function buildSeoInventory(): SeoRow[] {
       section: l.published ? "landing" : "landing (borrador)",
       title: l.title,
       description: l.description,
-      intent: l.intent,
+      intent: `${l.intent} · kw: ${l.keyword}`,
       h1: l.h1,
-      hasStructuredData: false,
+      hasStructuredData: Boolean(l.faq && l.faq.length > 0),
       hasHreflang: false,
     });
   }
 
-  for (const g of allGuides) {
+  for (const hub of guideHubs) {
     rows.push({
-      path: `/guias/${g.propertySlug}/${g.slug}`,
-      section: g.published ? (g.pillar ? "guía pilar" : "guía") : "guía (borrador)",
+      path: `/guias/${hub.slug}`,
+      section: "guía hub",
+      title: hub.metaTitle,
+      description: hub.metaDescription,
+      intent: "Informacional amplio — hub de destino",
+      h1: hub.h1,
+      hasStructuredData: true,
+      hasHreflang: false,
+    });
+  }
+
+  for (const g of await resolveGuides()) {
+    if (g.pillar) continue; // pillar intent lives on the hub page
+    rows.push({
+      path: `/guias/${hubForPropertySlug(g.propertySlug)}/${g.slug}`,
+      section: g.published ? "guía" : "guía (borrador)",
       title: g.title,
       description: g.description,
       intent: `${g.intent} · kw: ${g.keyword}`,
       h1: g.h1,
       hasStructuredData: Boolean(g.faq && g.faq.length > 0),
+      hasHreflang: false,
+    });
+  }
+
+  for (const s of seasonalPages) {
+    rows.push({
+      path: `/ofertas/${s.slug}`,
+      section: s.status === "published" ? "estacional" : "estacional (borrador)",
+      title: s.title,
+      description: s.description,
+      intent: `SEO estacional · kw: ${s.keyword}`,
+      h1: s.h1,
+      hasStructuredData: Boolean(s.faq && s.faq.length > 0),
       hasHreflang: false,
     });
   }
@@ -102,13 +132,13 @@ export function buildSeoInventory(): SeoRow[] {
   return rows.sort((a, b) => a.section.localeCompare(b.section) || a.path.localeCompare(b.path));
 }
 
-export function seoStats() {
-  const rows = buildSeoInventory();
-  const routes = getIndexableRoutes();
+export async function seoStats() {
+  const rows = await buildSeoInventory();
+  const routes = await getIndexableRoutes();
   return {
     indexableRoutes: routes.length,
     publishedLandings: publishedLandings().length,
-    publishedGuides: publishedGuides().length,
+    publishedGuides: (await resolvePublishedGuides()).length,
     draftContent: rows.filter((r) => r.section.includes("borrador")).length,
     missingMeta: rows.filter((r) => !r.title || !r.description).length,
     duplicateTitles: (() => {

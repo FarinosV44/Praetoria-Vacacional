@@ -18,6 +18,7 @@ export default async function EnReservarPage({
       checkIn={typeof sp.checkIn === "string" ? sp.checkIn : ""}
       checkOut={typeof sp.checkOut === "string" ? sp.checkOut : ""}
       guests={Number(typeof sp.guests === "string" ? sp.guests : "2") || 2}
+      coupon={typeof sp.coupon === "string" ? sp.coupon : undefined}
       locale="en"
     />
   );

@@ -3,9 +3,8 @@ import { publicEnv } from "@/lib/env";
 
 export const metadata = { title: "SEO" };
 
-export default function AdminSeoPage() {
-  const rows = buildSeoInventory();
-  const stats = seoStats();
+export default async function AdminSeoPage() {
+  const [rows, stats] = await Promise.all([buildSeoInventory(), seoStats()]);
   const base = publicEnv.siteUrl.replace(/\/$/, "");
 
   return (

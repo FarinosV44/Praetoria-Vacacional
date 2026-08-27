@@ -7,6 +7,7 @@ import { formatMoney, formatRange, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { AvailabilityCalendar, type RangeSelection } from "./AvailabilityCalendar";
+import { CouponField, type CouponState } from "./CouponField";
 
 const WIDGET_STR = {
   es: {
@@ -27,6 +28,7 @@ const WIDGET_STR = {
     cleaning: "Limpieza",
     taxes: "Impuestos",
     total: "Total",
+    discount: "Descuento",
     reserve: "Reservar",
     noCharge: "No se cobra nada hasta el último paso. Precio total, sin comisiones ocultas.",
   },
@@ -48,6 +50,7 @@ const WIDGET_STR = {
     cleaning: "Cleaning",
     taxes: "Taxes",
     total: "Total",
+    discount: "Discount",
     reserve: "Book",
     noCharge: "Nothing is charged until the last step. Full price, no hidden fees.",
   },
@@ -64,7 +67,9 @@ interface QuoteResponse {
     extraGuestFeeCents: number;
     taxCents: number;
     totalCents: number;
+    subtotalBeforeCouponCents: number;
     lengthOfStayDiscount: { label: string; amountCents: number } | null;
+    coupon: CouponState | null;
     valid: boolean;
   } | null;
 }
@@ -89,6 +94,7 @@ export function BookingWidget({
     checkOut: initial?.checkOut ?? null,
   });
   const [guests, setGuests] = useState(initial?.guests ?? 2);
+  const [coupon, setCoupon] = useState("");
   const [data, setData] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +112,13 @@ export function BookingWidget({
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ property: propertySlug, checkIn, checkOut, guests }),
+        body: JSON.stringify({
+          property: propertySlug,
+          checkIn,
+          checkOut,
+          guests,
+          coupon: coupon || undefined,
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -120,7 +132,7 @@ export function BookingWidget({
     } finally {
       setLoading(false);
     }
-  }, [propertySlug, checkIn, checkOut, guests, s]);
+  }, [propertySlug, checkIn, checkOut, guests, coupon, s]);
 
   useEffect(() => {
     const t = setTimeout(fetchQuote, 200);
@@ -130,7 +142,9 @@ export function BookingWidget({
   function reserve() {
     if (!checkIn || !checkOut) return;
     track("begin_checkout", { property_slug: propertySlug, nights: data?.quote?.nights ?? 0 });
-    const q = new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
+    const params: Record<string, string> = { checkIn, checkOut, guests: String(guests) };
+    if (data?.quote?.coupon?.applied) params.coupon = data.quote.coupon.code;
+    const q = new URLSearchParams(params).toString();
     router.push(`${localizedPath(locale, `/reservar/${propertySlug}`)}?${q}`);
   }
 
@@ -198,6 +212,12 @@ export function BookingWidget({
             )}
             <Row label={s.cleaning} value={formatMoney(q.cleaningFeeCents)} />
             {q.taxCents > 0 && <Row label={s.taxes} value={formatMoney(q.taxCents)} />}
+            {q.coupon?.applied && (
+              <Row
+                label={`${s.discount} · ${q.coupon.code}`}
+                value={`− ${formatMoney(q.coupon.discountCents)}`}
+              />
+            )}
             <div className="mt-2 flex justify-between border-t border-[var(--color-line)] pt-2 font-semibold">
               <dt>{s.total}</dt>
               <dd>{formatMoney(q.totalCents)}</dd>
@@ -205,6 +225,16 @@ export function BookingWidget({
           </dl>
         )}
       </div>
+
+      {(checkIn && checkOut) && (
+        <CouponField
+          value={coupon}
+          status={data?.quote?.coupon ?? null}
+          onChange={setCoupon}
+          locale={locale}
+          propertySlug={propertySlug}
+        />
+      )}
 
       <Button
         size="lg"

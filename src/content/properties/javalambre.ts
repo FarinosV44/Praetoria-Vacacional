@@ -19,6 +19,33 @@ export const javalambre: PropertyContent = {
   shortIntro:
     "Un apartamento nuevo de 70 m² en Camarena de la Sierra, la villa de las 100 fuentes, con vistas a la montaña y a un corto trayecto de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: la base ideal para un fin de semana de nieve en Teruel.",
 
+  highlights: [
+    {
+      title: "A 20 minutos de las pistas de Javalambre",
+      body: "El apartamento está en Camarena de la Sierra, el pueblo más cercano a la estación. Sales por la mañana y en 20 minutos estás calzando los esquís.",
+    },
+    {
+      title: "Guardaesquís, forfaits y alquiler de material",
+      body: "El edificio tiene habitación guardaesquís, punto de venta de forfaits y servicio de alquiler de equipo: llegas, dejas las botas secándose y no cargas con nada.",
+    },
+    {
+      title: "Chimenea de pellets y calefacción",
+      body: "Salón con chimenea de pellets además de la calefacción. Varios huéspedes destacan lo cálido que se mantiene el apartamento en pleno invierno.",
+    },
+    {
+      title: "Parking privado gratuito en el edificio",
+      body: "Plaza de aparcamiento gratis en el mismo edificio, sin buscar sitio en la calle con nieve.",
+    },
+    {
+      title: "Apartamento nuevo de 70 m² con balcón y vistas a la montaña",
+      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, y balcón con vistas a la sierra. Para hasta 6 personas.",
+    },
+    {
+      title: "Cielo Starlight y montaña todo el año",
+      body: "La comarca Gúdar-Javalambre es Destino Turístico Starlight; fuera de temporada, senderismo, BTT, escalada y el Observatorio Astrofísico muy cerca.",
+    },
+  ],
+
   location: {
     city: "Camarena de la Sierra",
     region: "Teruel · Aragón",
@@ -269,5 +296,31 @@ export const javalambre: PropertyContent = {
     ],
     cancellationSummary:
       "Free cancellation up to 30 days before check-in. After that, terms apply per the property's policy.",
+    highlights: [
+      {
+        title: "20 minutes from the Javalambre slopes",
+        body: "The apartment is in Camarena de la Sierra, the closest village to the resort. Leave in the morning and you are clipping into your skis 20 minutes later.",
+      },
+      {
+        title: "Ski storage, passes and equipment rental",
+        body: "The building has a ski storage room, a ski-pass point and equipment rental: arrive, leave your boots to dry and carry nothing.",
+      },
+      {
+        title: "Pellet stove and heating",
+        body: "A living room with a pellet stove on top of the central heating. Guests keep mentioning how warm the apartment stays in midwinter.",
+      },
+      {
+        title: "Free private parking in the building",
+        body: "A free parking space in the same building — no hunting for a spot in the snow.",
+      },
+      {
+        title: "New 70 m² apartment with a mountain-view balcony",
+        body: "Two bedrooms, a fully equipped kitchen with dishwasher and oven, and a balcony facing the range. Sleeps up to 6.",
+      },
+      {
+        title: "Starlight skies and year-round mountains",
+        body: "The Gúdar-Javalambre region is a Starlight Tourist Destination; off-season there is hiking, mountain biking, climbing and the Astrophysical Observatory nearby.",
+      },
+    ],
   },
 };

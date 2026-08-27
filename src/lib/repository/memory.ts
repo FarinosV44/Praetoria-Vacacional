@@ -14,6 +14,7 @@ import { getAllProperties } from "@/domains/properties/registry";
 import {
   PropertyUnavailableError,
   type AttachGuestInput,
+  type CouponInput,
   type CreateBlockInput,
   type CreateHoldInput,
   type EmailLogEntry,
@@ -23,6 +24,7 @@ import {
   type ReservationFilter,
   type UpsertPaymentInput,
 } from "./types";
+import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
 
 /**
  * In-memory repository backing DEMO mode (no Supabase configured, D-003).
@@ -42,6 +44,15 @@ interface Store {
   rateOverrides: Record<string, unknown>;
   emailLog: EmailLogRow[];
   importFeeds: Record<string, string>; // `${propertyId}:${channel}` -> url
+  coupons: Coupon[];
+  redemptions: {
+    couponId: string;
+    reservationId: string;
+    email: string | null;
+    discountCents: number;
+    createdAt: string;
+  }[];
+  contentOverrides: Record<string, { value: unknown; updatedAt: string }>;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -92,6 +103,25 @@ function seed(): Store {
       eventsImported: 0,
     })),
   );
+  const coupons: Coupon[] = [
+    {
+      id: randomUUID(),
+      code: "DEMO10",
+      kind: "percent",
+      value: 10,
+      propertySlug: null,
+      startsOn: null,
+      endsOn: null,
+      minNights: 0,
+      minTotalCents: 0,
+      maxUses: null,
+      usesCount: 0,
+      maxUsesPerEmail: null,
+      autoApply: false,
+      active: true,
+      description: "Código de ejemplo (modo demostración)",
+    },
+  ];
   return {
     reservations: [],
     blocks,
@@ -101,6 +131,9 @@ function seed(): Store {
     rateOverrides: {},
     emailLog: [],
     importFeeds: {},
+    coupons,
+    redemptions: [],
+    contentOverrides: {},
   };
 }
 
@@ -133,6 +166,9 @@ const store: Store = g.__pvStore ?? (g.__pvStore = load());
 store.rateOverrides ??= {};
 store.emailLog ??= [];
 store.importFeeds ??= {};
+store.coupons ??= [];
+store.redemptions ??= [];
+store.contentOverrides ??= {};
 
 function save() {
   persist(store);
@@ -192,6 +228,9 @@ export const memoryRepository: Repository = {
       guestPhone: null,
       currency: input.currency,
       totalCents: input.totalCents,
+      originalTotalCents: input.originalTotalCents ?? null,
+      discountCents: input.discountCents ?? 0,
+      couponCode: input.couponCode ?? null,
       priceBreakdown: input.priceBreakdown,
       termsAcceptedAt: null,
       holdExpiresAt: new Date(Date.now() + input.holdMinutes * 60_000).toISOString(),
@@ -421,6 +460,24 @@ export const memoryRepository: Repository = {
     save();
   },
 
+  async getContentOverride(key: string) {
+    const row = store.contentOverrides[key];
+    return row ? { key, value: row.value, updatedAt: row.updatedAt } : null;
+  },
+
+  async listContentOverrides(prefix?: string) {
+    return Object.entries(store.contentOverrides)
+      .filter(([k]) => !prefix || k.startsWith(prefix))
+      .map(([key, r]) => ({ key, value: r.value, updatedAt: r.updatedAt }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  },
+
+  async setContentOverride(key: string, value: unknown | null) {
+    if (value === null || value === undefined) delete store.contentOverrides[key];
+    else store.contentOverrides[key] = { value, updatedAt: new Date().toISOString() };
+    save();
+  },
+
   async logEmail(entry: EmailLogEntry) {
     store.emailLog.unshift({
       ...entry,
@@ -437,6 +494,87 @@ export const memoryRepository: Repository = {
 
   async getImportFeedUrl(propertyId: string, channel: string) {
     return store.importFeeds[`${propertyId}:${channel}`] ?? null;
+  },
+
+  async getCouponByCode(codeStr: string) {
+    const c = normalizeCode(codeStr);
+    return store.coupons.find((x) => x.code === c) ?? null;
+  },
+
+  async listCoupons() {
+    return [...store.coupons].sort((a, b) => a.code.localeCompare(b.code));
+  },
+
+  async createCoupon(input: CouponInput) {
+    const coupon: Coupon = {
+      ...input,
+      code: normalizeCode(input.code),
+      id: randomUUID(),
+      usesCount: 0,
+    };
+    if (store.coupons.some((c) => c.code === coupon.code)) {
+      throw new Error("COUPON_CODE_TAKEN");
+    }
+    store.coupons.push(coupon);
+    save();
+    return coupon;
+  },
+
+  async updateCoupon(id: string, patch: Partial<CouponInput>) {
+    const c = store.coupons.find((x) => x.id === id);
+    if (!c) throw new Error("COUPON_NOT_FOUND");
+    Object.assign(c, patch);
+    if (patch.code) c.code = normalizeCode(patch.code);
+    save();
+    return c;
+  },
+
+  async deleteCoupon(id: string) {
+    const i = store.coupons.findIndex((x) => x.id === id);
+    if (i >= 0) {
+      store.coupons.splice(i, 1);
+      save();
+    }
+  },
+
+  async countCouponRedemptionsByEmail(couponId: string, email: string) {
+    const e = email.trim().toLowerCase();
+    return store.redemptions.filter(
+      (r) => r.couponId === couponId && (r.email ?? "").toLowerCase() === e,
+    ).length;
+  },
+
+  async redeemCoupon(couponId, reservationId, email, discountCents) {
+    const coupon = store.coupons.find((c) => c.id === couponId);
+    if (!coupon) throw new Error("COUPON_NOT_FOUND");
+    if (coupon.maxUses !== null && coupon.usesCount >= coupon.maxUses) {
+      throw new Error("COUPON_EXHAUSTED");
+    }
+    if (store.redemptions.some((r) => r.couponId === couponId && r.reservationId === reservationId)) {
+      return;
+    }
+    store.redemptions.push({
+      couponId,
+      reservationId,
+      email,
+      discountCents,
+      createdAt: new Date().toISOString(),
+    });
+    coupon.usesCount += 1;
+    save();
+  },
+
+  async couponRedemptions(couponId: string) {
+    return store.redemptions
+      .filter((r) => r.couponId === couponId)
+      .map((r) => ({
+        reservationCode:
+          store.reservations.find((x) => x.id === r.reservationId)?.code ?? "—",
+        discountCents: r.discountCents,
+        email: r.email,
+        createdAt: r.createdAt,
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
 
   async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {
