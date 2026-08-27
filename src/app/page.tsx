@@ -104,6 +104,50 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Storytelling: two worlds */}
+      {[sea, ski].map((p, i) =>
+        p ? (
+          <section
+            key={p.slug}
+            data-experience={p.experience}
+            className="reveal border-t border-[var(--color-line)] bg-[var(--accent-50)]"
+          >
+            <div
+              className={`container-page grid items-center gap-8 py-16 md:grid-cols-2 ${
+                i % 2 ? "md:[&>*:first-child]:order-2" : ""
+              }`}
+            >
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">
+                <Image
+                  src={p.gallery[1]?.src ?? p.gallery[0]!.src}
+                  alt={p.gallery[1]?.alt ?? p.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
+              <div>
+                <p className="eyebrow">
+                  {p.experience === "sea" ? "Mediterráneo" : "Montaña"}
+                </p>
+                <h2 className="mt-2 font-display text-3xl sm:text-4xl">
+                  {p.experience === "sea"
+                    ? "Días de playa, tardes de ciudad"
+                    : "Nieve, silencio y montaña"}
+                </h2>
+                <p className="mt-3 text-[var(--color-ink-soft)]">{p.shortIntro}</p>
+                <Link
+                  href={`/${p.slug}`}
+                  className="mt-6 inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
+                >
+                  Descubrir {p.name}
+                </Link>
+              </div>
+            </div>
+          </section>
+        ) : null,
+      )}
+
       {/* Direct booking advantages */}
       <section aria-labelledby="ventajas-heading" className="bg-white py-20">
         <div className="container-page reveal">
