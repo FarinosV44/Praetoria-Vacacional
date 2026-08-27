@@ -1,5 +1,5 @@
 /**
- * Transactional SEO landing pages per property (issues #15, #16, #31, #39).
+ * Transactional SEO landing pages per property (issues #15, #16, #31, #39, #47).
  *
  * Content is written for humans first, with concrete, verifiable information
  * about the real location of each property:
@@ -7,17 +7,27 @@
  *  - Valencia   → Mareny de Barraquetes (Sueca), Les Palmeretes beach, south of
  *                 Valencia city, next to the Albufera
  * Every landing links to the property page and to availability (issue #28).
+ *
+ * Issue #47 — one strong URL per search intent. `keyword` is the single primary
+ * intent this URL owns; `secondaryKeywords` are supporting long-tail it may also
+ * rank for. The canonical is always the landing itself; the property page owns
+ * the head term. See `docs/seo/canonical-map.md`.
  */
 
 export interface Landing {
   slug: string;
   propertySlug: string;
   intent: string;
+  /** The single primary search intent this URL owns (issue #47). */
+  keyword: string;
+  /** Supporting long-tail; never another landing's primary keyword. */
+  secondaryKeywords: string[];
   title: string;
   description: string;
   h1: string;
   lead: string;
   blocks: { heading: string; body: string[] }[];
+  faq?: { question: string; answer: string }[];
   published: boolean;
 }
 
@@ -26,6 +36,8 @@ export const landings: Landing[] = [
     slug: "alojamiento-javalambre",
     propertySlug: "javalambre",
     intent: "Transaccional — buscar alojamiento en Javalambre",
+    keyword: "alojamiento Javalambre",
+    secondaryKeywords: ["apartamento Javalambre", "dónde alojarse en Javalambre"],
     title: "Alojamiento en Javalambre: apartamento en Camarena de la Sierra",
     description:
       "Apartamento en Camarena de la Sierra, a 20 minutos de las pistas de Javalambre. 70 m², chimenea de pellets, cocina completa, parking gratis y guardaesquís. Reserva directa.",
@@ -52,12 +64,25 @@ export const landings: Landing[] = [
         ],
       },
     ],
+    faq: [
+      {
+        question: "¿Dónde está el alojamiento?",
+        answer:
+          "En Camarena de la Sierra (Teruel), en la Calle San Mateo, a unos 20 minutos en coche de la estación de esquí de Javalambre.",
+      },
+      {
+        question: "¿Tiene parking?",
+        answer: "Sí, parking privado gratuito en el mismo edificio, además de guardaesquís.",
+      },
+    ],
     published: true,
   },
   {
     slug: "donde-dormir-javalambre",
     propertySlug: "javalambre",
     intent: "Informacional-transaccional — 'dónde dormir en Javalambre'",
+    keyword: "dónde dormir en Javalambre",
+    secondaryKeywords: ["dónde alojarse Gúdar-Javalambre", "hoteles y apartamentos Javalambre"],
     title: "Dónde dormir en Javalambre: Camarena de la Sierra y alrededores",
     description:
       "Guía práctica sobre dónde dormir para esquiar en Javalambre: Camarena de la Sierra, los pueblos de Gúdar-Javalambre y Teruel capital. Con apartamento en reserva directa.",
@@ -83,12 +108,29 @@ export const landings: Landing[] = [
         ],
       },
     ],
+    faq: [
+      {
+        question: "¿Cuál es la mejor zona para dormir si voy a esquiar?",
+        answer:
+          "Camarena de la Sierra, el pueblo más cercano a la estación de Javalambre, a unos 20 minutos en coche de las pistas.",
+      },
+      {
+        question: "¿Hay alojamiento a pie de pistas en Javalambre?",
+        answer:
+          "No. La estación no tiene alojamiento propio a pie de pistas, por lo que se duerme en los pueblos de la comarca.",
+      },
+    ],
     published: true,
   },
   {
     slug: "alojamiento-cerca-estacion-esqui",
     propertySlug: "javalambre",
     intent: "Transaccional local — 'alojamiento cerca estación de esquí Javalambre' / 'Camarena de la Sierra'",
+    keyword: "alojamiento cerca de las pistas de Javalambre",
+    secondaryKeywords: [
+      "alojamiento Camarena de la Sierra",
+      "apartamento para esquiar en Javalambre",
+    ],
     title: "Alojamiento cerca de la estación de esquí de Javalambre",
     description:
       "Apartamento en Camarena de la Sierra, a unos 20 minutos de la estación de esquí de Javalambre. Parking, guardaesquís y forfaits en el edificio. Reserva directa con precio total.",
@@ -114,12 +156,29 @@ export const landings: Landing[] = [
         ],
       },
     ],
+    faq: [
+      {
+        question: "¿A cuánto está el apartamento de las pistas?",
+        answer: "A unos 20 minutos en coche de la estación de esquí de Javalambre.",
+      },
+      {
+        question: "¿Hay guardaesquís?",
+        answer:
+          "Sí, el edificio dispone de habitación guardaesquís, punto de venta de forfaits y alquiler de material.",
+      },
+    ],
     published: true,
   },
   {
     slug: "apartamento-playa-valencia",
     propertySlug: "valencia",
     intent: "Transaccional — 'apartamento playa Valencia'",
+    keyword: "apartamento playa Valencia",
+    secondaryKeywords: [
+      "apartamento playa Sueca",
+      "apartamento Les Palmeretes",
+      "apartamento Mareny de Barraquetes",
+    ],
     title: "Apartamento en la playa, al sur de Valencia | Reserva directa",
     description:
       "Apartamento en primera línea de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), litoral sur de Valencia. 75 m², vistas al mar, parking gratis. Reserva directa.",
@@ -146,12 +205,25 @@ export const landings: Landing[] = [
         ],
       },
     ],
+    faq: [
+      {
+        question: "¿El apartamento está en la playa de Valencia ciudad?",
+        answer:
+          "No. Está en la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), en la costa sur de la provincia, a una media hora en coche de la ciudad de Valencia.",
+      },
+      {
+        question: "¿Cuántas personas caben?",
+        answer: "Hasta 4 personas en 3 dormitorios: 1 cama doble extragrande y 2 literas.",
+      },
+    ],
     published: true,
   },
   {
     slug: "alojamiento-frente-al-mar-valencia",
     propertySlug: "valencia",
     intent: "Transaccional específico — 'alojamiento frente al mar / primera línea Valencia'",
+    keyword: "alojamiento frente al mar Valencia",
+    secondaryKeywords: ["apartamento primera línea playa Valencia", "alojamiento con vistas al mar Valencia"],
     title: "Alojamiento frente al mar en la provincia de Valencia",
     description:
       "Alojamiento en primera línea de mar en Les Palmeretes (Sueca), al sur de Valencia. Despiertas con el Mediterráneo delante. Reserva directa con disponibilidad real y precio total.",
@@ -177,12 +249,24 @@ export const landings: Landing[] = [
         ],
       },
     ],
+    faq: [
+      {
+        question: "¿Se ve el mar desde el apartamento?",
+        answer: "Sí, tiene vistas directas al Mediterráneo desde el balcón y zona privada de playa.",
+      },
+      {
+        question: "¿A qué distancia está la arena?",
+        answer: "A unos 3 minutos a pie. El edificio está en primera línea de la playa Les Palmeretes.",
+      },
+    ],
     published: true,
   },
   {
     slug: "vacaciones-playa-valencia",
     propertySlug: "valencia",
     intent: "Transaccional estacional — 'apartamento vacaciones Valencia playa'",
+    keyword: "vacaciones playa Valencia",
+    secondaryKeywords: ["alojamiento cerca de la Albufera", "apartamento vacaciones costa de Valencia"],
     title: "Vacaciones de playa al sur de Valencia | Apartamento frente al mar",
     description:
       "Apartamento para vacaciones de playa en Les Palmeretes (Sueca), litoral sur de Valencia: verano, primavera y otoño con clima suave. Reserva directa, disponibilidad real y precio total.",
@@ -206,6 +290,17 @@ export const landings: Landing[] = [
         body: [
           "Consulta la disponibilidad real y el precio total antes de pagar. Confirmación inmediata y fechas bloqueadas automáticamente.",
         ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Es buen destino de playa fuera de julio y agosto?",
+        answer:
+          "Sí. Junio y septiembre tienen buen tiempo de baño con menos gente; primavera y otoño son ideales para tranquilidad y para visitar la Albufera y Valencia.",
+      },
+      {
+        question: "¿Cuánto se tarda a la ciudad de Valencia?",
+        answer: "Una media hora en coche, o en Cercanías desde las estaciones de Sueca o Cullera.",
       },
     ],
     published: true,

@@ -55,9 +55,9 @@ export function buildSeoInventory(): SeoRow[] {
       section: l.published ? "landing" : "landing (borrador)",
       title: l.title,
       description: l.description,
-      intent: l.intent,
+      intent: `${l.intent} · kw: ${l.keyword}`,
       h1: l.h1,
-      hasStructuredData: false,
+      hasStructuredData: Boolean(l.faq && l.faq.length > 0),
       hasHreflang: false,
     });
   }
