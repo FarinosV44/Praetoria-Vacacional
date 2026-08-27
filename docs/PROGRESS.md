@@ -54,6 +54,18 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | S20 · Perf/a11y/security hardening | #21 | 🟡 | CSP + security headers, rate limiting, server validation (zod), skip-link, focus styles, reduced-motion. **axe-core over 7 pages: 0 serious/critical; AA contrast**. Lighthouse run pending a deploy |
 | S21 · Final E2E QA | #22 | 🟡 | Playwright: booking flow both properties + EN flow + property independence, all green (DEMO). Full checklist w/ real services + remaining security scenarios pending |
 
+### V2 batch (issues #34–#41) — redesign + real content
+
+| Sprint | Issues | Status | Notes |
+|--------|--------|--------|-------|
+| V2a · Config-status system + graceful degradation | #41 | ⬜ | central `configured/not_configured/error/disabled` registry, admin status page, safe public/admin fallbacks |
+| V2b · Real Booking content extraction | #35 | ⬜ | real photos (→WebP), distances, amenities, capacity, reviews per property; no placeholders |
+| V2c · Home V2 (desire-first) | #34, #37 | ⬜ | emotional hero (no form), separate `Reserva tu escapada` module, editorial destination cards |
+| V2d · Booking module V2 | #36 | ⬜ | standalone premium search: property selector (JV/VLC/Cualquiera), summary, sticky mobile CTA |
+| V2e · Property pages V2 (boutique) | #38 | ⬜ | high-impact gallery, map + real distances, categorised amenities, sticky booking card |
+| V2f · SEO V2 | #39 | ⬜ | revalidated keyword map, entity signals, stronger internal linking, Camarena keyword |
+| V2g · Final visual polish | #40 | ⬜ | type scale, rhythm, breakpoints 375→1920, micro-interactions, zero placeholders |
+
 ## Exact position
 
 Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34

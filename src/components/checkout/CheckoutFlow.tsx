@@ -28,6 +28,7 @@ interface Props {
   quote: QuoteData;
   cancellationSummary: string;
   locale?: Locale;
+  paymentsConfigured?: boolean;
 }
 
 type Step = 1 | 2 | 3;
@@ -283,6 +284,13 @@ export function CheckoutFlow(props: Props) {
         {step === 3 && (
           <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
             <h2 className="font-display text-xl">{t.securePayment}</h2>
+            {props.paymentsConfigured === false && (
+              <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                {locale === "en"
+                  ? "Card payments are not enabled yet. This step runs in demo mode and no charge is made."
+                  : "Los pagos con tarjeta aún no están activos. Este paso funciona en modo demostración y no se realiza ningún cobro."}
+              </p>
+            )}
             <p className="mt-2 text-[var(--color-ink-soft)]">{t.secureBlurb}</p>
             <p className="mt-3 text-sm text-[var(--color-ink-soft)]">{props.cancellationSummary}</p>
             <div className="mt-5 flex gap-3">

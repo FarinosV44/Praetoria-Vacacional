@@ -5,6 +5,7 @@ import { quoteForCheckout } from "@/domains/booking/service";
 import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
 import { getCheckoutStrings } from "@/i18n/checkout";
 import { localizedPath, type Locale } from "@/i18n/config";
+import { stripeEnabled } from "@/domains/payments/stripe";
 
 export async function CheckoutPageView({
   slug,
@@ -51,6 +52,7 @@ export async function CheckoutPageView({
           checkOut={checkOut}
           guests={guests}
           locale={locale}
+          paymentsConfigured={stripeEnabled}
           quote={{
             nights: result.quote.nights,
             nightlySubtotalCents: result.quote.nightlySubtotalCents,
