@@ -46,28 +46,35 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | S12 · Admin panel | #13 | 🟡 | auth, dashboard, reservations (filter/cancel w/ confirm), manual blocks, **price & rules editor → live on site**, sync health |
 | S13 · iCal sync | #9 | 🟡 | parser+generator (7 tests, idempotent), per-property export feed (token), import endpoint+cron, dedup by (property,source,uid). Needs real Booking feed URLs to VERIFY |
 | S14 · Technical SEO | #14, #28, #32 | 🟡 | dynamic sitemap/robots, per-locale canonical, OG, JSON-LD (Org/WebSite/VacationRental/Breadcrumb/FAQ), noindex, breadcrumbs, **bidirectional hreflang + x-default** |
-| S15 · Keyword arch + SEO landings | #15, #16, #25, #26, #31 | 🟡→✅ | 6 transactional landings + **12 destination guides (hub & spoke)**, all real copy, distinct intent. Keyword→URL map doc still to formalise (#15) |
-| S16 · Analytics + Search Console | #19, #33 | 🟡 | GA4 loader (consent-default-denied), typed event wrapper w/ PII filter, events wired, **GSC verification meta**. Needs GA4 id + live GSC + evolution dashboard (#33) |
+| S15 · Keyword arch + SEO landings | #15, #16, #25, #26, #31 | ✅ (content) | 6 transactional landings + 12 destination guides (hub & spoke), all real copy, distinct intent. `docs/seo/keyword-map.md` formalised. #26 local schema could go deeper |
+| S16 · Analytics + Search Console | #19, #33 | 🟡 | GA4 loader (consent-default-denied), typed event wrapper w/ PII filter, events wired, GSC verification meta, experiment dimension. Needs GA4 id + live GSC + evolution dashboard (#33) |
 | S17 · Legal pages | #20 | 🟡 | 4 configurable legal docs, `[[PENDIENTE]]` markers, checkout terms checkbox, per-property cancellation policy |
-| S18 · i18n ES/EN | #29 | 🟡 | ES root + `/en` for home & property pages, dictionaries, hreflang, LanguageSwitcher, reviewed EN property copy. EN checkout copy + EN landings/guides pending |
-| S19 · CRO | #30 | 🟡 | direct-booking block near CTA, total price up front, trust signals, no false urgency. A/B experiment scaffolding not built |
-| S20 · Perf/a11y/security hardening | #21 | 🟡 | **CSP** + security headers, rate limiting, server validation (zod), skip-link, focus styles, reduced-motion. Full Lighthouse/axe pass pending |
-| S21 · Final E2E QA | #22 | 🟡 | **Playwright critical-path E2E green for BOTH properties + independence** (DEMO). Full checklist w/ real services + security scenarios pending |
+| S18 · i18n ES/EN | #29 | ✅ | ES root + `/en` for home, property pages AND full checkout; dictionaries, bidirectional hreflang + x-default, per-locale canonical, LanguageSwitcher, reviewed EN copy. Booking language preserved end-to-end (E2E verified). EN landings/guides = later expansion |
+| S19 · CRO | #30 | 🟡 | direct-booking block near CTA, total price up front, trust signals, no false urgency. **A/B experiment scaffolding built** (3 prepared, disabled); `docs/cro/experiments.md` |
+| S20 · Perf/a11y/security hardening | #21 | 🟡 | CSP + security headers, rate limiting, server validation (zod), skip-link, focus styles, reduced-motion. **axe-core over 7 pages: 0 serious/critical; AA contrast**. Lighthouse run pending a deploy |
+| S21 · Final E2E QA | #22 | 🟡 | Playwright: booking flow both properties + EN flow + property independence, all green (DEMO). Full checklist w/ real services + remaining security scenarios pending |
 
 ## Exact position
 
-Working `develop` (pushed). 8 commits. Platform builds static (37 pages), 34 unit
-+ 3 Playwright E2E green. Full booking flow verified end-to-end in DEMO for both
-properties. ES site substantially complete; EN priority pages live with correct
-hreflang/canonical. Admin can edit prices and they reach the public site.
+Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34
+unit + 4 booking E2E + 7 axe a11y tests all green. Full booking flow verified
+end-to-end in DEMO for both properties **and in English**. ES site content-complete
+(2 property pages, 6 landings, 12 guides, 4 legal, home). EN home + property +
+full checkout live with correct hreflang/canonical. Admin: auth, dashboard,
+reservations, manual blocks, **price editor (live on site)**, sync health.
 
 Remaining before V1 "done" (issue #22):
-1. User adds real Supabase + Stripe(test) + Resend keys + Booking iCal URLs → then
-   S10/S11/S13 move VERIFY→done and S21 runs the full checklist.
-2. User provides real property photos/content → S7/S8 content, WebP pipeline.
-3. EN checkout copy + EN landings/guides; #15 keyword map doc; #33 SEO dashboard;
-   deeper visual + Lighthouse/axe pass; #30 experiment scaffolding.
-4. `develop → main` merge + Vercel deploy (user's call).
+1. **User adds real Supabase + Stripe(test) + Resend keys + Booking iCal URLs**
+   (docs/SETUP.md) → S10/S11/S13 move VERIFY→done; then run the full S21 checklist
+   with the remaining security scenarios (duplicate webhook, repeated iCal sync).
+2. **User provides real property photos/content** → replace placeholders in
+   `src/content/properties/*.ts`, flip `status` flags; add a WebP/AVIF pipeline
+   for the real assets (#27); replace placeholder OG art.
+3. Deploy to the domain → run Lighthouse (targets Perf ≥90 mobile, SEO ≥95,
+   A11y ≥90), validate structured data in Rich Results Test, submit sitemap in GSC.
+4. Nice-to-have: #33 SEO evolution dashboard, deeper local schema (#26), EN
+   landings/guides, deeper visual micro-interactions & skeletons (#24).
+5. `develop → main` merge + Vercel deploy — the user's call.
 
 ## Branches
 
