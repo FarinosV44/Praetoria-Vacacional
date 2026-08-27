@@ -341,6 +341,25 @@ export const supabaseRepository: Repository = {
     return true;
   },
 
+  async getRateOverride(propertyId: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("property_settings")
+      .select("rate_config")
+      .eq("property_id", propertyId)
+      .maybeSingle();
+    const cfg = data?.rate_config;
+    return cfg && typeof cfg === "object" && Object.keys(cfg).length > 0 ? cfg : null;
+  },
+
+  async setRateOverride(propertyId: string, rateConfig: unknown) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("property_settings")
+      .upsert({ property_id: propertyId, rate_config: rateConfig }, { onConflict: "property_id" });
+    if (error) throw error;
+  },
+
   async getSyncRows(propertyId?: string) {
     const db = supabaseAdmin();
     let q = db.from("calendar_syncs").select();

@@ -37,6 +37,7 @@ interface Store {
   payments: Payment[];
   webhookEvents: { provider: string; eventId: string }[];
   syncs: CalendarSyncRow[];
+  rateOverrides: Record<string, unknown>;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -87,7 +88,7 @@ function seed(): Store {
       eventsImported: 0,
     })),
   );
-  return { reservations: [], blocks, payments: [], webhookEvents: [], syncs };
+  return { reservations: [], blocks, payments: [], webhookEvents: [], syncs, rateOverrides: {} };
 }
 
 function load(): Store {
@@ -115,6 +116,8 @@ function persist(store: Store): void {
 // Survive Next.js HMR by stashing on globalThis.
 const g = globalThis as unknown as { __pvStore?: Store };
 const store: Store = g.__pvStore ?? (g.__pvStore = load());
+// Forward-compat for stores persisted by an older version.
+store.rateOverrides ??= {};
 
 function save() {
   persist(store);
@@ -386,6 +389,15 @@ export const memoryRepository: Repository = {
     store.webhookEvents.push({ provider, eventId });
     save();
     return true;
+  },
+
+  async getRateOverride(propertyId: string) {
+    return store.rateOverrides[propertyId] ?? null;
+  },
+
+  async setRateOverride(propertyId: string, rateConfig: unknown) {
+    store.rateOverrides[propertyId] = rateConfig;
+    save();
   },
 
   async getSyncRows(propertyId?: string) {

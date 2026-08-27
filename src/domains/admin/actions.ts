@@ -6,6 +6,8 @@ import { isAdminAuthenticated, createAdminSession, destroyAdminSession, verifyPa
 import { getRepository, PropertyUnavailableError } from "@/lib/repository";
 import { getPropertyBySlug } from "@/domains/properties/registry";
 import { isIsoDate } from "@/lib/dates";
+import { getRateConfig } from "@/content/rates";
+import { rateConfigSchema } from "@/domains/pricing/schema";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -69,6 +71,57 @@ export async function deleteBlockAction(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (id) await getRepository().deleteBlock(id);
   revalidatePath("/admin/calendario");
+}
+
+const num = (fd: FormData, key: string) => Number(fd.get(key));
+
+export async function updateRatesAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
+  await assertAdmin();
+  const slug = String(formData.get("propertySlug") ?? "");
+  const property = getPropertyBySlug(slug);
+  const current = getRateConfig(slug);
+  if (!property || !current) return { ok: false, error: "Alojamiento no encontrado" };
+
+  let seasons = current.seasons;
+  let discounts = current.discounts;
+  try {
+    const rawSeasons = String(formData.get("seasons") ?? "").trim();
+    const rawDiscounts = String(formData.get("discounts") ?? "").trim();
+    if (rawSeasons) seasons = JSON.parse(rawSeasons);
+    if (rawDiscounts) discounts = JSON.parse(rawDiscounts);
+  } catch {
+    return { ok: false, error: "El JSON de temporadas o descuentos no es válido" };
+  }
+
+  const candidate = {
+    ...current,
+    propertySlug: slug,
+    currency: "EUR" as const,
+    baseNightlyCents: num(formData, "baseNightlyCents"),
+    weekendNightlyCents: num(formData, "weekendNightlyCents") || undefined,
+    minNights: num(formData, "minNights"),
+    maxNights: num(formData, "maxNights"),
+    cleaningFeeCents: num(formData, "cleaningFeeCents"),
+    includedGuests: num(formData, "includedGuests"),
+    extraGuestNightlyCents: num(formData, "extraGuestNightlyCents"),
+    maxGuests: num(formData, "maxGuests"),
+    taxPercent: num(formData, "taxPercent"),
+    bookingWindowDays: num(formData, "bookingWindowDays"),
+    leadTimeDays: num(formData, "leadTimeDays"),
+    seasons,
+    discounts,
+  };
+
+  const parsed = rateConfigSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return { ok: false, error: "Valores no válidos: " + parsed.error.issues[0]?.message };
+  }
+
+  await getRepository().setRateOverride(property.id, parsed.data);
+  revalidatePath(`/${slug}`);
+  revalidatePath(`/en/${slug}`);
+  revalidatePath("/admin/precios");
+  return { ok: true };
 }
 
 export async function cancelReservationAction(formData: FormData): Promise<void> {

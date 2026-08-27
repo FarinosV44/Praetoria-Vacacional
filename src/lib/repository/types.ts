@@ -109,6 +109,11 @@ export interface Repository {
   /** Returns true the first time an event id is seen, false afterwards. */
   claimWebhookEvent(provider: string, eventId: string, type: string, payload: unknown): Promise<boolean>;
 
+  // --- Rate config overrides (admin-editable, issue #13) ------------
+  /** Admin-saved rate config for a property, or null to use the file default. */
+  getRateOverride(propertyId: string): Promise<unknown | null>;
+  setRateOverride(propertyId: string, rateConfig: unknown): Promise<void>;
+
   // --- Calendar sync bookkeeping -----------------------------------
   getSyncRows(propertyId?: string): Promise<CalendarSyncRow[]>;
   recordSyncRun(

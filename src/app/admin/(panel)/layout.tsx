@@ -13,6 +13,7 @@ const nav = [
   { href: "/admin", label: "Panel" },
   { href: "/admin/reservas", label: "Reservas" },
   { href: "/admin/calendario", label: "Calendario y bloqueos" },
+  { href: "/admin/precios", label: "Precios y reglas" },
   { href: "/admin/sincronizacion", label: "Sincronización" },
 ];
 
