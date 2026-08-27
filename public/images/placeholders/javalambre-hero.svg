@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1067" viewBox="0 0 1600 1067" role="img" aria-label="Javalambre · Nieve">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b5ba9"/>
+      <stop offset="1" stop-color="#8fb2e6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1067" fill="url(#g)"/>
+  <text x="50%" y="49%" text-anchor="middle" font-family="Georgia, serif" font-size="46" fill="rgba(255,255,255,0.92)">Javalambre · Nieve</text>
+  <text x="50%" y="55%" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" fill="rgba(255,255,255,0.7)">Imagen pendiente de confirmación del propietario</text>
+</svg>

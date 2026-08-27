@@ -1,0 +1,85 @@
+# Setup — connecting the real services
+
+The platform runs fully in **DEMO mode** with `.env.example` copied verbatim to
+`.env.local`. This guide switches each integration to real infrastructure. Do
+them in any order; each is independent.
+
+---
+
+## 1. Supabase (database + admin auth)
+
+1. Create a project at supabase.com.
+2. **Project Settings → API** — copy into `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (keep secret — server only)
+3. Apply the schema. With the Supabase CLI:
+   ```bash
+   supabase link --project-ref <ref>
+   supabase db push          # applies supabase/migrations/*
+   ```
+   Or paste each file in `supabase/migrations/` into the SQL editor in order.
+4. The seed migration creates both properties with the UUIDs the app expects.
+5. Restart `npm run dev`. DEMO mode turns off automatically; availability, holds
+   and reservations now persist in Postgres. Overlap prevention is enforced by a
+   Postgres exclusion constraint + trigger, not just app code.
+
+## 2. Stripe (payments)
+
+1. Get **test** keys from dashboard.stripe.com (`sk_test_…`, `pk_test_…`):
+   - `STRIPE_SECRET_KEY`
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+2. Webhook secret — local:
+   ```bash
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   ```
+   copy the `whsec_…` into `STRIPE_WEBHOOK_SECRET`.
+   Production: create an endpoint for `https://<domain>/api/webhooks/stripe`
+   listening to `checkout.session.completed`, `payment_intent.succeeded`,
+   `payment_intent.payment_failed`, `checkout.session.expired`.
+3. Once configured, the demo simulator (`/reserva/simular`) is disabled and the
+   real Stripe Checkout redirect is used. A reservation is **only** confirmed by
+   the signed webhook, never by the success URL.
+4. Go live: swap in `sk_live_…` / `pk_live_…` and the live webhook secret.
+
+## 3. Resend (email)
+
+1. Create an API key at resend.com → `RESEND_API_KEY`.
+2. Verify your sending domain, then set `EMAIL_FROM` (e.g.
+   `Praetoria Vacacional <reservas@tudominio.com>`) and `EMAIL_REPLY_TO`.
+3. Until configured, confirmation emails are logged to the server console and the
+   reservation still completes (email failure never blocks a booking).
+
+## 4. Admin panel
+
+- `ADMIN_PASSWORD` — required to sign in at `/admin`.
+- `ADMIN_SESSION_SECRET` — long random string signing the session cookie.
+- `ADMIN_EMAILS` — reserved for the optional Supabase-Auth-backed admin.
+
+## 5. iCal channel sync (Booking.com)
+
+1. `ICAL_EXPORT_TOKEN` — long random string. Guards the export feeds and the
+   import/cron endpoints.
+2. In each `src/content/properties/<slug>.ts`, set `icalImportUrls[].url` to the
+   property's Booking.com calendar-export URL.
+3. In Booking.com → Calendar → Sync calendars, subscribe to
+   `https://<domain>/api/ical/<slug>.ics?token=<ICAL_EXPORT_TOKEN>`.
+4. Schedule the import: `vercel.json` runs `GET /api/ical/import` on a cron;
+   or call it manually with `Authorization: Bearer <ICAL_EXPORT_TOKEN>`.
+
+## 6. Analytics (optional)
+
+- `NEXT_PUBLIC_GA4_ID` — GA4 measurement id. Consent defaults to denied; wire a
+  CMP before enabling analytics storage. No PII is ever sent.
+
+## 7. Content
+
+Replace the placeholder blocks in `src/content/properties/*.ts` with the owner's
+authorised photos, amenities, distances, address and reviews, then flip each
+`status` / `*Status` flag from `"placeholder"` to `"authored"`. Fill the
+`[[PENDIENTE: …]]` markers in `src/content/legal.ts`.
+
+## Production env checklist
+
+Set in the Vercel project: everything in `.env.example` with real values, plus
+`NEXT_PUBLIC_SITE_URL=https://<domain>`.

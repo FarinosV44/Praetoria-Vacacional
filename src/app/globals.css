@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/*
+ * Praetoria Vacacional design tokens (issues #2, #24).
+ * One visual system, two personalities: `sea` (Mediterranean, warm) and
+ * `ski` (mountain, cool). Experience theming is applied with data-experience
+ * on a wrapper element, which remaps the --accent-* tokens.
+ */
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+
+  --color-ink: oklch(0.22 0.02 260);
+  --color-ink-soft: oklch(0.44 0.02 260);
+  --color-paper: oklch(0.99 0.005 260);
+  --color-paper-warm: oklch(0.985 0.012 80);
+  --color-line: oklch(0.9 0.01 260);
+
+  --color-sea-50: oklch(0.97 0.03 220);
+  --color-sea-500: oklch(0.68 0.13 225);
+  --color-sea-600: oklch(0.58 0.13 230);
+  --color-sea-700: oklch(0.47 0.11 235);
+  --color-sea-accent: oklch(0.78 0.14 85);
+
+  --color-ski-50: oklch(0.97 0.02 240);
+  --color-ski-500: oklch(0.62 0.11 255);
+  --color-ski-600: oklch(0.52 0.11 260);
+  --color-ski-700: oklch(0.42 0.09 265);
+  --color-ski-accent: oklch(0.72 0.12 200);
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px oklch(0.2 0.02 260 / 0.05), 0 12px 32px oklch(0.2 0.02 260 / 0.08);
+}
+
+:root {
+  --accent-50: var(--color-sea-50);
+  --accent-500: var(--color-sea-500);
+  --accent-600: var(--color-sea-600);
+  --accent-700: var(--color-sea-700);
+  --accent-contrast: oklch(0.99 0 0);
+}
+
+[data-experience="sea"] {
+  --accent-50: var(--color-sea-50);
+  --accent-500: var(--color-sea-500);
+  --accent-600: var(--color-sea-600);
+  --accent-700: var(--color-sea-700);
+}
+
+[data-experience="ski"] {
+  --accent-50: var(--color-ski-50);
+  --accent-500: var(--color-ski-500);
+  --accent-600: var(--color-ski-600);
+  --accent-700: var(--color-ski-700);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
