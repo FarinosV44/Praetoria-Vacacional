@@ -77,27 +77,22 @@ export function HomeView({ locale }: { locale: Locale }) {
       <JsonLd data={faqJsonLd(faq)} />
 
       {/* 1 · Emotional hero (no booking form) */}
-      <section className="relative isolate overflow-hidden bg-[var(--color-ink)] text-white">
-        <div className="absolute inset-0 -z-10 grid grid-cols-1 sm:grid-cols-2">
+      <section className="relative overflow-hidden bg-[var(--color-ink)] text-white">
+        <div className="absolute inset-0 grid grid-cols-1 grid-rows-1 sm:grid-cols-2">
           {seaHero && (
-            <Picture
-              photo={seaHero}
-              priority
-              sizes="(max-width: 640px) 100vw, 50vw"
-              imgClassName="h-full w-full object-cover"
-            />
+            <div className="relative">
+              <Picture photo={seaHero} priority sizes="(max-width: 640px) 100vw, 50vw" />
+            </div>
           )}
           {skiHero && (
-            <Picture
-              photo={skiHero}
-              sizes="(max-width: 640px) 100vw, 50vw"
-              imgClassName="hidden h-full w-full object-cover sm:block"
-            />
+            <div className="relative hidden sm:block">
+              <Picture photo={skiHero} sizes="50vw" />
+            </div>
           )}
         </div>
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/45 via-black/35 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/75 via-black/45 to-black/25" />
 
-        <div className="container-page flex min-h-[70vh] flex-col justify-end py-16 sm:min-h-[78vh] sm:py-20">
+        <div className="container-page relative flex min-h-[70vh] flex-col justify-end py-16 sm:min-h-[78vh] sm:py-20">
           <p className="eyebrow !text-white/75">{c.heroKicker}</p>
           <h1 className="mt-4 max-w-2xl font-display text-4xl leading-[1.08] sm:text-5xl md:text-6xl">
             {c.heroTitle}

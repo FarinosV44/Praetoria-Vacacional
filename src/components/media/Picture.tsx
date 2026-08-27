@@ -1,42 +1,34 @@
+import Image from "next/image";
 import type { ResponsivePhoto } from "@/content/properties/photos";
-import { srcSet } from "@/content/properties/photos";
 
 /**
- * Responsive <picture> for the pre-optimised property photos (AVIF → WebP).
- * The images are already encoded at fixed widths, so we skip the Next image
- * optimiser and serve them directly with a proper srcset.
+ * Property photo. The real files are pre-encoded (see photo-manifest.json); we
+ * hand the largest WebP to next/image, which produces the responsive srcset and
+ * modern formats. `fill` mode — the parent must be positioned with a size.
  */
 export function Picture({
   photo,
   sizes,
   priority = false,
   className = "",
-  imgClassName = "",
+  imgClassName = "object-cover",
 }: {
   photo: ResponsivePhoto;
   sizes: string;
   priority?: boolean;
   className?: string;
+  /** kept for API compatibility; merged into the Image className */
   imgClassName?: string;
 }) {
   const maxW = Math.max(...photo.widths);
-  const width = maxW;
-  const height = Math.round(maxW / photo.aspect);
   return (
-    <picture className={className}>
-      <source type="image/avif" srcSet={srcSet(photo, "avif")} sizes={sizes} />
-      <source type="image/webp" srcSet={srcSet(photo, "webp")} sizes={sizes} />
-      <img
-        src={`${photo.dir}/${photo.base}-${maxW}.webp`}
-        alt={photo.alt}
-        width={width}
-        height={height}
-        loading={priority ? "eager" : "lazy"}
-        // @ts-expect-error fetchpriority is valid HTML, types lag
-        fetchpriority={priority ? "high" : undefined}
-        decoding="async"
-        className={imgClassName || "h-full w-full object-cover"}
-      />
-    </picture>
+    <Image
+      src={`${photo.dir}/${photo.base}-${maxW}.webp`}
+      alt={photo.alt}
+      fill
+      sizes={sizes}
+      priority={priority}
+      className={`${imgClassName} ${className}`.trim()}
+    />
   );
 }

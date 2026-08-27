@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { ResponsivePhoto } from "@/content/properties/photos";
-import { srcSet } from "@/content/properties/photos";
 
 /**
  * Full-screen, keyboard-navigable gallery (issue #17/#38). Mounts only when
@@ -77,15 +76,12 @@ export function GalleryLightbox({
         >
           ‹
         </button>
-        <picture className="flex h-full max-h-[80vh] w-full max-w-5xl items-center justify-center">
-          <source type="image/avif" srcSet={srcSet(photo, "avif")} sizes="100vw" />
-          <source type="image/webp" srcSet={srcSet(photo, "webp")} sizes="100vw" />
-          <img
-            src={`${photo.dir}/${photo.base}-${Math.max(...photo.widths)}.webp`}
-            alt={photo.alt}
-            className="max-h-[80vh] w-auto object-contain"
-          />
-        </picture>
+        {/* eslint-disable-next-line @next/next/no-img-element -- lightbox: full-size, on-demand, no layout benefit from next/image */}
+        <img
+          src={`${photo.dir}/${photo.base}-${Math.max(...photo.widths)}.webp`}
+          alt={photo.alt}
+          className="max-h-[80vh] w-auto max-w-5xl object-contain"
+        />
         <button
           onClick={next}
           aria-label="Siguiente"
