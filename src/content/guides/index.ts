@@ -147,12 +147,38 @@ export const guides: Guide[] = [
     pillar: false,
     intent: "Informacional — familias con niños",
     keyword: "Javalambre con niños",
-    title: "Javalambre con niños",
-    description: "Por qué Javalambre funciona bien para ir con niños y cómo organizar la escapada.",
+    title: "Javalambre con niños: esquí en familia y planes de nieve",
+    description:
+      "Por qué Javalambre es una buena estación para ir con niños: pistas suaves, ambiente tranquilo, clases de esquí y planes de nieve más allá de las pistas.",
     h1: "Javalambre con niños",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "Javalambre es de las estaciones más recomendables para iniciar a los niños en el esquí: pistas anchas y poco inclinadas, distancias cortas y un ambiente sin aglomeraciones. Estas son las claves para una escapada de nieve en familia.",
+    sections: [
+      {
+        heading: "Por qué funciona para peques",
+        body: [
+          "La zona de debutantes y las pistas verdes y azules concentradas cerca de la base permiten tener al grupo controlado y volver rápido al punto de encuentro. El desnivel moderado evita sustos y cansancio excesivo el primer día.",
+        ],
+      },
+      {
+        heading: "Clases y material",
+        body: [
+          "La escuela de esquí ofrece cursillos para niños por grupos de edad y nivel; en puentes y vacaciones conviene reservar con antelación. El alquiler de material infantil está disponible en la estación.",
+        ],
+      },
+      {
+        heading: "Días sin esquí",
+        body: [
+          "Un trineo, un muñeco de nieve y chocolate caliente llenan una mañana. Fuera de pistas, el planetario de la zona y la observación de estrellas (la comarca es Destino Starlight) funcionan muy bien con niños a partir de cierta edad.",
+        ],
+      },
+      {
+        heading: "Logística",
+        body: [
+          "Alojarse cerca de la estación evita trayectos largos con niños cansados y permite comer y descansar en el apartamento a mediodía.",
+        ],
+      },
+    ],
+    published: true,
   },
   {
     slug: "que-hacer-en-javalambre-sin-esquiar",
@@ -161,11 +187,37 @@ export const guides: Guide[] = [
     intent: "Informacional — plan sin esquí",
     keyword: "qué hacer en Javalambre sin esquiar",
     title: "Qué hacer en Javalambre sin esquiar",
-    description: "Planes en la sierra de Javalambre que no dependen de las pistas.",
+    description:
+      "Planes en la sierra de Javalambre que no dependen de las pistas: observación de estrellas, senderismo, pueblos de Gúdar-Javalambre y Teruel.",
     h1: "Qué hacer en Javalambre sin esquiar",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "La sierra de Javalambre es mucho más que su estación de esquí. Si viajas fuera de temporada, o simplemente no esquías, estos planes llenan un fin de semana.",
+    sections: [
+      {
+        heading: "Observación de estrellas",
+        body: [
+          "El entorno del Observatorio Astrofísico de Javalambre tiene uno de los cielos más oscuros de Europa. La comarca Gúdar-Javalambre está certificada como Destino Turístico Starlight; en noche despejada se ve la Vía Láctea a simple vista.",
+        ],
+      },
+      {
+        heading: "Senderismo y naturaleza",
+        body: [
+          "En primavera y verano hay rutas por sabinares, nacimientos de agua y las cumbres de la sierra. El pico de Javalambre supera los 2.000 m y ofrece panorámicas hacia el Mediterráneo en días claros.",
+        ],
+      },
+      {
+        heading: "Pueblos de la comarca",
+        body: [
+          "Camarena de la Sierra, La Puebla de Valverde, Manzanera o Mora de Rubielos (con su castillo y colegiata) son paradas con encanto rural y buena gastronomía de montaña: ternasco, quesos, trufa en temporada.",
+        ],
+      },
+      {
+        heading: "Teruel capital",
+        body: [
+          "A menos de una hora, Teruel concentra el mejor mudéjar de Aragón (Patrimonio de la Humanidad), el conjunto de los Amantes y un casco histórico compacto ideal para una tarde.",
+        ],
+      },
+    ],
+    published: true,
   },
   {
     slug: "restaurantes-y-servicios-cerca-de-javalambre",
@@ -174,11 +226,37 @@ export const guides: Guide[] = [
     intent: "Informacional local — servicios",
     keyword: "restaurantes cerca de Javalambre",
     title: "Restaurantes y servicios cerca de Javalambre",
-    description: "Dónde comer, comprar y repostar en la zona de Javalambre.",
+    description:
+      "Cómo organizar las comidas y las compras en una escapada a Javalambre: opciones en la estación, en los pueblos y en Teruel, y consejos para abastecerte.",
     h1: "Restaurantes y servicios cerca de Javalambre",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "La zona de Javalambre es de montaña y de pueblos pequeños, así que conviene planificar las comidas y la compra. Esto es lo que debes saber.",
+    sections: [
+      {
+        heading: "En la estación",
+        body: [
+          "La zona de base cuenta con cafetería y restauración de estación durante la temporada de esquí, pensada para comidas rápidas entre pistas. En días de mucha afluencia hay colas a mediodía.",
+        ],
+      },
+      {
+        heading: "En los pueblos cercanos",
+        body: [
+          "Camarena de la Sierra y La Puebla de Valverde tienen bares y restaurantes de cocina tradicional. Mora de Rubielos y Rubielos de Mora, algo más lejos, ofrecen propuestas más cuidadas. Fuera de temporada conviene confirmar horarios por teléfono.",
+        ],
+      },
+      {
+        heading: "Compra y abastecimiento",
+        body: [
+          "Para una estancia de varios días es práctico hacer una compra grande en Teruel capital antes de subir, ya que en los pueblos de la sierra los comercios son pequeños y con horarios limitados. Cocinar en el apartamento ahorra tiempo y dinero.",
+        ],
+      },
+      {
+        heading: "Combustible y farmacia",
+        body: [
+          "Repostar en Teruel o en la A-23 antes de la última parte del trayecto. Las farmacias más cercanas están en los pueblos; para urgencias, el centro de salud de referencia de la comarca.",
+        ],
+      },
+    ],
+    published: true,
   },
 
   // ------------------------------------------------------------------- Valencia
@@ -299,12 +377,38 @@ export const guides: Guide[] = [
     pillar: false,
     intent: "Informacional — familias",
     keyword: "Valencia con niños y playa",
-    title: "Valencia con niños y playa",
-    description: "Cómo combinar playa y planes para niños en Valencia.",
+    title: "Valencia con niños y playa: plan para toda la familia",
+    description:
+      "Cómo combinar playa y planes para niños en Valencia: arenales cómodos, Bioparc, Oceanogràfic, el Turia y la Albufera. Ideas para una escapada en familia.",
     h1: "Valencia con niños y playa",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "Valencia es una ciudad muy cómoda para viajar con niños: llana, con playas de arena fina y grandes atractivos familiares a poca distancia del mar. Este es un plan realista.",
+    sections: [
+      {
+        heading: "Playa con niños",
+        body: [
+          "La Malva-rosa y la Patacona tienen arena fina, pendiente suave, paseo, aseos y socorrismo en temporada. Ir a primera hora o a última tarde evita las horas de más sol.",
+        ],
+      },
+      {
+        heading: "Grandes planes cerca del mar",
+        body: [
+          "El Oceanogràfic (el acuario más grande de Europa) y el Museo de las Ciencias están en la Ciudad de las Artes, a un paseo en bici por el Turia desde la playa. El Bioparc, al otro lado de la ciudad, es un zoo de inmersión muy valorado con niños.",
+        ],
+      },
+      {
+        heading: "Al aire libre",
+        body: [
+          "El Jardín del Turia tiene zonas de juego (el Parque Gulliver es un tobogán gigante), carril bici y mucho espacio. La Albufera, en barca al atardecer, suele gustar a los más mayores.",
+        ],
+      },
+      {
+        heading: "Comer con niños",
+        body: [
+          "Los restaurantes de arroz del frente marítimo suelen tener menús y espacio para carritos. Reservar para comer, sobre todo en fin de semana.",
+        ],
+      },
+    ],
+    published: true,
   },
   {
     slug: "escapada-fin-de-semana-junto-al-mar-valencia",
@@ -313,11 +417,31 @@ export const guides: Guide[] = [
     intent: "Transaccional — escapada fin de semana",
     keyword: "escapada de fin de semana junto al mar en Valencia",
     title: "Escapada de fin de semana junto al mar en Valencia",
-    description: "Un plan de dos días junto al mar en Valencia.",
+    description:
+      "Un plan de dos días junto al mar en Valencia: playa, Cabanyal, arroces, Ciudad de las Artes y puesta de sol en la Albufera. Con alojamiento en reserva directa.",
     h1: "Escapada de fin de semana junto al mar en Valencia",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "Con un fin de semana da tiempo a mezclar playa, ciudad y gastronomía sin agobios. Esta es una propuesta equilibrada partiendo de un alojamiento frente al mar.",
+    sections: [
+      {
+        heading: "Viernes: llegada y paseo marítimo",
+        body: [
+          "Llegar, dejar las cosas y bajar a caminar por el paseo de la Malva-rosa al atardecer. Cena de arroz o de tapas en el Cabanyal.",
+        ],
+      },
+      {
+        heading: "Sábado: playa y ciudad",
+        body: [
+          "Mañana de playa. Por la tarde, en bici por el Jardín del Turia hasta la Ciudad de las Artes y las Ciencias, o al centro histórico (Mercado Central, Lonja, Catedral).",
+        ],
+      },
+      {
+        heading: "Domingo: Albufera y regreso",
+        body: [
+          "Paseo en barca por la Albufera y comida en El Palmar antes de volver. Si el tiempo acompaña, otro rato de playa a media mañana.",
+        ],
+      },
+    ],
+    published: true,
   },
   {
     slug: "restaurantes-y-ocio-cerca-de-la-playa-valencia",
@@ -326,11 +450,31 @@ export const guides: Guide[] = [
     intent: "Informacional local",
     keyword: "restaurantes cerca de la playa de Valencia",
     title: "Restaurantes y ocio cerca de la playa de Valencia",
-    description: "Dónde comer y salir cerca del frente marítimo de Valencia.",
+    description:
+      "Dónde comer arroz, tapear y salir cerca del frente marítimo de Valencia: Malva-rosa, Cabanyal y La Marina. Consejos prácticos.",
     h1: "Restaurantes y ocio cerca de la playa de Valencia",
-    lead: "",
-    sections: [],
-    published: false,
+    lead: "El frente marítimo de Valencia concentra algunos de los mejores arroces de la ciudad y una vida de barrio en auge en el Cabanyal. Esto es lo que conviene saber.",
+    sections: [
+      {
+        heading: "Arroces frente al mar",
+        body: [
+          "El paseo de la Malva-rosa está lleno de restaurantes de arroz con vistas. La paella valenciana se come tradicionalmente a mediodía; para cenar es más habitual el arroz del senyoret o a banda. Reservar en fin de semana y temporada alta.",
+        ],
+      },
+      {
+        heading: "El Cabanyal",
+        body: [
+          "El barrio marinero se ha llenado de bares de tapas, vermuterías y locales de producto. El Mercado del Cabanyal es buen sitio para desayunar o comprar para cocinar en el apartamento.",
+        ],
+      },
+      {
+        heading: "La Marina y ocio nocturno",
+        body: [
+          "La Marina de Valencia acoge terrazas, conciertos y eventos, sobre todo en verano. La zona de ocio nocturno más intensa está algo más al norte, en la playa; entre semana el ambiente es tranquilo.",
+        ],
+      },
+    ],
+    published: true,
   },
 ];
 
