@@ -38,6 +38,11 @@ const T = {
     ratingOn: (n: number) => `${n} opiniones en Booking`,
     bestOf: "Lo mejor de este alojamiento",
     nearbyGuides: "Qué hacer cerca",
+    distances: "Distancias",
+    closingHeading: (n: string) => `¿Reservamos tu estancia en ${n}?`,
+    closingBody: "Consulta disponibilidad y precio total, sin comisiones y con confirmación inmediata.",
+    closingCta: "Ver fechas y precio",
+    closingContact: "Tengo una duda",
   },
   en: {
     home: "Home",
@@ -64,8 +69,23 @@ const T = {
     ratingOn: (n: number) => `${n} reviews on Booking`,
     bestOf: "The best of this apartment",
     nearbyGuides: "What to do nearby",
+    distances: "Distances",
+    closingHeading: (n: string) => `Shall we book your stay at ${n}?`,
+    closingBody: "Check availability and the full price — no fees, instant confirmation.",
+    closingCta: "See dates & price",
+    closingContact: "I have a question",
   },
 } as const;
+
+const NEARBY_ICON: Record<string, string> = {
+  beach: "🏖️",
+  ski: "⛷️",
+  transport: "🚉",
+  food: "🍽️",
+  nature: "🌿",
+  landmark: "📍",
+  airport: "✈️",
+};
 
 export function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
   const raw = getPropertyBySlug(slug);
@@ -213,15 +233,25 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
               </p>
             ))}
 
-            <h3 className="mt-6 text-sm font-semibold">{t.nearby}</h3>
-            <ul className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)] text-sm">
-              {p.nearby.map((n) => (
-                <li key={n.name} className="flex justify-between gap-4 py-2">
-                  <span>{n.name}</span>
-                  <span className="shrink-0 text-[var(--color-ink-soft)]">{n.distance}</span>
-                </li>
-              ))}
-            </ul>
+            <h3 className="mt-6 text-sm font-semibold">{t.distances}</h3>
+            <table className="mt-3 w-full border-collapse text-sm">
+              <caption className="sr-only">{t.nearby}</caption>
+              <tbody>
+                {p.nearby.map((n) => (
+                  <tr key={n.name} className="border-b border-[var(--color-line)]">
+                    <td className="py-2 pr-4">
+                      <span aria-hidden className="mr-2">
+                        {NEARBY_ICON[n.category]}
+                      </span>
+                      {n.name}
+                    </td>
+                    <td className="py-2 text-right font-medium tabular-nums whitespace-nowrap text-[var(--color-ink-soft)]">
+                      {n.distance}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
               Distancias estimadas (fuente: Booking.com / OpenStreetMap).
             </p>
@@ -270,7 +300,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="contenido" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
           <BookingWidget
             propertySlug={p.slug}
             maxGuests={p.capacity.guests}
@@ -284,6 +314,31 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
         <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
       </div>
       <FaqBlock items={p.faq} heading={t.faqHeading(p.name)} />
+
+      {/* Closing CTA (issue #44 §14) */}
+      <section
+        data-experience={p.experience}
+        className="border-t border-[var(--color-line)] bg-[var(--accent-50)] py-14"
+      >
+        <div className="container-page">
+          <h2 className="font-display text-2xl sm:text-3xl">{t.closingHeading(p.name)}</h2>
+          <p className="mt-2 max-w-xl text-[var(--color-ink-soft)]">{t.closingBody}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="#contenido"
+              className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+            >
+              {t.closingCta}
+            </a>
+            <Link
+              href={path("/contacto")}
+              className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
+            >
+              {t.closingContact}
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
         <a
