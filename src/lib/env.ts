@@ -47,8 +47,9 @@ const schema = z.object({
   // iCal sync — token that authenticates our public export feeds
   ICAL_EXPORT_TOKEN: z.string().optional(),
 
-  // Analytics (optional)
+  // Analytics / Search Console (optional)
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
+  NEXT_PUBLIC_GSC_VERIFICATION: z.string().optional(),
 
   // Reservation hold window (minutes) while the guest pays
   RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(30),
@@ -86,5 +87,8 @@ export const publicEnv = {
   siteUrl: env.NEXT_PUBLIC_SITE_URL,
   siteName: env.NEXT_PUBLIC_SITE_NAME,
   ga4Id: env.analyticsConfigured ? env.NEXT_PUBLIC_GA4_ID : undefined,
+  gscVerification: isReal(raw.NEXT_PUBLIC_GSC_VERIFICATION)
+    ? raw.NEXT_PUBLIC_GSC_VERIFICATION
+    : undefined,
   stripePublishableKey: env.stripeConfigured ? env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY : undefined,
 } as const;

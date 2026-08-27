@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     images: ["/images/og/default.svg"],
   },
   robots: { index: true, follow: true },
+  verification: publicEnv.gscVerification
+    ? { google: publicEnv.gscVerification }
+    : undefined,
 };
 
 export const viewport: Viewport = {
