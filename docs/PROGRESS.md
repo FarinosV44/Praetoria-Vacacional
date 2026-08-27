@@ -58,13 +58,13 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 
 | Sprint | Issues | Status | Notes |
 |--------|--------|--------|-------|
-| V2a · Config-status system + graceful degradation | #41 | ⬜ | central `configured/not_configured/error/disabled` registry, admin status page, safe public/admin fallbacks |
-| V2b · Real Booking content extraction | #35 | ⬜ | real photos (→WebP), distances, amenities, capacity, reviews per property; no placeholders |
-| V2c · Home V2 (desire-first) | #34, #37 | ⬜ | emotional hero (no form), separate `Reserva tu escapada` module, editorial destination cards |
-| V2d · Booking module V2 | #36 | ⬜ | standalone premium search: property selector (JV/VLC/Cualquiera), summary, sticky mobile CTA |
-| V2e · Property pages V2 (boutique) | #38 | ⬜ | high-impact gallery, map + real distances, categorised amenities, sticky booking card |
-| V2f · SEO V2 | #39 | ⬜ | revalidated keyword map, entity signals, stronger internal linking, Camarena keyword |
-| V2g · Final visual polish | #40 | ⬜ | type scale, rhythm, breakpoints 375→1920, micro-interactions, zero placeholders |
+| V2a · Config-status + graceful degradation | #41 | ✅ | `config-status/registry` (4 states), `/admin/configuracion`, dashboard banner, checkout demo-mode notice. Every feature implemented; only activation pending |
+| V2b · Real Booking content | #35 | ✅ | 21 real photos → AVIF+WebP ×4 widths (served via next/image), real address/capacity/amenities/distances/reviews/rating/licence for BOTH properties. `photo-manifest.json`. `scripts/fetch-property-photos.mjs` (signed URLs). No placeholders left. e2e/images.spec.ts guards it |
+| V2c · Home V2 (desire-first) | #34, #37 | ✅ | emotional hero (real split photos, short headline, 1-line sub, two "Descubrir X", NO form), separate `Reserva tu escapada` module, editorial #37 cards (photo + rating + headline distance + capacity + feature) |
+| V2d · Booking module V2 | #36 | ✅ | property selector JV/VLC/Cualquiera, live stay summary, "free at the other one" prompt keeping dates, sticky mobile CTA |
+| V2e · Property pages V2 (boutique) | #38 | 🟡 | rebuilt: high-impact gallery + lightbox, sticky booking card, quick facts, categorised amenities, getting-there + "Qué tienes cerca" (crawlable), stay info, real breadcrumbs/schema. **No map embed** (needs a maps key; address+geo+distance table cover it for now) |
+| V2f · SEO V2 | #39 | ✅ | keyword map + all landings/guides corrected to real locations (Camarena de la Sierra; Mareny de Barraquetes / Les Palmeretes / southern coast), entity signals (VacationRental w/ geo+floorSize+aggregateRating), Camarena keyword targeted |
+| V2g · Final visual polish | #40 | 🟡 | lighter header, hero gradient, palette AA, tactile buttons, skeletons, consistent radii/rhythm. Full manual breakpoint review (375→1920) pending — the screenshot tool was unreliable this session; e2e image-layout test added instead |
 
 ## Exact position
 

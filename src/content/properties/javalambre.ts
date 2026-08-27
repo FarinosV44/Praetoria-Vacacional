@@ -21,7 +21,7 @@ export const javalambre: PropertyContent = {
 
   location: {
     city: "Camarena de la Sierra",
-    region: "Teruel, Aragón",
+    region: "Teruel · Aragón",
     area: "Sierra de Javalambre",
     addressLine: "24 Calle San Mateo",
     postalCode: "44459",

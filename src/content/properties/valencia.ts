@@ -20,8 +20,8 @@ export const valencia: PropertyContent = {
     "Un apartamento de 75 m² a 3 minutos a pie de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), con vistas al mar desde el balcón, zona privada de playa y parking gratis. Un tramo de litoral tranquilo junto a la Albufera, a media hora de Valencia capital.",
 
   location: {
-    city: "Mareny de Barraquetes (Sueca), Valencia",
-    region: "Comunidad Valenciana",
+    city: "Mareny de Barraquetes",
+    region: "Sueca · Valencia",
     area: "Frente al mar",
     addressLine: "Carrer del Mestre Navarro 1, pta 3",
     postalCode: "46419",

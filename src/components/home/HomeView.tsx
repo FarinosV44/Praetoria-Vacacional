@@ -90,7 +90,7 @@ export function HomeView({ locale }: { locale: Locale }) {
             </div>
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/75 via-black/45 to-black/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/15" />
 
         <div className="container-page relative flex min-h-[70vh] flex-col justify-end py-16 sm:min-h-[78vh] sm:py-20">
           <p className="eyebrow !text-white/75">{c.heroKicker}</p>
