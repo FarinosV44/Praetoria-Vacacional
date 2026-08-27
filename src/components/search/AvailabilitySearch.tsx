@@ -9,6 +9,8 @@ import { localizedPath, type Locale } from "@/i18n/config";
 
 const STR = {
   es: {
+    property: "Alojamiento",
+    anyProperty: "Cualquiera",
     checkIn: "Entrada",
     checkOut: "Salida",
     guests: "Huéspedes",
@@ -21,8 +23,12 @@ const STR = {
     minStay: (n: number) => ` · estancia mínima ${n} noches`,
     connError: "Problema de conexión. Inténtalo de nuevo.",
     genericError: "No se pudo comprobar la disponibilidad",
+    summary: (nights: number, guests: number, nl: (n: number) => string) =>
+      `${nl(nights)} · ${guests} ${guests === 1 ? "huésped" : "huéspedes"}`,
   },
   en: {
+    property: "Property",
+    anyProperty: "Either",
     checkIn: "Check-in",
     checkOut: "Check-out",
     guests: "Guests",
@@ -35,8 +41,15 @@ const STR = {
     minStay: (n: number) => ` · minimum stay ${n} nights`,
     connError: "Connection problem. Please try again.",
     genericError: "Could not check availability",
+    summary: (nights: number, guests: number, nl: (n: number) => string) =>
+      `${nl(nights)} · ${guests} ${guests === 1 ? "guest" : "guests"}`,
   },
 } as const;
+
+const PROPERTIES = [
+  { slug: "javalambre", name: "Javalambre Mountain SuperSki" },
+  { slug: "valencia", name: "Valencia Frente al Mar" },
+];
 
 interface QuoteLite {
   totalCents: number;
@@ -66,6 +79,7 @@ export function AvailabilitySearch({
   locale?: Locale;
 }) {
   const t = STR[locale];
+  const [property, setProperty] = useState<string>("");
   const [checkIn, setCheckIn] = useState(todayPlus(14));
   const [checkOut, setCheckOut] = useState(todayPlus(17));
   const [guests, setGuests] = useState(2);
@@ -90,7 +104,7 @@ export function AvailabilitySearch({
         setMessage(data.error ?? t.genericError);
         return;
       }
-      setResults(data.results);
+      setResults(data.results as ResultRow[]);
       setStatus("done");
     } catch {
       setStatus("error");
@@ -98,13 +112,35 @@ export function AvailabilitySearch({
     }
   }
 
+  const shown = property ? results.filter((r) => r.propertySlug === property) : results;
+  const chosen = property ? results.find((r) => r.propertySlug === property) : null;
+  const alt =
+    property && chosen && !chosen.available
+      ? results.find((r) => r.available && r.propertySlug !== property)
+      : null;
+
   const query = new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
   const reservePath = (slug: string) => localizedPath(locale, `/reservar/${slug}`) + `?${query}`;
   const propertyPath = (slug: string) => localizedPath(locale, `/${slug}`);
 
   return (
     <div className={compact ? "" : "rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6"}>
-      <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
+      <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_auto_auto] lg:items-end">
+        <label className="text-sm sm:col-span-2 lg:col-span-1">
+          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.property}</span>
+          <select
+            value={property}
+            onChange={(e) => setProperty(e.target.value)}
+            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base"
+          >
+            <option value="">{t.anyProperty}</option>
+            {PROPERTIES.map((p) => (
+              <option key={p.slug} value={p.slug}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkIn}</span>
           <input
@@ -132,7 +168,7 @@ export function AvailabilitySearch({
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base sm:w-24"
+            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base lg:w-24"
           >
             {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
@@ -141,10 +177,26 @@ export function AvailabilitySearch({
             ))}
           </select>
         </label>
-        <Button type="submit" size="lg" disabled={status === "loading"} className="h-12 sm:h-12">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={status === "loading"}
+          className="h-12 sm:col-span-2 lg:col-span-1 lg:h-12"
+        >
           {status === "loading" ? t.checking : t.submit}
         </Button>
       </form>
+
+      {(checkIn < checkOut) && (
+        <p className="mt-2 text-center text-xs text-[var(--color-ink-soft)]">
+          {property ? PROPERTIES.find((p) => p.slug === property)?.name : t.anyProperty} ·{" "}
+          {t.summary(
+            Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86400000),
+            guests,
+            nightsLabel,
+          )}
+        </p>
+      )}
 
       {message && (
         <p role="alert" className="mt-3 text-sm text-red-600">
@@ -171,7 +223,7 @@ export function AvailabilitySearch({
 
       {status === "done" && (
         <ul className="mt-5 grid gap-3">
-          {results.map((r) => (
+          {shown.map((r) => (
             <li
               key={r.propertySlug}
               data-experience={r.experience}
@@ -208,6 +260,24 @@ export function AvailabilitySearch({
               )}
             </li>
           ))}
+          {alt && alt.quote && (
+            <li className="rounded-xl border border-dashed border-[var(--accent-500)] bg-[var(--accent-50)] p-4 text-sm">
+              {locale === "en" ? (
+                <>
+                  These dates are free at <strong>{alt.propertyName}</strong> for{" "}
+                  {formatMoney(alt.quote.totalCents)}.{" "}
+                </>
+              ) : (
+                <>
+                  Estas fechas sí están libres en <strong>{alt.propertyName}</strong> por{" "}
+                  {formatMoney(alt.quote.totalCents)}.{" "}
+                </>
+              )}
+              <Link href={reservePath(alt.propertySlug)} className="font-medium underline">
+                {t.book}
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </div>
