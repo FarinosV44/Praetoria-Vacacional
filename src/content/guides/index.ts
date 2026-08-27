@@ -37,7 +37,7 @@ export const guides: Guide[] = [
     description:
       "Guía práctica de la sierra de Javalambre (Teruel): la estación de esquí, el observatorio, los pueblos de Gúdar-Javalambre, cómo llegar y dónde dormir.",
     h1: "Guía de Javalambre",
-    lead: "La sierra de Javalambre, en el sur de la provincia de Teruel, es montaña de verdad sin masificación: una estación de esquí familiar, cielos de los más limpios de Europa y pueblos de piedra en la comarca de Gúdar-Javalambre. Esta guía reúne lo esencial para organizar la escapada.",
+    lead: "La sierra de Javalambre, en el sur de la provincia de Teruel, es montaña de verdad sin masificación: una estación de esquí familiar, cielos de los más limpios de Europa y pueblos de piedra como Camarena de la Sierra, a los pies de la estación. Esta guía reúne lo esencial para organizar la escapada.",
     sections: [
       {
         heading: "Dónde está y cómo llegar",
@@ -259,48 +259,53 @@ export const guides: Guide[] = [
     published: true,
   },
 
-  // ------------------------------------------------------------------- Valencia
+  // ------------------------------------------------- Valencia (costa sur, Sueca)
   {
     slug: "guia-playas-de-valencia",
     propertySlug: "valencia",
     pillar: true,
-    intent: "Informacional amplio — playas de Valencia",
-    keyword: "playas de Valencia",
-    title: "Guía de las playas de Valencia: cuál elegir",
+    intent: "Informacional amplio — playas del sur de Valencia",
+    keyword: "playas del sur de Valencia",
+    title: "Guía de las playas del sur de Valencia: de la Albufera a Cullera",
     description:
-      "Guía de las playas de Valencia: Malva-rosa, Cabanyal, Patacona, El Saler y la Devesa de la Albufera. Servicios, ambiente y cómo llegar desde el centro.",
-    h1: "Guía de las playas de Valencia",
-    lead: "Valencia tiene playa urbana amplia y, a pocos kilómetros, arenales naturales dentro del parque de la Albufera. Esta guía ayuda a elegir según lo que busques: servicios y ambiente, o dunas y pinar.",
+      "Guía de las playas de la costa sur de Valencia: El Saler, El Perellonet, El Perelló, Mareny de Barraquetes, Les Palmeretes y Cullera. Arena amplia, dunas y ambiente tranquilo.",
+    h1: "Guía de las playas del sur de Valencia",
+    lead: "Al sur de la ciudad de Valencia, entre la Albufera y Cullera, se extiende un litoral de playas amplias y tranquilas, con dunas y pinar en algunos tramos y pueblos costeros de casas bajas. Esta guía ayuda a elegir según lo que busques.",
     sections: [
       {
-        heading: "Playas del frente urbano",
+        heading: "El cordón de playas de la Devesa y El Saler",
         body: [
-          "Las Arenas, la Malva-rosa y el Cabanyal forman un arenal continuo de varios kilómetros, con paseo marítimo, chiringuitos, duchas y socorrismo en temporada. Es la opción más cómoda si quieres bajar andando desde el alojamiento y combinar playa con ciudad.",
+          "Nada más salir de Valencia, dentro del Parque Natural de la Albufera, El Saler y la Devesa ofrecen kilómetros de arena con dunas y pinar y muy poca edificación. Ideales para quien prioriza el entorno natural.",
+        ],
+      },
+      {
+        heading: "El Perellonet, El Perelló y Mareny de Barraquetes",
+        body: [
+          "Más al sur, ya en los municipios de Sueca y Valencia, se suceden playas urbanas tranquilas de casas de veraneo: El Perellonet, El Perelló y Mareny de Barraquetes. Arenales anchos, paseo marítimo y ambiente familiar sin masificación.",
         ],
         list: [
-          "Malva-rosa: la más conocida, con paseo animado y restaurantes de arroz.",
-          "Cabanyal-Les Arenes: el mismo arenal frente al barrio marinero de casas modernistas.",
-          "Patacona: continuación hacia el norte, ya en Alboraia, algo más tranquila.",
+          "Playa Les Palmeretes (Mareny de Barraquetes): amplia y tranquila, junto a este apartamento.",
+          "El Perelló: pueblo con puerto deportivo y buena oferta de arroces.",
+          "El Perellonet: entre el mar y la Albufera, punto de partida de paseos en barca.",
         ],
       },
       {
-        heading: "Playas naturales del sur",
+        heading: "Cullera",
         body: [
-          "Al sur, dentro del Parc Natural de l'Albufera, El Saler y la Devesa ofrecen dunas, pinar y menos edificación. Se llega en coche o en autobús; son ideales para quien prioriza el entorno natural.",
-        ],
-      },
-      {
-        heading: "Cómo llegar desde el centro",
-        body: [
-          "El frente urbano está conectado con el centro por líneas de autobús (p. ej. la 32 y la 92) y por carril bici; en coche, unos 15 minutos sin tráfico. Para las playas del sur, el bus a El Saler o vehículo propio.",
+          "Al final de este tramo, Cullera combina una larga playa urbana con el faro, el castillo y el monte con vistas al Mediterráneo. Está a unos 9 km del apartamento.",
         ],
       },
     ],
     faq: [
       {
-        question: "¿Cuál es la mejor playa de Valencia para ir con niños?",
+        question: "¿Cuál es la mejor playa del sur de Valencia para ir con niños?",
         answer:
-          "La Malva-rosa y la Patacona tienen arena fina, poca pendiente y todos los servicios, lo que las hace cómodas para familias.",
+          "Les Palmeretes, El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada, y suelen estar menos concurridas que la playa urbana de Valencia.",
+      },
+      {
+        question: "¿Se puede ir a estas playas en transporte público?",
+        answer:
+          "Sí, aunque con menos frecuencia que a la playa urbana. Hay autobuses desde Valencia y las estaciones de tren de Sueca y Cullera dan servicio a la zona; lo más cómodo es el coche.",
       },
     ],
     published: true,
@@ -309,30 +314,30 @@ export const guides: Guide[] = [
     slug: "que-hacer-junto-al-mar-en-valencia",
     propertySlug: "valencia",
     pillar: false,
-    intent: "Informacional — planes cerca de la playa",
-    keyword: "qué hacer junto al mar en Valencia",
-    title: "Qué hacer junto al mar en Valencia",
+    intent: "Informacional — planes cerca de la playa (costa sur)",
+    keyword: "qué hacer junto al mar al sur de Valencia",
+    title: "Qué hacer junto al mar al sur de Valencia",
     description:
-      "Planes sin alejarte del mar en Valencia: paseo marítimo, barrio del Cabanyal, arroces, la Marina y puesta de sol en la Albufera.",
-    h1: "Qué hacer junto al mar en Valencia",
-    lead: "Puedes pasar varios días sin separarte de la costa y no repetir plan. Estas son las mejores opciones a pie o en bici desde el frente marítimo.",
+      "Planes sin alejarte de la costa sur de Valencia: la Albufera en barca, arroces en El Palmar, el castillo de Cullera y los pueblos costeros de Sueca.",
+    h1: "Qué hacer junto al mar al sur de Valencia",
+    lead: "Desde la playa Les Palmeretes puedes pasar varios días sin separarte de la costa y no repetir plan. Estas son las mejores opciones cerca.",
     sections: [
       {
-        heading: "El barrio del Cabanyal",
+        heading: "La Albufera en barca al atardecer",
         body: [
-          "El antiguo barrio de pescadores conserva una trama de calles con casas de azulejo y modernismo popular. Hoy combina mercado, bares y una escena cultural en auge.",
+          "El Parque Natural de la Albufera está a 8 km. El paseo en barca por el lago al caer el sol, saliendo de El Palmar o El Perellonet, es uno de los planes más recordados de la zona, y termina con arroz en un restaurante del pueblo.",
         ],
       },
       {
-        heading: "La Marina de Valencia",
+        heading: "Cullera: faro, castillo y mirador",
         body: [
-          "El puerto que acogió la Copa América es hoy un espacio abierto con actividades náuticas, gastronomía y eventos. Buen sitio para el atardecer.",
+          "A unos 9 km, el monte de Cullera ofrece el faro, el castillo medieval y varios miradores sobre la desembocadura del Júcar y el Mediterráneo. Buen plan de media mañana o de atardecer.",
         ],
       },
       {
-        heading: "La Albufera al atardecer",
+        heading: "Los pueblos costeros y sus puertos",
         body: [
-          "A un corto trayecto, el paseo en barca por la Albufera al caer el sol es uno de los planes más recordados de Valencia, y termina con arroz en El Palmar.",
+          "El Perelló y su puerto deportivo, el mercadillo de verano de Mareny y los paseos marítimos de la zona dan para tardes tranquilas de bici y helado.",
         ],
       },
     ],
@@ -342,30 +347,30 @@ export const guides: Guide[] = [
     slug: "como-moverse-de-la-playa-al-centro-de-valencia",
     propertySlug: "valencia",
     pillar: false,
-    intent: "Práctico — transporte",
-    keyword: "cómo moverse de la playa al centro de Valencia",
-    title: "Cómo moverse de la playa al centro de Valencia",
+    intent: "Práctico — transporte a Valencia capital",
+    keyword: "cómo llegar a Valencia desde la playa del sur",
+    title: "Cómo llegar a Valencia capital desde la playa del sur",
     description:
-      "Opciones para ir de la playa al centro de Valencia: autobús, bici por el antiguo cauce del Turia, coche y a pie. Tiempos y consejos.",
-    h1: "Cómo moverse de la playa al centro de Valencia",
-    lead: "Valencia es una ciudad llana y muy ciclable, así que moverse entre la playa y el centro es sencillo. Estas son las alternativas.",
+      "Opciones para ir de Mareny de Barraquetes / Les Palmeretes a la ciudad de Valencia: coche, tren desde Sueca o Cullera y autobús. Tiempos y consejos.",
+    h1: "Cómo llegar a Valencia capital desde la playa del sur",
+    lead: "El apartamento está en la costa sur de la provincia, a una media hora de la ciudad de Valencia. Estas son las formas de moverte.",
     sections: [
       {
-        heading: "En bici por el Jardín del Turia",
+        heading: "En coche",
         body: [
-          "El antiguo cauce del río, reconvertido en parque de 9 km, conecta la Ciudad de las Artes y las Ciencias con el centro histórico. Con Valenbisi o bici propia, del mar al centro son unos 20–25 minutos.",
+          "Es la opción más directa: por la V-31 y la CV-500 se llega al centro de Valencia en unos 30 minutos sin tráfico. En el centro, el aparcamiento es caro y limitado, así que conviene dejar el coche en un parking disuasorio o cerca de una parada de metro.",
+        ],
+      },
+      {
+        heading: "En tren de Cercanías",
+        body: [
+          "Las estaciones de Sueca (a 8 km) y Cullera (a 11 km) están en la línea C-1 de Cercanías, que llega a la estación del Nord de Valencia en unos 40-50 minutos. Necesitarás coche o taxi para llegar a la estación desde la playa.",
         ],
       },
       {
         heading: "En autobús",
         body: [
-          "Varias líneas de la EMT unen el frente marítimo con el centro en 15–25 minutos según tráfico. Es la opción más directa si no quieres pedalear.",
-        ],
-      },
-      {
-        heading: "En coche",
-        body: [
-          "Rápido fuera de hora punta, pero el aparcamiento en el centro es caro y limitado; mejor dejar el coche cerca del alojamiento y moverse en transporte o bici.",
+          "Hay líneas de autobús que conectan los pueblos costeros de Sueca con Valencia, con menos frecuencia que el tren. Útil como alternativa puntual.",
         ],
       },
     ],
@@ -376,35 +381,35 @@ export const guides: Guide[] = [
     propertySlug: "valencia",
     pillar: false,
     intent: "Informacional — familias",
-    keyword: "Valencia con niños y playa",
-    title: "Valencia con niños y playa: plan para toda la familia",
+    keyword: "playa con niños al sur de Valencia",
+    title: "Playa con niños al sur de Valencia: plan para toda la familia",
     description:
-      "Cómo combinar playa y planes para niños en Valencia: arenales cómodos, Bioparc, Oceanogràfic, el Turia y la Albufera. Ideas para una escapada en familia.",
-    h1: "Valencia con niños y playa",
-    lead: "Valencia es una ciudad muy cómoda para viajar con niños: llana, con playas de arena fina y grandes atractivos familiares a poca distancia del mar. Este es un plan realista.",
+      "Cómo combinar playa tranquila y planes para niños desde la costa sur de Valencia: Les Palmeretes, la Albufera, Cullera y, a media hora, el Oceanogràfic y el Bioparc.",
+    h1: "Playa con niños al sur de Valencia",
+    lead: "La costa sur de Valencia es muy cómoda para viajar con niños: playas amplias de arena fina y pendiente suave, ambiente tranquilo y grandes atractivos familiares a media hora en coche.",
     sections: [
       {
         heading: "Playa con niños",
         body: [
-          "La Malva-rosa y la Patacona tienen arena fina, pendiente suave, paseo, aseos y socorrismo en temporada. Ir a primera hora o a última tarde evita las horas de más sol.",
+          "Les Palmeretes y las playas vecinas de El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada. Al estar menos concurridas que la playa urbana, es más fácil montar la sombrilla y no perder de vista a los peques. Ir a primera hora o a última tarde evita el sol fuerte.",
         ],
       },
       {
-        heading: "Grandes planes cerca del mar",
+        heading: "La Albufera y Cullera",
         body: [
-          "El Oceanogràfic (el acuario más grande de Europa) y el Museo de las Ciencias están en la Ciudad de las Artes, a un paseo en bici por el Turia desde la playa. El Bioparc, al otro lado de la ciudad, es un zoo de inmersión muy valorado con niños.",
+          "El paseo en barca por la Albufera suele gustar a partir de cierta edad. En Cullera, el castillo y el faro son una buena excursión, y hay un pequeño tren turístico en verano.",
         ],
       },
       {
-        heading: "Al aire libre",
+        heading: "A media hora: Oceanogràfic y Bioparc",
         body: [
-          "El Jardín del Turia tiene zonas de juego (el Parque Gulliver es un tobogán gigante), carril bici y mucho espacio. La Albufera, en barca al atardecer, suele gustar a los más mayores.",
+          "El Oceanogràfic (el acuario más grande de Europa) y el Museo de las Ciencias, en la Ciudad de las Artes, están a unos 24 km. El Bioparc, un zoo de inmersión muy valorado con niños, está al otro lado de la ciudad.",
         ],
       },
       {
         heading: "Comer con niños",
         body: [
-          "Los restaurantes de arroz del frente marítimo suelen tener menús y espacio para carritos. Reservar para comer, sobre todo en fin de semana.",
+          "Los restaurantes de arroz de la zona suelen tener menús y espacio para carritos. Conviene reservar para comer, sobre todo en fin de semana y en verano.",
         ],
       },
     ],
@@ -416,28 +421,28 @@ export const guides: Guide[] = [
     pillar: false,
     intent: "Transaccional — escapada fin de semana",
     keyword: "escapada de fin de semana junto al mar en Valencia",
-    title: "Escapada de fin de semana junto al mar en Valencia",
+    title: "Escapada de fin de semana junto al mar, al sur de Valencia",
     description:
-      "Un plan de dos días junto al mar en Valencia: playa, Cabanyal, arroces, Ciudad de las Artes y puesta de sol en la Albufera. Con alojamiento en reserva directa.",
-    h1: "Escapada de fin de semana junto al mar en Valencia",
-    lead: "Con un fin de semana da tiempo a mezclar playa, ciudad y gastronomía sin agobios. Esta es una propuesta equilibrada partiendo de un alojamiento frente al mar.",
+      "Un plan de dos días junto al mar en la costa sur de Valencia: playa Les Palmeretes, Albufera en barca, Cullera y, si apetece, una tarde en la ciudad. Con alojamiento en reserva directa.",
+    h1: "Escapada de fin de semana junto al mar, al sur de Valencia",
+    lead: "Con un fin de semana da tiempo a mezclar playa tranquila, naturaleza y algo de ciudad sin agobios. Esta es una propuesta equilibrada partiendo de un apartamento frente al mar en Les Palmeretes.",
     sections: [
       {
-        heading: "Viernes: llegada y paseo marítimo",
+        heading: "Viernes: llegada y atardecer en la playa",
         body: [
-          "Llegar, dejar las cosas y bajar a caminar por el paseo de la Malva-rosa al atardecer. Cena de arroz o de tapas en el Cabanyal.",
+          "Llegar, dejar las cosas y bajar a la arena a ver el atardecer. Cena de arroz o de tapas en El Perelló o en el propio Mareny.",
         ],
       },
       {
-        heading: "Sábado: playa y ciudad",
+        heading: "Sábado: playa y Albufera",
         body: [
-          "Mañana de playa. Por la tarde, en bici por el Jardín del Turia hasta la Ciudad de las Artes y las Ciencias, o al centro histórico (Mercado Central, Lonja, Catedral).",
+          "Mañana de playa frente al apartamento. Por la tarde, paseo en barca por la Albufera saliendo de El Palmar o El Perellonet, y arroz para cenar.",
         ],
       },
       {
-        heading: "Domingo: Albufera y regreso",
+        heading: "Domingo: Cullera o ciudad, y regreso",
         body: [
-          "Paseo en barca por la Albufera y comida en El Palmar antes de volver. Si el tiempo acompaña, otro rato de playa a media mañana.",
+          "Subir al castillo y al faro de Cullera, o acercarse a la ciudad de Valencia (media hora) para ver el casco histórico y la Ciudad de las Artes antes de volver.",
         ],
       },
     ],
@@ -448,29 +453,29 @@ export const guides: Guide[] = [
     propertySlug: "valencia",
     pillar: false,
     intent: "Informacional local",
-    keyword: "restaurantes cerca de la playa de Valencia",
-    title: "Restaurantes y ocio cerca de la playa de Valencia",
+    keyword: "restaurantes cerca de la playa de Mareny / El Perelló",
+    title: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
     description:
-      "Dónde comer arroz, tapear y salir cerca del frente marítimo de Valencia: Malva-rosa, Cabanyal y La Marina. Consejos prácticos.",
-    h1: "Restaurantes y ocio cerca de la playa de Valencia",
-    lead: "El frente marítimo de Valencia concentra algunos de los mejores arroces de la ciudad y una vida de barrio en auge en el Cabanyal. Esto es lo que conviene saber.",
+      "Dónde comer arroz, tapear y salir cerca de Les Palmeretes, Mareny de Barraquetes y El Perelló, en la costa sur de Valencia. Consejos prácticos.",
+    h1: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
+    lead: "La costa sur de Valencia es tierra de arroz: la paella valenciana y el arroz a banda se toman aquí en su versión más tradicional, muchas veces con el arrozal a la vista. Esto es lo que conviene saber cerca del apartamento.",
     sections: [
       {
-        heading: "Arroces frente al mar",
+        heading: "Arroces cerca del apartamento",
         body: [
-          "El paseo de la Malva-rosa está lleno de restaurantes de arroz con vistas. La paella valenciana se come tradicionalmente a mediodía; para cenar es más habitual el arroz del senyoret o a banda. Reservar en fin de semana y temporada alta.",
+          "En Mareny de Barraquetes y El Perelló hay restaurantes de arroz a pocos minutos: La Manduca Maresa está a unos 500 m del apartamento y el Restaurante Llobarro a 1,7 km. La paella se come tradicionalmente a mediodía; conviene reservar en fin de semana y en verano.",
         ],
       },
       {
-        heading: "El Cabanyal",
+        heading: "El Palmar, la meca del arroz",
         body: [
-          "El barrio marinero se ha llenado de bares de tapas, vermuterías y locales de producto. El Mercado del Cabanyal es buen sitio para desayunar o comprar para cocinar en el apartamento.",
+          "El Palmar, en el corazón de la Albufera, concentra los restaurantes de arroz más conocidos de la zona y combina muy bien con un paseo en barca al atardecer.",
         ],
       },
       {
-        heading: "La Marina y ocio nocturno",
+        heading: "Ocio y ambiente",
         body: [
-          "La Marina de Valencia acoge terrazas, conciertos y eventos, sobre todo en verano. La zona de ocio nocturno más intensa está algo más al norte, en la playa; entre semana el ambiente es tranquilo.",
+          "El Perelló tiene puerto deportivo y algo más de vida nocturna en verano. En general, la costa sur es tranquila: chiringuitos, terrazas y paseo marítimo, sin el bullicio de la playa urbana de Valencia.",
         ],
       },
     ],

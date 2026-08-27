@@ -1,52 +1,68 @@
-# Keyword → URL map (issue #15)
+# Keyword → URL map (issues #15, #39)
 
 Every indexable URL has ONE differentiated intent. Transactional and local
 intents are prioritised. No two URLs target the same query.
 
+**Real locations** (corrected in V2 after extracting the Booking listings):
+
+- **Javalambre** → the apartment is in **Camarena de la Sierra** (Teruel), ~20 min
+  by car from the ski slopes.
+- **Valencia** → the apartment is in **Mareny de Barraquetes (Sueca)**, on
+  **Les Palmeretes beach**, on the coast **south** of Valencia city, next to the
+  Albufera — not the city beach.
+
 ## Javalambre (snow)
 
-| URL | Primary keyword | Intent | Title / H1 focus | Internal links in |
-|---|---|---|---|---|
-| `/javalambre` | alojamiento Javalambre | Transactional (property) | Alojamiento en Javalambre para escapadas de nieve | home, all JV landings & guides |
-| `/javalambre/alojamiento-javalambre` | alojamiento Javalambre / apartamento Javalambre | Transactional | Alojamiento en Javalambre \| reserva directa | property page, guides |
-| `/javalambre/donde-dormir-javalambre` | dónde dormir en Javalambre | Info→transactional | Dónde dormir en Javalambre: opciones y consejos | pillar guide, property |
-| `/javalambre/alojamiento-cerca-estacion-esqui` | alojamiento cerca estación de esquí Javalambre | Local transactional | Alojamiento cerca de la estación de esquí de Javalambre | "esquiar en Javalambre" guide, property |
-| `/guias/javalambre/guia-de-javalambre` | guía de Javalambre | Info (pillar) | Guía de Javalambre: qué ver, esquiar y dónde alojarse | every JV guide + property |
-| `/guias/javalambre/esquiar-en-javalambre` | esquiar en Javalambre | Info-transactional | Esquiar en Javalambre: pistas, forfait y consejos | pillar, `alojamiento-cerca-estacion-esqui` |
-| `/guias/javalambre/fin-de-semana-en-javalambre` | fin de semana Javalambre | Transactional | Fin de semana en Javalambre: plan de 2 días | pillar, property |
-| `/guias/javalambre/javalambre-con-ninos` | Javalambre con niños | Info | Javalambre con niños: esquí en familia | pillar |
-| `/guias/javalambre/que-hacer-en-javalambre-sin-esquiar` | qué hacer en Javalambre sin esquiar | Info | Qué hacer en Javalambre sin esquiar | pillar |
-| `/guias/javalambre/restaurantes-y-servicios-cerca-de-javalambre` | restaurantes cerca de Javalambre | Info local | Restaurantes y servicios cerca de Javalambre | pillar |
+| URL | Primary keyword | Intent |
+|---|---|---|
+| `/javalambre` | alojamiento Camarena de la Sierra / apartamento Javalambre | Transactional (property) |
+| `/javalambre/alojamiento-javalambre` | alojamiento Javalambre / apartamento Javalambre | Transactional |
+| `/javalambre/donde-dormir-javalambre` | dónde dormir en Javalambre | Info→transactional |
+| `/javalambre/alojamiento-cerca-estacion-esqui` | alojamiento cerca estación de esquí Javalambre / Camarena de la Sierra | Local transactional |
+| `/guias/javalambre/guia-de-javalambre` | guía de Javalambre | Info (pillar) |
+| `/guias/javalambre/esquiar-en-javalambre` | esquiar en Javalambre | Info-transactional |
+| `/guias/javalambre/fin-de-semana-en-javalambre` | fin de semana de esquí Javalambre | Transactional |
+| `/guias/javalambre/javalambre-con-ninos` | Javalambre con niños | Info |
+| `/guias/javalambre/que-hacer-en-javalambre-sin-esquiar` | qué hacer en Javalambre sin esquiar | Info |
+| `/guias/javalambre/restaurantes-y-servicios-cerca-de-javalambre` | restaurantes cerca de Javalambre / Camarena | Info local |
 
-## Valencia Frente al Mar (sea)
+## Valencia (sea — southern coast)
 
-| URL | Primary keyword | Intent | Title / H1 focus | Internal links in |
-|---|---|---|---|---|
-| `/valencia` | apartamento frente al mar Valencia | Transactional (property) | Apartamento frente al mar en Valencia | home, all VLC landings & guides |
-| `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | Transactional | Apartamento en la playa de Valencia \| reserva directa | property, guides |
-| `/valencia/alojamiento-frente-al-mar-valencia` | alojamiento frente al mar / primera línea Valencia | Transactional specific | Alojamiento frente al mar en Valencia — primera línea | "playas de Valencia" guide, property |
-| `/valencia/vacaciones-playa-valencia` | apartamento vacaciones Valencia playa | Transactional seasonal | Vacaciones de playa en Valencia \| apartamento junto al mar | "escapada fin de semana" guide, property |
-| `/guias/valencia/guia-playas-de-valencia` | playas de Valencia | Info (pillar) | Guía de las playas de Valencia: cuál elegir | every VLC guide + property |
-| `/guias/valencia/que-hacer-junto-al-mar-en-valencia` | qué hacer junto al mar en Valencia | Info | Qué hacer junto al mar en Valencia | pillar, property |
-| `/guias/valencia/como-moverse-de-la-playa-al-centro-de-valencia` | cómo moverse de la playa al centro de Valencia | Practical | Cómo moverse de la playa al centro de Valencia | pillar |
-| `/guias/valencia/valencia-con-ninos-y-playa` | Valencia con niños y playa | Info | Valencia con niños y playa: plan para toda la familia | pillar |
-| `/guias/valencia/escapada-fin-de-semana-junto-al-mar-valencia` | escapada fin de semana junto al mar Valencia | Transactional | Escapada de fin de semana junto al mar en Valencia | pillar, `vacaciones-playa-valencia` |
-| `/guias/valencia/restaurantes-y-ocio-cerca-de-la-playa-valencia` | restaurantes cerca de la playa de Valencia | Info local | Restaurantes y ocio cerca de la playa de Valencia | pillar |
+| URL | Primary keyword | Intent |
+|---|---|---|
+| `/valencia` | apartamento frente al mar Valencia / playa Les Palmeretes | Transactional (property) |
+| `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | Transactional |
+| `/valencia/alojamiento-frente-al-mar-valencia` | alojamiento frente al mar Valencia / primera línea | Transactional specific |
+| `/valencia/vacaciones-playa-valencia` | apartamento vacaciones Valencia playa | Transactional seasonal |
+| `/guias/valencia/guia-playas-de-valencia` | playas del sur de Valencia | Info (pillar) |
+| `/guias/valencia/que-hacer-junto-al-mar-en-valencia` | qué hacer junto al mar al sur de Valencia | Info |
+| `/guias/valencia/como-moverse-de-la-playa-al-centro-de-valencia` | cómo llegar a Valencia desde la playa del sur | Practical |
+| `/guias/valencia/valencia-con-ninos-y-playa` | playa con niños al sur de Valencia | Info |
+| `/guias/valencia/escapada-fin-de-semana-junto-al-mar-valencia` | escapada fin de semana junto al mar Valencia | Transactional |
+| `/guias/valencia/restaurantes-y-ocio-cerca-de-la-playa-valencia` | restaurantes cerca de la playa Mareny / El Perelló | Info local |
+
+## Entity signals (issue #39)
+
+- **Praetoria Vacacional** — Organization + WebSite JSON-LD (home + all pages).
+- **Each property** — VacationRental JSON-LD with real address, geo, floorSize,
+  aggregateRating (8.7, from Booking), image list. BreadcrumbList on every page.
+- **Each destination** — real distances rendered server-side in the "Qué tienes
+  cerca" table (crawlable without JS), plus the getting-there paragraphs.
 
 ## Brand / conversion
 
-| URL | Intent | Notes |
-|---|---|---|
-| `/` | Brand + choice | "reserva directa apartamento playa y montaña" — Playa/Nieve selector |
-| `/en`, `/en/javalambre`, `/en/valencia` | EN transactional | hreflang paired with the ES equivalents |
-| `/ventajas-reserva-directa` | Conversion support | linked near first CTA on every commercial page |
-| `/guias` | Content hub | links both pillar guides |
+| URL | Intent |
+|---|---|
+| `/` | Brand + choice (desire-first hero, then standalone booking module) |
+| `/en`, `/en/javalambre`, `/en/valencia` | EN transactional, hreflang-paired |
+| `/ventajas-reserva-directa` | Conversion support, linked near first CTA |
+| `/guias` | Content hub → both pillar guides |
 
 ## Rules applied
 
-- Transactional URLs (`/javalambre`, `/valencia`, the 6 landings) receive links
-  from every relevant informational guide (issue #28).
-- Guides link up to their pillar and across to 1–2 siblings, never a keyword farm.
-- The EN tree is a focused funnel (home → property → checkout); EN landings/guides
-  are a later expansion and are not linked from ES pages.
+- One strong landing per intent, not many weak pages (issue #39).
+- Transactional URLs receive links from every relevant guide (issue #28).
+- Guides link up to their pillar and across to 1–2 siblings.
+- EN tree is a focused funnel (home → property → checkout); EN landings/guides
+  are a later expansion.
 - `noindex`: `/admin/**`, `/reservar/**`, `/reserva/**`, `/api/**`.
