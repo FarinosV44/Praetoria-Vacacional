@@ -3,11 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { getCheckoutStrings } from "@/i18n/checkout";
+import { localizedPath, type Locale } from "@/i18n/config";
 
-export function SimulatorClient({ reservationId }: { reservationId: string }) {
+export function SimulatorClient({
+  reservationId,
+  locale = "es",
+}: {
+  reservationId: string;
+  locale?: Locale;
+}) {
   const router = useRouter();
+  const t = getCheckoutStrings(locale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const langQ = locale === "en" ? "&lang=en" : "";
 
   async function run(outcome: "success" | "failure") {
     setBusy(true);
@@ -23,31 +33,33 @@ export function SimulatorClient({ reservationId }: { reservationId: string }) {
       setBusy(false);
       return;
     }
-    if (data.status === "confirmed") router.push(`/reserva/exito?code=${data.code}`);
-    else router.push(`/reserva/error?code=${data.code}`);
+    const base = locale === "en" ? "/reserva" : "/reserva";
+    if (data.status === "confirmed") router.push(`${base}/exito?code=${data.code}${langQ}`);
+    else router.push(`${base}/error?code=${data.code}${langQ}`);
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-xl border border-[var(--color-line)] bg-white p-6">
-      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-        Modo demostración: Stripe no está configurado. Este paso simula la pasarela de pago para
-        poder probar el flujo completo. Configura Stripe para el cobro real (docs/SETUP.md).
-      </p>
-      <h1 className="mt-4 font-display text-xl">Pasarela de pago (simulada)</h1>
+    <div
+      className="mx-auto max-w-md rounded-xl border border-[var(--color-line)] bg-white p-6"
+      lang={locale === "en" ? "en" : undefined}
+    >
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{t.simDemoNote}</p>
+      <h1 className="mt-4 font-display text-xl">{t.simHeading}</h1>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       <div className="mt-5 space-y-2">
         <Button className="w-full" size="lg" disabled={busy} onClick={() => run("success")}>
-          Simular pago correcto
+          {t.simOk}
         </Button>
-        <Button
-          className="w-full"
-          variant="secondary"
-          disabled={busy}
-          onClick={() => run("failure")}
-        >
-          Simular pago fallido
+        <Button className="w-full" variant="secondary" disabled={busy} onClick={() => run("failure")}>
+          {t.simFail}
         </Button>
       </div>
+      <a
+        href={localizedPath(locale, "/")}
+        className="mt-4 block text-center text-xs text-[var(--color-ink-soft)] underline"
+      >
+        {t.backHome}
+      </a>
     </div>
   );
 }

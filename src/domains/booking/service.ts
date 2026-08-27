@@ -1,7 +1,7 @@
 import "server-only";
 import { addDays, nightsBetween, todayIso, type IsoDate } from "@/lib/dates";
 import { getRepository } from "@/lib/repository";
-import { getRateConfig } from "@/content/rates";
+import { resolveRateConfig } from "@/domains/pricing/resolve";
 import { buildQuote } from "@/domains/pricing/engine";
 import type { Quote } from "@/domains/pricing/types";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
@@ -30,7 +30,7 @@ export async function checkProperty(
   guests: number,
 ): Promise<AvailabilityResult> {
   const property = getPropertyBySlug(slug);
-  const rate = getRateConfig(slug);
+  const rate = await resolveRateConfig(slug);
   if (!property || !rate) {
     return {
       propertySlug: slug,
@@ -77,7 +77,7 @@ export async function quoteForCheckout(
   guests: number,
 ): Promise<{ ok: true; quote: Quote; propertyId: string } | { ok: false; error: string }> {
   const property = getPropertyBySlug(slug);
-  const rate = getRateConfig(slug);
+  const rate = await resolveRateConfig(slug);
   if (!property || !rate) return { ok: false, error: "Alojamiento no encontrado" };
 
   const quote = buildQuote(rate, { propertySlug: slug, checkIn, checkOut, guests });

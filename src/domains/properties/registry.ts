@@ -40,6 +40,27 @@ export function propertySlugs(): string[] {
   return ALL.map((p) => p.slug);
 }
 
+/**
+ * A property with English priority fields applied (issue #29). Deep sections and
+ * FAQ fall back to Spanish only when no reviewed English copy exists; callers
+ * that render those should check `p.en?.sections` before assuming translation.
+ */
+export function localizedProperty(p: PropertyContent, locale: "es" | "en"): PropertyContent {
+  if (locale === "es" || !p.en) return p;
+  return {
+    ...p,
+    tagline: p.en.tagline,
+    shortIntro: p.en.shortIntro,
+    seo: p.en.seo,
+    sections: p.en.sections ?? p.sections,
+    faq: p.en.faq ?? p.faq,
+    cancellationPolicy: {
+      ...p.cancellationPolicy,
+      summary: p.en.cancellationSummary ?? p.cancellationPolicy.summary,
+    },
+  };
+}
+
 /** Theme tokens per experience — consumed by Tailwind data-attributes and JSON-LD. */
 export const experienceMeta: Record<
   Experience,

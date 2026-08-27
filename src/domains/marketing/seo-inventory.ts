@@ -1,0 +1,120 @@
+import { getAllProperties } from "@/domains/properties/registry";
+import { publishedLandings, landings as allLandings } from "@/content/landings";
+import { guides as allGuides, publishedGuides } from "@/content/guides";
+import { legalDocs } from "@/content/legal";
+import { getIndexableRoutes } from "./navigation";
+
+/**
+ * A build-time snapshot of the indexable surface (issues #32, #33). Powers the
+ * admin SEO view so titles / metas / intents can be reviewed and iterated
+ * without touching booking logic.
+ */
+export interface SeoRow {
+  path: string;
+  section: string;
+  title: string;
+  description: string;
+  intent: string;
+  h1: string;
+  hasStructuredData: boolean;
+  hasHreflang: boolean;
+}
+
+export function buildSeoInventory(): SeoRow[] {
+  const rows: SeoRow[] = [];
+
+  for (const p of getAllProperties()) {
+    rows.push({
+      path: `/${p.slug}`,
+      section: "propiedad",
+      title: p.seo.metaTitle,
+      description: p.seo.metaDescription,
+      intent: "Transaccional — ficha de propiedad",
+      h1: p.seo.h1,
+      hasStructuredData: true,
+      hasHreflang: true,
+    });
+    if (p.en) {
+      rows.push({
+        path: `/en/${p.slug}`,
+        section: "propiedad (EN)",
+        title: p.en.seo.metaTitle,
+        description: p.en.seo.metaDescription,
+        intent: "Transactional — property page",
+        h1: p.en.seo.h1,
+        hasStructuredData: true,
+        hasHreflang: true,
+      });
+    }
+  }
+
+  for (const l of allLandings) {
+    rows.push({
+      path: `/${l.propertySlug}/${l.slug}`,
+      section: l.published ? "landing" : "landing (borrador)",
+      title: l.title,
+      description: l.description,
+      intent: l.intent,
+      h1: l.h1,
+      hasStructuredData: false,
+      hasHreflang: false,
+    });
+  }
+
+  for (const g of allGuides) {
+    rows.push({
+      path: `/guias/${g.propertySlug}/${g.slug}`,
+      section: g.published ? (g.pillar ? "guía pilar" : "guía") : "guía (borrador)",
+      title: g.title,
+      description: g.description,
+      intent: `${g.intent} · kw: ${g.keyword}`,
+      h1: g.h1,
+      hasStructuredData: Boolean(g.faq && g.faq.length > 0),
+      hasHreflang: false,
+    });
+  }
+
+  for (const d of Object.values(legalDocs)) {
+    rows.push({
+      path: `/legal/${d.slug}`,
+      section: "legal",
+      title: d.title,
+      description: d.intro,
+      intent: "Informacional legal",
+      h1: d.title,
+      hasStructuredData: false,
+      hasHreflang: false,
+    });
+  }
+
+  rows.push({
+    path: "/",
+    section: "home",
+    title: "Praetoria Vacacional · Alojamientos de playa y montaña con reserva directa",
+    description:
+      "Reserva directa en dos alojamientos: Javalambre para la nieve y Valencia para la playa.",
+    intent: "Marca + selección Playa/Nieve",
+    h1: "La nieve de Javalambre y el mar de Valencia, en reserva directa.",
+    hasStructuredData: true,
+    hasHreflang: true,
+  });
+
+  return rows.sort((a, b) => a.section.localeCompare(b.section) || a.path.localeCompare(b.path));
+}
+
+export function seoStats() {
+  const rows = buildSeoInventory();
+  const routes = getIndexableRoutes();
+  return {
+    indexableRoutes: routes.length,
+    publishedLandings: publishedLandings().length,
+    publishedGuides: publishedGuides().length,
+    draftContent: rows.filter((r) => r.section.includes("borrador")).length,
+    missingMeta: rows.filter((r) => !r.title || !r.description).length,
+    duplicateTitles: (() => {
+      const seen = new Map<string, number>();
+      for (const r of rows) seen.set(r.title, (seen.get(r.title) ?? 0) + 1);
+      return [...seen.values()].filter((n) => n > 1).length;
+    })(),
+  };
+}

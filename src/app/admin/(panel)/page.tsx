@@ -4,6 +4,7 @@ import { getAllProperties } from "@/domains/properties/registry";
 import { addDays, todayIso } from "@/lib/dates";
 import { formatMoney, formatRange, guestsLabel } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { getConfigFeatures } from "@/domains/config-status/registry";
 
 export default async function AdminDashboard() {
   const repo = getRepository();
@@ -21,8 +22,28 @@ export default async function AdminDashboard() {
   const revenue = confirmed.reduce((s, r) => s + r.totalCents, 0);
   const nightsSold = confirmed.reduce((s, r) => s + r.nights, 0);
 
+  const pending = getConfigFeatures().filter(
+    (f) => f.state === "not_configured" || f.state === "error",
+  );
+
   return (
     <div className="space-y-8">
+      {pending.length > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-medium">
+            {pending.length} integración(es) pendiente(s) de configuración
+          </p>
+          <p className="mt-1">
+            {pending.map((f) => f.label).join(" · ")}. Todo el código está implementado; solo faltan
+            las claves.{" "}
+            <Link href="/admin/configuracion" className="underline">
+              Ver detalle y cómo activarlas
+            </Link>
+            .
+          </p>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Reservas confirmadas (120 días)" value={String(confirmed.length)} />
         <Stat label="Ingresos confirmados" value={formatMoney(revenue)} />

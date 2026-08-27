@@ -1,5 +1,6 @@
 import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings } from "@/content/landings";
+import { publishedGuides } from "@/content/guides";
 
 /**
  * The single source of truth for indexable URLs (issues #14, #28, #32).
@@ -40,6 +41,17 @@ export function getIndexableRoutes(): SiteRoute[] {
     });
   }
 
+  // English priority pages (issue #29): home + property pages.
+  routes.push({ path: "/en", changefreq: "weekly", priority: 0.7, section: "home" });
+  for (const property of getAllProperties()) {
+    routes.push({
+      path: `/en/${property.slug}`,
+      changefreq: "weekly",
+      priority: 0.7,
+      section: "propiedad",
+    });
+  }
+
   for (const landing of publishedLandings()) {
     routes.push({
       path: `/${landing.propertySlug}/${landing.slug}`,
@@ -49,8 +61,25 @@ export function getIndexableRoutes(): SiteRoute[] {
     });
   }
 
+  for (const guide of publishedGuides()) {
+    routes.push({
+      path: `/guias/${guide.propertySlug}/${guide.slug}`,
+      changefreq: "monthly",
+      priority: guide.pillar ? 0.6 : 0.45,
+      section: "guia",
+    });
+  }
+
   routes.push(...legalRoutes);
   return routes;
+}
+
+/** Guides for a property, for internal-link blocks on the property page. */
+export function guideLinksFor(propertySlug: string): { path: string; label: string }[] {
+  return publishedGuides(propertySlug).map((g) => ({
+    path: `/guias/${g.propertySlug}/${g.slug}`,
+    label: g.h1,
+  }));
 }
 
 /** Routes that must never be indexed (issues #14, #32). */

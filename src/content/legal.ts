@@ -14,7 +14,9 @@ export const operator = {
   address: "[[PENDIENTE: domicilio fiscal]]",
   email: "[[PENDIENTE: email de contacto legal]]",
   phone: "[[PENDIENTE: teléfono de contacto]]",
-  touristRegistry: "[[PENDIENTE: números de registro turístico por alojamiento]]",
+  touristRegistry:
+    "Javalambre Mountain SuperSki (Camarena de la Sierra, Teruel): VUTE-23-0450 / VUTE-23-045. " +
+    "Valencia Frente al Mar (Mareny de Barraquetes, Sueca): VT-56539-V2 / VT-56539-V.",
 };
 
 export interface LegalDoc {

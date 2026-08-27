@@ -78,12 +78,18 @@ export type PaymentStartResult =
 export async function beginPayment(
   reservationId: string,
   origin: string,
+  locale: "es" | "en" = "es",
 ): Promise<PaymentStartResult> {
   const repo = getRepository();
+  const langQ = locale === "en" ? "&lang=en" : "";
   const reservation = await repo.getReservation(reservationId);
   if (!reservation) return { ok: false, error: "Reserva no encontrada" };
   if (reservation.status === "confirmed") {
-    return { ok: true, mode: "demo", url: `${origin}/reserva/exito?code=${reservation.code}` };
+    return {
+      ok: true,
+      mode: "demo",
+      url: `${origin}/reserva/exito?code=${reservation.code}${langQ}`,
+    };
   }
   if (reservation.status !== "pending") {
     return { ok: false, error: "La reserva ha expirado. Vuelve a empezar." };
@@ -97,8 +103,8 @@ export async function beginPayment(
   const property = getPropertyById(reservation.propertyId);
   if (!property) return { ok: false, error: "Alojamiento no encontrado" };
 
-  const successUrl = `${origin}/reserva/exito?code=${reservation.code}`;
-  const cancelUrl = `${origin}/reserva/error?code=${reservation.code}`;
+  const successUrl = `${origin}/reserva/exito?code=${reservation.code}${langQ}`;
+  const cancelUrl = `${origin}/reserva/error?code=${reservation.code}${langQ}`;
 
   if (!stripeEnabled) {
     await repo.upsertPayment({
@@ -109,7 +115,11 @@ export async function beginPayment(
       amountCents: reservation.totalCents,
       currency: "EUR",
     });
-    return { ok: true, mode: "demo", url: `${origin}/reserva/simular?id=${reservation.id}` };
+    return {
+      ok: true,
+      mode: "demo",
+      url: `${origin}/reserva/simular?id=${reservation.id}${langQ}`,
+    };
   }
 
   try {

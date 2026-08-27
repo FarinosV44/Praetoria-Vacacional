@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Analytics } from "@/components/Analytics";
+import { ExperimentTracker } from "@/components/ExperimentTracker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
   description:
     "Reserva directa en dos alojamientos: Javalambre Mountain SuperSki para la nieve y Valencia Frente al Mar para la playa. Disponibilidad real, precio total y confirmación inmediata.",
   applicationName: publicEnv.siteName,
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
   alternates: { canonical: absoluteUrl("/") },
   openGraph: {
     type: "website",
@@ -34,6 +36,9 @@ export const metadata: Metadata = {
     images: ["/images/og/default.svg"],
   },
   robots: { index: true, follow: true },
+  verification: publicEnv.gscVerification
+    ? { google: publicEnv.gscVerification }
+    : undefined,
 };
 
 export const viewport: Viewport = {
@@ -53,9 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Saltar al contenido
         </a>
         <SiteHeader />
-        <main id="contenido">{children}</main>
+        <main id="contenido" className="pb-16 lg:pb-0">
+          {children}
+        </main>
         <SiteFooter />
         <Analytics />
+        <ExperimentTracker />
       </body>
     </html>
   );

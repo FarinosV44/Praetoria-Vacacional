@@ -13,7 +13,10 @@ const nav = [
   { href: "/admin", label: "Panel" },
   { href: "/admin/reservas", label: "Reservas" },
   { href: "/admin/calendario", label: "Calendario y bloqueos" },
+  { href: "/admin/precios", label: "Precios y reglas" },
   { href: "/admin/sincronizacion", label: "Sincronización" },
+  { href: "/admin/seo", label: "SEO" },
+  { href: "/admin/configuracion", label: "Configuración" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

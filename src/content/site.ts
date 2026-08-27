@@ -31,6 +31,55 @@ export const trustSignals: { label: string }[] = [
   { label: "Cancelación según la política de cada alojamiento" },
 ];
 
+export const directBookingAdvantagesEn: { title: string; body: string }[] = [
+  {
+    title: "No middleman fees",
+    body: "You book directly with the owner — no platform surcharges.",
+  },
+  {
+    title: "The full price up front",
+    body: "You see the final amount, cleaning included, before you pay. No surprises at the end.",
+  },
+  {
+    title: "Instant confirmation, dates blocked",
+    body: "After the secure payment you get your booking reference by email and the dates are reserved at once.",
+  },
+  {
+    title: "Deal directly with the owner",
+    body: "Any question before, during or after your stay goes to the person who manages the property.",
+  },
+];
+
+export const trustSignalsEn = [
+  "Secure card payment via Stripe",
+  "Properties verified by the owner",
+  "Real reviews, with their source",
+  "Cancellation per each property's policy",
+];
+
+export const homeFaqEn: FaqItem[] = [
+  {
+    question: "How do I know if my dates are available?",
+    answer:
+      "Enter check-in, check-out and the number of guests in the search box. We tell you immediately whether Javalambre, Valencia, both or neither is free, with the full price for each.",
+  },
+  {
+    question: "Do I need an account to book?",
+    answer:
+      "No. The booking is completed in three steps with no sign-up: dates and guests, your contact details and the secure payment.",
+  },
+  {
+    question: "Is the payment secure?",
+    answer:
+      "Yes. Payment is processed by Stripe and your card details never pass through our servers. The booking is confirmed only once payment has completed successfully.",
+  },
+  {
+    question: "Can I book both places for the same dates?",
+    answer:
+      "Yes. Javalambre and Valencia have independent calendars and prices, so the same dates can be available at both at once.",
+  },
+];
+
 export const homeFaq: FaqItem[] = [
   {
     question: "¿Cómo sé si hay disponibilidad para mis fechas?",
