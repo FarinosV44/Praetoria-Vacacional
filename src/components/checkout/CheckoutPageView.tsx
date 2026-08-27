@@ -12,12 +12,14 @@ export async function CheckoutPageView({
   checkIn,
   checkOut,
   guests,
+  coupon,
   locale,
 }: {
   slug: string;
   checkIn: string;
   checkOut: string;
   guests: number;
+  coupon?: string;
   locale: Locale;
 }) {
   const raw = getPropertyBySlug(slug);
@@ -25,7 +27,7 @@ export async function CheckoutPageView({
   const prop = localizedProperty(raw, locale);
   const t = getCheckoutStrings(locale);
 
-  const result = await quoteForCheckout(prop.slug, checkIn, checkOut, guests);
+  const result = await quoteForCheckout(prop.slug, checkIn, checkOut, guests, coupon);
 
   return (
     <div data-experience={prop.experience} className="container-page py-8">
@@ -66,6 +68,7 @@ export async function CheckoutPageView({
                   amountCents: result.quote.lengthOfStayDiscount.amountCents,
                 }
               : null,
+            coupon: result.quote.coupon,
           }}
           cancellationSummary={prop.cancellationPolicy.summary}
         />

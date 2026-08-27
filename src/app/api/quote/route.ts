@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   try {
     const { property, checkIn, checkOut, guests } = parsed.data;
-    const result = await checkProperty(property, checkIn, checkOut, guests);
+    const result = await checkProperty(property, checkIn, checkOut, guests, parsed.data.coupon);
     return apiOk(result);
   } catch (err) {
     console.error("quote failed", err);

@@ -133,6 +133,78 @@ export async function cancelReservationAction(formData: FormData): Promise<void>
   revalidatePath("/admin");
 }
 
+const couponFormSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    code: z.string().trim().min(2).max(40).regex(/^[A-Za-z0-9_-]+$/),
+    kind: z.enum(["percent", "fixed"]),
+    value: z.coerce.number().int().positive(),
+    propertySlug: z.string().optional(),
+    startsOn: z.string().optional(),
+    endsOn: z.string().optional(),
+    minNights: z.coerce.number().int().min(0).default(0),
+    minTotalEuros: z.coerce.number().min(0).default(0),
+    maxUses: z.string().optional(),
+    maxUsesPerEmail: z.string().optional(),
+    active: z.coerce.boolean().default(true),
+    description: z.string().trim().max(200).optional(),
+  })
+  .refine((v) => v.kind !== "percent" || (v.value >= 1 && v.value <= 100), {
+    message: "El porcentaje debe estar entre 1 y 100",
+    path: ["value"],
+  });
+
+export async function saveCouponAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
+  await assertAdmin();
+  const parsed = couponFormSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
+  }
+  const d = parsed.data;
+  const input = {
+    code: d.code,
+    kind: d.kind,
+    value: d.kind === "fixed" ? Math.round(d.value * 100) : d.value,
+    propertySlug: d.propertySlug && d.propertySlug !== "all" ? d.propertySlug : null,
+    startsOn: d.startsOn || null,
+    endsOn: d.endsOn || null,
+    minNights: d.minNights,
+    minTotalCents: Math.round(d.minTotalEuros * 100),
+    maxUses: d.maxUses ? Number(d.maxUses) : null,
+    maxUsesPerEmail: d.maxUsesPerEmail ? Number(d.maxUsesPerEmail) : null,
+    autoApply: false,
+    active: d.active,
+    description: d.description || null,
+  };
+
+  try {
+    if (d.id) await getRepository().updateCoupon(d.id, input);
+    else await getRepository().createCoupon(input);
+  } catch (err) {
+    if (err instanceof Error && err.message === "COUPON_CODE_TAKEN") {
+      return { ok: false, error: "Ya existe un código con ese nombre" };
+    }
+    return { ok: false, error: "No se pudo guardar la promoción" };
+  }
+  revalidatePath("/admin/promociones");
+  return { ok: true };
+}
+
+export async function toggleCouponAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  const active = String(formData.get("active") ?? "") === "true";
+  if (id) await getRepository().updateCoupon(id, { active: !active });
+  revalidatePath("/admin/promociones");
+}
+
+export async function deleteCouponAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (id) await getRepository().deleteCoupon(id);
+  revalidatePath("/admin/promociones");
+}
+
 const feedSchema = z.object({
   propertySlug: z.string(),
   channel: z.string().min(1).default("booking"),

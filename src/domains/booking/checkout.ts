@@ -26,7 +26,13 @@ export async function startCheckout(input: StartCheckoutInput): Promise<StartRes
     return { ok: true, reservation: existing, totalCents: existing.totalCents };
   }
 
-  const quote = await quoteForCheckout(input.property, input.checkIn, input.checkOut, input.guests);
+  const quote = await quoteForCheckout(
+    input.property,
+    input.checkIn,
+    input.checkOut,
+    input.guests,
+    input.coupon,
+  );
   if (!quote.ok) {
     return {
       ok: false,
@@ -35,6 +41,9 @@ export async function startCheckout(input: StartCheckoutInput): Promise<StartRes
     };
   }
 
+  // Only persist a coupon that the server actually applied.
+  const applied = quote.quote.coupon?.applied ? quote.quote.coupon : null;
+
   try {
     const reservation = await repo.createHold({
       propertyId: quote.propertyId,
@@ -42,6 +51,9 @@ export async function startCheckout(input: StartCheckoutInput): Promise<StartRes
       checkOut: input.checkOut,
       guests: input.guests,
       totalCents: quote.quote.totalCents,
+      originalTotalCents: quote.quote.subtotalBeforeCouponCents,
+      discountCents: applied?.discountCents ?? 0,
+      couponCode: applied?.code ?? null,
       currency: "EUR",
       priceBreakdown: quote.quote,
       holdMinutes: env.RESERVATION_HOLD_MINUTES,
@@ -175,10 +187,27 @@ export async function finalizeReservation(
     return { ok: false };
   }
 
-  const reservation =
-    current.status === "confirmed"
-      ? current
-      : await repo.confirmReservation(reservationId, paymentIntentId);
+  const alreadyConfirmed = current.status === "confirmed";
+  const reservation = alreadyConfirmed
+    ? current
+    : await repo.confirmReservation(reservationId, paymentIntentId);
+
+  // Redeem the coupon exactly once, on first confirmation (issue #45).
+  if (!alreadyConfirmed && reservation.couponCode) {
+    try {
+      const coupon = await repo.getCouponByCode(reservation.couponCode);
+      if (coupon) {
+        await repo.redeemCoupon(
+          coupon.id,
+          reservation.id,
+          reservation.guestEmail,
+          reservation.discountCents,
+        );
+      }
+    } catch (err) {
+      console.error("coupon redemption failed (reservation still confirmed)", err);
+    }
+  }
 
   await repo.upsertPayment({
     reservationId,

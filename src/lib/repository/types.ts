@@ -8,6 +8,7 @@ import type {
   Reservation,
   ReservationStatus,
 } from "@/domains/booking/types";
+import type { Coupon } from "@/domains/pricing/coupons";
 
 export interface CreateHoldInput {
   propertyId: string;
@@ -15,10 +16,29 @@ export interface CreateHoldInput {
   checkOut: IsoDate;
   guests: number;
   totalCents: number;
+  originalTotalCents?: number | null;
+  discountCents?: number;
+  couponCode?: string | null;
   currency: "EUR";
   priceBreakdown: unknown;
   holdMinutes: number;
   idempotencyKey: string;
+}
+
+export interface CouponInput {
+  code: string;
+  kind: "percent" | "fixed";
+  value: number;
+  propertySlug: string | null;
+  startsOn: IsoDate | null;
+  endsOn: IsoDate | null;
+  minNights: number;
+  minTotalCents: number;
+  maxUses: number | null;
+  maxUsesPerEmail: number | null;
+  autoApply: boolean;
+  active: boolean;
+  description: string | null;
 }
 
 export interface AttachGuestInput {
@@ -132,6 +152,23 @@ export interface Repository {
   // --- Email log (issue #42) ---------------------------------------
   logEmail(entry: EmailLogEntry): Promise<void>;
   listEmailLog(limit?: number): Promise<EmailLogRow[]>;
+
+  // --- Coupons (issue #45) ----------------------------------------
+  getCouponByCode(code: string): Promise<Coupon | null>;
+  listCoupons(): Promise<Coupon[]>;
+  createCoupon(input: CouponInput): Promise<Coupon>;
+  updateCoupon(id: string, patch: Partial<CouponInput>): Promise<Coupon>;
+  deleteCoupon(id: string): Promise<void>;
+  countCouponRedemptionsByEmail(couponId: string, email: string): Promise<number>;
+  redeemCoupon(
+    couponId: string,
+    reservationId: string,
+    email: string | null,
+    discountCents: number,
+  ): Promise<void>;
+  couponRedemptions(couponId: string): Promise<
+    { reservationCode: string; discountCents: number; email: string | null; createdAt: string }[]
+  >;
 
   // --- Channel import feed URLs, admin-editable (issue #42) --------
   getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;

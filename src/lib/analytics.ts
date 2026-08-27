@@ -9,7 +9,12 @@ type EventName =
   | "begin_checkout"
   | "payment_started"
   | "reservation_confirmed"
-  | "reservation_failed";
+  | "reservation_failed"
+  | "coupon_applied"
+  | "coupon_rejected"
+  | "coupon_field_open"
+  | "checkout_step"
+  | "contact_click";
 
 type Params = Record<string, string | number | boolean | undefined>;
 

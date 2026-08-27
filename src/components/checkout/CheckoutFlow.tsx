@@ -7,6 +7,8 @@ import { formatMoney, formatRange, guestsLabel, nightsLabel } from "@/lib/format
 import { track } from "@/lib/analytics";
 import { getCheckoutStrings } from "@/i18n/checkout";
 import { localizedPath, type Locale } from "@/i18n/config";
+import { CouponField, type CouponState } from "@/components/booking/CouponField";
+import { useRouter, usePathname } from "next/navigation";
 
 interface QuoteData {
   nights: number;
@@ -16,6 +18,7 @@ interface QuoteData {
   taxCents: number;
   totalCents: number;
   lengthOfStayDiscount: { label: string; amountCents: number } | null;
+  coupon: CouponState | null;
 }
 
 interface Props {
@@ -53,6 +56,15 @@ export function CheckoutFlow(props: Props) {
   const locale = props.locale ?? "es";
   const t = getCheckoutStrings(locale);
   const path = (n: string) => localizedPath(locale, n);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  /** Re-runs the server quote with (or without) a coupon by updating the URL. */
+  function setCouponInUrl(codeValue: string) {
+    const params = new URLSearchParams({ checkIn, checkOut, guests: String(guests) });
+    if (codeValue) params.set("coupon", codeValue.toUpperCase());
+    router.replace(`${pathname}?${params.toString()}`);
+  }
 
   const [step, setStep] = useState<Step>(1);
   const [reservationId, setReservationId] = useState<string | null>(null);
@@ -78,7 +90,14 @@ export function CheckoutFlow(props: Props) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ property: propertySlug, checkIn, checkOut, guests, idempotencyKey }),
+        body: JSON.stringify({
+          property: propertySlug,
+          checkIn,
+          checkOut,
+          guests,
+          coupon: quote.coupon?.applied ? quote.coupon.code : undefined,
+          idempotencyKey,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -219,6 +238,13 @@ export function CheckoutFlow(props: Props) {
                 {t.backToProperty}
               </Link>
             </p>
+            <CouponField
+              value={quote.coupon?.code ?? ""}
+              status={quote.coupon}
+              onChange={setCouponInUrl}
+              locale={locale}
+              propertySlug={propertySlug}
+            />
             <Button className="mt-5 w-full" size="lg" disabled={busy} onClick={goToDetails}>
               {busy ? t.oneMoment : t.continue}
             </Button>
@@ -329,6 +355,12 @@ export function CheckoutFlow(props: Props) {
             )}
             <Line label={t.cleaning} value={formatMoney(q.cleaningFeeCents)} />
             {q.taxCents > 0 && <Line label={t.taxes} value={formatMoney(q.taxCents)} />}
+            {q.coupon?.applied && (
+              <Line
+                label={`${locale === "en" ? "Discount" : "Descuento"} · ${q.coupon.code}`}
+                value={`− ${formatMoney(q.coupon.discountCents)}`}
+              />
+            )}
           </dl>
           <div className="mt-3 flex justify-between border-t border-[var(--color-line)] pt-3 font-semibold">
             <span>{t.total}</span>
