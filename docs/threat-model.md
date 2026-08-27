@@ -26,7 +26,7 @@ Project class: **web app** (public booking + payments + admin). Profile:
 | Secrets never in client bundle | present | only `NEXT_PUBLIC_*` exposed via `publicEnv` |
 | iCal feeds token-guarded | present | `?token=` / Bearer on import & cron |
 | noindex on admin/checkout/api | present | `middleware.ts` X-Robots-Tag + route metadata |
-| CSP | TO BUILD | add `Content-Security-Policy` once inline-script inventory is fixed |
+| CSP | present (partial) | `next.config.ts` — locked directives; `script-src` keeps `'unsafe-inline'` (inline JSON-LD + Next hydration) so static generation is preserved. Nonce/hash upgrade is a follow-up if static rendering is dropped |
 | CSRF on admin server actions | partial | same-site cookie + Next action origin check; add explicit token if admin grows |
 | Timing-safe admin password compare | present | `timingSafeEqual` |
 

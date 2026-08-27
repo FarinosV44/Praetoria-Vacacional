@@ -3,8 +3,8 @@ import { publicEnv } from "@/lib/env";
 
 /**
  * GA4 loader (issue #19). Only renders when NEXT_PUBLIC_GA4_ID is configured.
- * Consent handling (issue #20) is stubbed to "denied" defaults until a CMP is
- * wired; events are still queued and no PII is ever sent (see lib/analytics).
+ * Consent defaults to denied (issue #20) until a CMP grants it; no PII is sent
+ * (see lib/analytics).
  */
 export function Analytics() {
   const id = publicEnv.ga4Id;
