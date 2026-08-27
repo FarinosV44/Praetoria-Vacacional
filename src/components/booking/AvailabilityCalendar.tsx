@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { SkeletonCalendar } from "@/components/ui/Skeleton";
 
 type DayState = "free" | "busy" | "past" | "checkout-only";
 interface CalendarDay {
@@ -172,6 +173,10 @@ export function AvailabilityCalendar({
         </div>
       </div>
     );
+  }
+
+  if (loading && days.size === 0) {
+    return <SkeletonCalendar />;
   }
 
   return (

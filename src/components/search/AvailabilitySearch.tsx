@@ -152,6 +152,23 @@ export function AvailabilitySearch({
         </p>
       )}
 
+      {status === "loading" && (
+        <ul className="mt-5 grid gap-3" aria-hidden>
+          {[0, 1].map((i) => (
+            <li
+              key={i}
+              className="flex items-center justify-between rounded-xl border border-[var(--color-line)] p-4"
+            >
+              <div className="space-y-2">
+                <div className="h-5 w-40 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
+                <div className="h-4 w-56 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
+              </div>
+              <div className="h-11 w-24 animate-pulse rounded-full bg-[var(--color-line)]/70 motion-reduce:animate-none" />
+            </li>
+          ))}
+        </ul>
+      )}
+
       {status === "done" && (
         <ul className="mt-5 grid gap-3">
           {results.map((r) => (
