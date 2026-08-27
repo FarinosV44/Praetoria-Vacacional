@@ -3,6 +3,7 @@ import { publishedLandings, landings as allLandings } from "@/content/landings";
 import { guides as allGuides, publishedGuides, hubForPropertySlug } from "@/content/guides";
 import { guideHubs } from "@/content/guides/hubs";
 import { legalDocs } from "@/content/legal";
+import { seasonalPages } from "@/content/seasonal";
 import { getIndexableRoutes } from "./navigation";
 
 /**
@@ -85,6 +86,19 @@ export function buildSeoInventory(): SeoRow[] {
       intent: `${g.intent} · kw: ${g.keyword}`,
       h1: g.h1,
       hasStructuredData: Boolean(g.faq && g.faq.length > 0),
+      hasHreflang: false,
+    });
+  }
+
+  for (const s of seasonalPages) {
+    rows.push({
+      path: `/ofertas/${s.slug}`,
+      section: s.status === "published" ? "estacional" : "estacional (borrador)",
+      title: s.title,
+      description: s.description,
+      intent: `SEO estacional · kw: ${s.keyword}`,
+      h1: s.h1,
+      hasStructuredData: Boolean(s.faq && s.faq.length > 0),
       hasHreflang: false,
     });
   }

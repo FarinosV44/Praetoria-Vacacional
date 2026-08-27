@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getGuideHub, guideHubs } from "@/content/guides/hubs";
 import { satelliteGuides } from "@/content/guides";
 import { publishedLandings } from "@/content/landings";
+import { publishedSeasonalPages } from "@/content/seasonal";
 import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -42,6 +43,7 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
 
   const satellites = satelliteGuides(h.slug);
   const landings = publishedLandings().filter((l) => l.propertySlug === h.propertySlug);
+  const seasonal = publishedSeasonalPages().filter((s) => s.propertySlug === h.propertySlug);
   const toc = h.sections.map((s) => ({ id: slugifyHeading(s.heading), label: s.heading }));
 
   return (
@@ -121,7 +123,7 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
         </article>
       </div>
 
-      {(satellites.length > 0 || landings.length > 0) && (
+      {(satellites.length > 0 || landings.length > 0 || seasonal.length > 0) && (
         <section className="border-t border-[var(--color-line)] bg-white py-14">
           <div className="container-page">
             <h2 className="font-display text-2xl">Guías de {h.propertySlug === "javalambre" ? "Javalambre" : "la costa sur de Valencia"}</h2>
@@ -148,6 +150,19 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
                     <span className="font-medium">{l.h1}</span>
                     <span className="mt-1 block text-xs text-[var(--color-ink-soft)]">
                       Reserva directa
+                    </span>
+                  </Link>
+                </li>
+              ))}
+              {seasonal.map((s) => (
+                <li key={s.slug}>
+                  <Link
+                    href={`/ofertas/${s.slug}`}
+                    className="block h-full rounded-xl border border-dashed border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                  >
+                    <span className="font-medium">{s.h1}</span>
+                    <span className="mt-1 block text-xs text-[var(--color-ink-soft)]">
+                      {s.period}
                     </span>
                   </Link>
                 </li>

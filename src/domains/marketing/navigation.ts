@@ -2,6 +2,7 @@ import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings } from "@/content/landings";
 import { publishedGuides, hubForPropertySlug } from "@/content/guides";
 import { guideHubs } from "@/content/guides/hubs";
+import { publishedSeasonalPages } from "@/content/seasonal";
 
 /**
  * The single source of truth for indexable URLs (issues #14, #28, #32).
@@ -72,6 +73,15 @@ export function getIndexableRoutes(): SiteRoute[] {
       changefreq: "monthly",
       priority: 0.45,
       section: "guia",
+    });
+  }
+
+  for (const s of publishedSeasonalPages()) {
+    routes.push({
+      path: `/ofertas/${s.slug}`,
+      changefreq: "monthly",
+      priority: 0.55,
+      section: "landing",
     });
   }
 
