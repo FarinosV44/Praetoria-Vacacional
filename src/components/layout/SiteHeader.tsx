@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { getAllProperties, experienceMeta } from "@/domains/properties/registry";
 import { ButtonLink } from "@/components/ui/Button";
+import { LogoMark } from "./Logo";
 
 export function SiteHeader() {
   const properties = getAllProperties();
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-paper)]/85 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="font-display text-lg tracking-tight text-[var(--color-ink)]">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display text-lg tracking-tight text-[var(--color-ink)]"
+        >
+          <LogoMark className="h-7 w-7 text-[var(--accent-600)]" />
           Praetoria <span className="text-[var(--accent-600)]">Vacacional</span>
         </Link>
 

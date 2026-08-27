@@ -48,28 +48,31 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="container-page flex min-h-[70vh] flex-col justify-center py-16 text-white">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
-            Praetoria Vacacional
-          </p>
-          <h1 className="mt-3 max-w-2xl font-display text-4xl leading-tight sm:text-5xl md:text-6xl">
-            Dos escapadas, una reserva directa: la nieve de Javalambre y el mar de Valencia.
+        <div className="container-page flex min-h-[78vh] flex-col justify-center py-20 text-white">
+          <p className="eyebrow !text-white/75">Praetoria Vacacional</p>
+          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] sm:text-5xl md:text-[4rem]">
+            La nieve de Javalambre y el mar de Valencia, en reserva directa.
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-white/90">
-            Consulta disponibilidad real, precio total y reserva en tres pasos. Sin comisiones de
+          <p className="mt-5 max-w-xl text-lg text-white/90">
+            Disponibilidad real, precio total y reserva en tres pasos. Sin comisiones de
             intermediarios y con confirmación inmediata.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap gap-3">
             {properties.map((p) => (
               <Link
                 key={p.slug}
                 href={`/${p.slug}`}
                 data-experience={p.experience}
-                className="rounded-full bg-white/95 px-5 py-3 text-sm font-medium text-[var(--accent-700)] backdrop-blur transition hover:bg-white"
+                className="group inline-flex items-center gap-2 rounded-full bg-white/95 px-5 py-3 text-sm font-medium text-[var(--accent-700)] backdrop-blur transition hover:bg-white hover:shadow-lg"
               >
-                {p.experience === "ski" ? "❄ " : "☀ "}
+                <span aria-hidden className="text-base">
+                  {p.experience === "ski" ? "❄" : "☀"}
+                </span>
                 {p.name}
+                <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
               </Link>
             ))}
           </div>
@@ -85,11 +88,12 @@ export default function HomePage() {
       </section>
 
       {/* Property cards */}
-      <section aria-labelledby="alojamientos-heading" className="container-page py-14">
-        <h2 id="alojamientos-heading" className="font-display text-2xl sm:text-3xl">
+      <section aria-labelledby="alojamientos-heading" className="container-page py-16 reveal">
+        <p className="eyebrow">Dos destinos</p>
+        <h2 id="alojamientos-heading" className="mt-2 font-display text-3xl sm:text-4xl">
           Elige tu escapada
         </h2>
-        <p className="mt-2 max-w-2xl text-[var(--color-ink-soft)]">
+        <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">
           Cada alojamiento tiene su propio calendario, sus precios y su personalidad. El motor de
           reserva y el pago seguro son los mismos.
         </p>
@@ -101,9 +105,10 @@ export default function HomePage() {
       </section>
 
       {/* Direct booking advantages */}
-      <section aria-labelledby="ventajas-heading" className="bg-white py-16">
-        <div className="container-page">
-          <h2 id="ventajas-heading" className="font-display text-2xl sm:text-3xl">
+      <section aria-labelledby="ventajas-heading" className="bg-white py-20">
+        <div className="container-page reveal">
+          <p className="eyebrow">Reserva directa</p>
+          <h2 id="ventajas-heading" className="mt-2 font-display text-3xl sm:text-4xl">
             Por qué reservar directamente
           </h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
