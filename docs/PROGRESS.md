@@ -74,8 +74,9 @@ git push -u origin main
 git push -u origin develop
 ```
 
-Branches: `main` (initial commit `3ec2de2`), `develop` (checked out, work continues here).
-Nothing reaches users until you merge `develop → main` yourself.
+Branches: `main` (initial commit `3ec2de2`), `develop` (checked out — commits
+`3ec2de2`, `ced1b6a`, `0361a12`). Nothing reaches users until you merge
+`develop → main` yourself.
 
 ## Open items / blocks
 
