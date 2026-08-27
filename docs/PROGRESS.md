@@ -122,4 +122,12 @@ The Vercel deploy itself is still the user's to trigger.
 
 ## Ready for `main`
 
-Nothing yet.
+**V3 batch (#43–#52) is complete on `develop`.** Home V3, property pages V3,
+guide hubs + 301s, discount codes, transactional SEO consolidation, seasonal
+pages, CRO, light CMS, final audit and mobile-first pass — all committed, with
+`tsc` + `next lint` + `npm run build` + 56 unit + 64 chromium e2e green.
+
+Merged to `main` at the user's explicit request (2026-08-27). Post-merge manual
+gates remain (real service keys + `docs/launch-checklist.md`, Lighthouse on the
+deployed URL, iOS Safari flow pass) — see `docs/audits/final-audit.md`. The
+Vercel deploy is the owner's call.
