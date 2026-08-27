@@ -1,6 +1,7 @@
 import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings, landings as allLandings } from "@/content/landings";
-import { guides as allGuides, publishedGuides, hubForPropertySlug } from "@/content/guides";
+import { hubForPropertySlug } from "@/content/guides";
+import { resolveGuides, resolvePublishedGuides } from "@/content/guides/overrides";
 import { guideHubs } from "@/content/guides/hubs";
 import { legalDocs } from "@/content/legal";
 import { seasonalPages } from "@/content/seasonal";
@@ -22,7 +23,7 @@ export interface SeoRow {
   hasHreflang: boolean;
 }
 
-export function buildSeoInventory(): SeoRow[] {
+export async function buildSeoInventory(): Promise<SeoRow[]> {
   const rows: SeoRow[] = [];
 
   for (const p of getAllProperties()) {
@@ -76,7 +77,7 @@ export function buildSeoInventory(): SeoRow[] {
     });
   }
 
-  for (const g of allGuides) {
+  for (const g of await resolveGuides()) {
     if (g.pillar) continue; // pillar intent lives on the hub page
     rows.push({
       path: `/guias/${hubForPropertySlug(g.propertySlug)}/${g.slug}`,
@@ -131,13 +132,13 @@ export function buildSeoInventory(): SeoRow[] {
   return rows.sort((a, b) => a.section.localeCompare(b.section) || a.path.localeCompare(b.path));
 }
 
-export function seoStats() {
-  const rows = buildSeoInventory();
-  const routes = getIndexableRoutes();
+export async function seoStats() {
+  const rows = await buildSeoInventory();
+  const routes = await getIndexableRoutes();
   return {
     indexableRoutes: routes.length,
     publishedLandings: publishedLandings().length,
-    publishedGuides: publishedGuides().length,
+    publishedGuides: (await resolvePublishedGuides()).length,
     draftContent: rows.filter((r) => r.section.includes("borrador")).length,
     missingMeta: rows.filter((r) => !r.title || !r.description).length,
     duplicateTitles: (() => {

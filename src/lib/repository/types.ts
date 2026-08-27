@@ -98,6 +98,12 @@ export interface EmailLogRow extends EmailLogEntry {
   createdAt: string;
 }
 
+export interface ContentOverrideRow {
+  key: string;
+  value: unknown;
+  updatedAt: string;
+}
+
 /** Thrown when a hold/block cannot be created because the dates are taken. */
 export class PropertyUnavailableError extends Error {
   constructor(message = "PROPERTY_UNAVAILABLE") {
@@ -148,6 +154,13 @@ export interface Repository {
   /** Admin-saved rate config for a property, or null to use the file default. */
   getRateOverride(propertyId: string): Promise<unknown | null>;
   setRateOverride(propertyId: string, rateConfig: unknown): Promise<void>;
+
+  // --- Content overrides — light CMS (issue #50) -------------------
+  /** One override document by key (e.g. "property:javalambre", "guide:valencia:...") */
+  getContentOverride(key: string): Promise<ContentOverrideRow | null>;
+  listContentOverrides(prefix?: string): Promise<ContentOverrideRow[]>;
+  /** Pass `null` to clear the override. */
+  setContentOverride(key: string, value: unknown | null): Promise<void>;
 
   // --- Email log (issue #42) ---------------------------------------
   logEmail(entry: EmailLogEntry): Promise<void>;

@@ -419,6 +419,37 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 
+  async getContentOverride(key: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("content_overrides")
+      .select("key, value, updated_at")
+      .eq("key", key)
+      .maybeSingle();
+    return data ? { key: data.key, value: data.value, updatedAt: data.updated_at } : null;
+  },
+
+  async listContentOverrides(prefix?: string) {
+    const db = supabaseAdmin();
+    let q = db.from("content_overrides").select("key, value, updated_at").order("key");
+    if (prefix) q = q.like("key", `${prefix}%`);
+    const { data } = await q;
+    return (data ?? []).map((r) => ({ key: r.key, value: r.value, updatedAt: r.updated_at }));
+  },
+
+  async setContentOverride(key: string, value: unknown | null) {
+    const db = supabaseAdmin();
+    if (value === null || value === undefined) {
+      const { error } = await db.from("content_overrides").delete().eq("key", key);
+      if (error) throw error;
+      return;
+    }
+    const { error } = await db
+      .from("content_overrides")
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    if (error) throw error;
+  },
+
   async logEmail(entry: EmailLogEntry) {
     const db = supabaseAdmin();
     const { error } = await db.from("email_log").insert({

@@ -52,6 +52,7 @@ interface Store {
     discountCents: number;
     createdAt: string;
   }[];
+  contentOverrides: Record<string, { value: unknown; updatedAt: string }>;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -132,6 +133,7 @@ function seed(): Store {
     importFeeds: {},
     coupons,
     redemptions: [],
+    contentOverrides: {},
   };
 }
 
@@ -166,6 +168,7 @@ store.emailLog ??= [];
 store.importFeeds ??= {};
 store.coupons ??= [];
 store.redemptions ??= [];
+store.contentOverrides ??= {};
 
 function save() {
   persist(store);
@@ -454,6 +457,24 @@ export const memoryRepository: Repository = {
 
   async setRateOverride(propertyId: string, rateConfig: unknown) {
     store.rateOverrides[propertyId] = rateConfig;
+    save();
+  },
+
+  async getContentOverride(key: string) {
+    const row = store.contentOverrides[key];
+    return row ? { key, value: row.value, updatedAt: row.updatedAt } : null;
+  },
+
+  async listContentOverrides(prefix?: string) {
+    return Object.entries(store.contentOverrides)
+      .filter(([k]) => !prefix || k.startsWith(prefix))
+      .map(([key, r]) => ({ key, value: r.value, updatedAt: r.updatedAt }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  },
+
+  async setContentOverride(key: string, value: unknown | null) {
+    if (value === null || value === undefined) delete store.contentOverrides[key];
+    else store.contentOverrides[key] = { value, updatedAt: new Date().toISOString() };
     save();
   },
 

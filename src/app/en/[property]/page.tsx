@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllProperties, getPropertyBySlug, localizedProperty } from "@/domains/properties/registry";
+import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
@@ -17,9 +18,8 @@ export async function generateMetadata({
   params: Promise<{ property: string }>;
 }): Promise<Metadata> {
   const { property } = await params;
-  const raw = getPropertyBySlug(property);
-  if (!raw) return {};
-  const p = localizedProperty(raw, "en");
+  const p = await resolveProperty(property, "en");
+  if (!p) return {};
   return pageMetadata({
     title: p.seo.metaTitle,
     description: p.seo.metaDescription,

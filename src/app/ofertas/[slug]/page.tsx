@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSeasonalPage, seasonalPages } from "@/content/seasonal";
-import { getPropertyBySlug } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { publishedLandings } from "@/content/landings";
 import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -13,6 +13,7 @@ import { heroPhoto } from "@/content/properties/photos";
 import { getRateConfig } from "@/content/rates";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   // Draft pages are generated too (so the owner can preview) but render noindex
@@ -44,7 +45,7 @@ export default async function SeasonalPageView({
   const { slug } = await params;
   const page = getSeasonalPage(slug);
   if (!page) notFound();
-  const prop = getPropertyBySlug(page.propertySlug);
+  const prop = await resolveProperty(page.propertySlug, "es");
   if (!prop) notFound();
 
   const photo = heroPhoto(page.propertySlug);

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGuideHub, guideHubs } from "@/content/guides/hubs";
-import { satelliteGuides } from "@/content/guides";
+import { resolveSatelliteGuides } from "@/content/guides/overrides";
 import { publishedLandings } from "@/content/landings";
 import { publishedSeasonalPages } from "@/content/seasonal";
 import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
@@ -17,6 +17,7 @@ import {
 } from "@/components/guides/GuideLayout";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 export function generateStaticParams() {
   return guideHubs.map((h) => ({ hub: h.slug }));
 }
@@ -41,7 +42,7 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
   const h = getGuideHub(hub);
   if (!h) notFound();
 
-  const satellites = satelliteGuides(h.slug);
+  const satellites = await resolveSatelliteGuides(h.slug);
   const landings = publishedLandings().filter((l) => l.propertySlug === h.propertySlug);
   const seasonal = publishedSeasonalPages().filter((s) => s.propertySlug === h.propertySlug);
   const toc = h.sections.map((s) => ({ id: slugifyHeading(s.heading), label: s.heading }));

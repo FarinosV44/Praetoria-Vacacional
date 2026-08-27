@@ -10,6 +10,8 @@ export const metadata: Metadata = pageMetadata({
   hreflangFor: "/",
 });
 
+export const revalidate = 3600;
+
 export default function HomePage() {
   return <HomeView locale="es" />;
 }

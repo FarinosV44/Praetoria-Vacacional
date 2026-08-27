@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLanding, publishedLandings } from "@/content/landings";
-import { getPropertyBySlug } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -14,6 +14,7 @@ import { getRateConfig } from "@/content/rates";
 import { guideLinksFor } from "@/domains/marketing/navigation";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return publishedLandings().map((l) => ({ property: l.propertySlug, slug: l.slug }));
@@ -41,11 +42,11 @@ export default async function LandingPage({
 }) {
   const { property, slug } = await params;
   const landing = getLanding(property, slug);
-  const prop = getPropertyBySlug(property);
+  const prop = await resolveProperty(property, "es");
   if (!landing || !prop) notFound();
 
   const photo = heroPhoto(property);
-  const guides = guideLinksFor(property).slice(0, 4);
+  const guides = (await guideLinksFor(property)).slice(0, 4);
   const topReviews = [...prop.reviews].sort((a, b) => b.rating - a.rating).slice(0, 3);
   const crumbs = [
     { name: "Inicio", path: "/" },

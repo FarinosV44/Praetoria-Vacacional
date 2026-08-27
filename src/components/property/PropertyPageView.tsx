@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPropertyBySlug, localizedProperty } from "@/domains/properties/registry";
+import { resolveProperty } from "@/domains/properties/content";
 import { propertyJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -88,14 +88,14 @@ const NEARBY_ICON: Record<string, string> = {
   airport: "✈️",
 };
 
-export function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
-  const raw = getPropertyBySlug(slug);
-  if (!raw) return null;
-  const p = localizedProperty(raw, locale);
+export async function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
+  const p = await resolveProperty(slug, locale === "en" ? "en" : "es");
+  if (!p) return null;
   const t = T[locale];
   const photos = propertyPhotos(slug);
   const path = (n: string) => localizedPath(locale, n);
-  const links = locale === "es" ? [...landingLinksFor(slug), ...guideLinksFor(slug)] : [];
+  const links =
+    locale === "es" ? [...landingLinksFor(slug), ...(await guideLinksFor(slug))] : [];
 
   const facts: [string, string | number][] = [
     [t.guests, p.capacity.guests],

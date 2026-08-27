@@ -1,6 +1,7 @@
 import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings } from "@/content/landings";
-import { publishedGuides, hubForPropertySlug } from "@/content/guides";
+import { hubForPropertySlug } from "@/content/guides";
+import { resolvePublishedGuides } from "@/content/guides/overrides";
 import { guideHubs } from "@/content/guides/hubs";
 import { publishedSeasonalPages } from "@/content/seasonal";
 
@@ -31,7 +32,7 @@ const legalRoutes: SiteRoute[] = [
   "/legal/condiciones-reserva",
 ].map((path) => ({ path, changefreq: "monthly" as const, priority: 0.3, section: "legal" as const }));
 
-export function getIndexableRoutes(): SiteRoute[] {
+export async function getIndexableRoutes(): Promise<SiteRoute[]> {
   const routes: SiteRoute[] = [...staticInfoRoutes];
 
   for (const property of getAllProperties()) {
@@ -66,7 +67,7 @@ export function getIndexableRoutes(): SiteRoute[] {
   for (const hub of guideHubs) {
     routes.push({ path: `/guias/${hub.slug}`, changefreq: "monthly", priority: 0.6, section: "guia" });
   }
-  for (const guide of publishedGuides()) {
+  for (const guide of await resolvePublishedGuides()) {
     if (guide.pillar) continue; // pillar intent is served by the hub page
     routes.push({
       path: `/guias/${hubForPropertySlug(guide.propertySlug)}/${guide.slug}`,
@@ -90,12 +91,14 @@ export function getIndexableRoutes(): SiteRoute[] {
 }
 
 /** Guides for a property, for internal-link blocks on the property page. */
-export function guideLinksFor(propertySlug: string): { path: string; label: string }[] {
+export async function guideLinksFor(
+  propertySlug: string,
+): Promise<{ path: string; label: string }[]> {
   const hub = hubForPropertySlug(propertySlug);
   const links: { path: string; label: string }[] = [];
   const hubDef = guideHubs.find((h) => h.slug === hub);
   if (hubDef) links.push({ path: `/guias/${hub}`, label: hubDef.title });
-  for (const g of publishedGuides(propertySlug)) {
+  for (const g of await resolvePublishedGuides(propertySlug)) {
     if (g.pillar) continue;
     links.push({ path: `/guias/${hub}/${g.slug}`, label: g.h1 });
   }

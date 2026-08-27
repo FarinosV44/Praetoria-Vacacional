@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGuideHub } from "@/content/guides/hubs";
-import { getSatelliteGuide, satelliteGuides, publishedGuides } from "@/content/guides";
+import { guides as baseGuides } from "@/content/guides";
+import { resolveSatelliteGuide, resolveSatelliteGuides } from "@/content/guides/overrides";
 import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -14,9 +15,12 @@ import {
 } from "@/components/guides/GuideLayout";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 
 export function generateStaticParams() {
-  return publishedGuides()
+  // Draft guides are generated too (preview) but render noindex; publishing one
+  // via the CMS then just flips the meta robots on the next revalidation.
+  return baseGuides
     .filter((g) => !g.pillar)
     .map((g) => ({
       hub: g.propertySlug === "valencia" ? "valencia-playa" : "javalambre",
@@ -30,12 +34,13 @@ export async function generateMetadata({
   params: Promise<{ hub: string; slug: string }>;
 }): Promise<Metadata> {
   const { hub, slug } = await params;
-  const g = getSatelliteGuide(hub, slug);
-  if (!g) return {};
+  const found = await resolveSatelliteGuide(hub, slug);
+  if (!found) return {};
   return pageMetadata({
-    title: g.title,
-    description: g.description,
+    title: found.guide.title,
+    description: found.guide.description,
     path: `/guias/${hub}/${slug}`,
+    noindex: !found.published,
   });
 }
 
@@ -45,11 +50,12 @@ export default async function GuidePage({
   params: Promise<{ hub: string; slug: string }>;
 }) {
   const { hub, slug } = await params;
-  const g = getSatelliteGuide(hub, slug);
+  const found = await resolveSatelliteGuide(hub, slug);
   const h = getGuideHub(hub);
-  if (!g || !h) notFound();
+  if (!found || !h) notFound();
+  const g = found.guide;
 
-  const siblings = satelliteGuides(hub).filter((x) => x.slug !== slug);
+  const siblings = (await resolveSatelliteGuides(hub)).filter((x) => x.slug !== slug);
   const toc = g.sections.map((s) => ({ id: slugifyHeading(s.heading), label: s.heading }));
 
   return (
@@ -62,17 +68,26 @@ export default async function GuidePage({
             { name: h.title, path: `/guias/${hub}` },
             { name: g.h1, path: `/guias/${hub}/${slug}` },
           ]),
-          ...(g.faq && g.faq.length > 0 ? [faqJsonLd(g.faq)] : []),
-          {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: g.h1,
-            description: g.description,
-            about: g.keyword,
-          },
+          ...(found.published && g.faq && g.faq.length > 0 ? [faqJsonLd(g.faq)] : []),
+          ...(found.published
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Article",
+                  headline: g.h1,
+                  description: g.description,
+                  about: g.keyword,
+                },
+              ]
+            : []),
         ]}
       />
       <GuideHero propertySlug={g.propertySlug} eyebrow={`Guía · ${h.title}`} title={g.h1} lead={g.lead} />
+      {!found.published && (
+        <p className="container-page mt-3 rounded-md bg-amber-100 px-3 py-1 text-sm text-amber-900">
+          Borrador — esta guía no está indexada ni enlazada públicamente.
+        </p>
+      )}
       <Breadcrumbs
         items={[
           { name: "Inicio", path: "/" },

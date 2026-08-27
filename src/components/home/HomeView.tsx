@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPropertiesByExperience, localizedProperty } from "@/domains/properties/registry";
+import { resolvePropertiesForHome } from "@/domains/properties/content";
 import { AvailabilitySearch } from "@/components/search/AvailabilitySearch";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { FaqBlock } from "@/components/FaqBlock";
@@ -75,12 +75,10 @@ const COPY = {
   },
 } as const;
 
-export function HomeView({ locale }: { locale: Locale }) {
+export async function HomeView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const c = COPY[locale];
-  const ski = getPropertiesByExperience("ski").map((p) => localizedProperty(p, locale))[0]!;
-  const sea = getPropertiesByExperience("sea").map((p) => localizedProperty(p, locale))[0]!;
-  const properties = [sea, ski];
+  const properties = await resolvePropertiesForHome(locale === "en" ? "en" : "es");
   const faq = locale === "en" ? homeFaqEn : homeFaq;
   const advantages =
     locale === "en"

@@ -4,7 +4,9 @@ import { pageMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { guideHubs } from "@/content/guides/hubs";
-import { satelliteGuides } from "@/content/guides";
+import { resolveSatelliteGuides } from "@/content/guides/overrides";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
   title: "Guías de destino: Javalambre y la costa sur de Valencia",
@@ -13,7 +15,12 @@ export const metadata: Metadata = pageMetadata({
   path: "/guias",
 });
 
-export default function GuiasPage() {
+export default async function GuiasPage() {
+  const satellitesByHub = new Map(
+    await Promise.all(
+      guideHubs.map(async (h) => [h.slug, await resolveSatelliteGuides(h.slug)] as const),
+    ),
+  );
   return (
     <div>
       <JsonLd
@@ -37,7 +44,7 @@ export default function GuiasPage() {
 
         <div className="mt-10 grid gap-8 md:grid-cols-2">
           {guideHubs.map((h) => {
-            const satellites = satelliteGuides(h.slug);
+            const satellites = satellitesByHub.get(h.slug) ?? [];
             return (
               <section
                 key={h.slug}
