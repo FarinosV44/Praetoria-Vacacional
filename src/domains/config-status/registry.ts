@@ -81,8 +81,8 @@ export function getConfigFeatures(): ConfigFeature[] {
     where: "Resend → API Keys (verifica también el dominio de envío)",
     state: env.emailConfigured ? "configured" : "not_configured",
     statusLine: env.emailConfigured
-      ? "Activo. Confirmaciones y avisos de pago fallido se envían con Resend."
-      : "Email pendiente: servicio no configurado. Las confirmaciones se registran en el log.",
+      ? "Activo. Confirmación, aviso de pago fallido y notificación interna vía Resend. Registro en /admin/pagos."
+      : "Email pendiente: servicio no configurado. Cada intento se registra en /admin/pagos; la reserva nunca falla por esto.",
     publicMessage: null,
   };
 
@@ -93,7 +93,7 @@ export function getConfigFeatures(): ConfigFeature[] {
       "El importador, exportador, parser, deduplicación, cron y la UI de admin están implementados. Faltan las URLs iCal de cada alojamiento en Booking.",
     envVars: ["ICAL_EXPORT_TOKEN"],
     where:
-      "Token: variable de entorno · URLs de importación: src/content/properties/<slug>.ts (icalImportUrls) o el panel de sincronización",
+      "Token: variable de entorno ICAL_EXPORT_TOKEN · URLs de importación de Booking: pégalas en /admin/sincronizacion (o en src/content/properties/<slug>.ts)",
     state: env.icalExportConfigured ? "configured" : "not_configured",
     statusLine: env.icalExportConfigured
       ? "Feeds de exportación activos. Revisa el estado de importación por alojamiento."

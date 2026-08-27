@@ -65,6 +65,7 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V2e · Property pages V2 (boutique) | #38 | 🟡 | rebuilt: high-impact gallery + lightbox, sticky booking card, quick facts, categorised amenities, getting-there + "Qué tienes cerca" (crawlable), stay info, real breadcrumbs/schema. **No map embed** (needs a maps key; address+geo+distance table cover it for now) |
 | V2f · SEO V2 | #39 | ✅ | keyword map + all landings/guides corrected to real locations (Camarena de la Sierra; Mareny de Barraquetes / Les Palmeretes / southern coast), entity signals (VacationRental w/ geo+floorSize+aggregateRating), Camarena keyword targeted |
 | V2g · Final visual polish | #40 | 🟡 | lighter header, hero gradient, palette AA, tactile buttons, skeletons, consistent radii/rhythm. Full manual breakpoint review (375→1920) pending — the screenshot tool was unreliable this session; e2e image-layout test added instead |
+| V2h · Production-ready | #42 | ✅ (code) | `/api/health` (status + integrations, no secrets), boot config banner (`instrumentation.ts`), `error.tsx` + `global-error.tsx`, email log persisted + shown in `/admin/pagos` (payments + emails), internal reservation notification, branded email templates, admin form to set Booking iCal import URLs + "Sincronizar ahora", `/api/admin/sync`. `docs/launch-checklist.md` + backup/recovery in SETUP.md. e2e/production.spec.ts (health, headers, no-secrets-in-bundle). **Ticking the launch checklist needs real credentials + a deploy.** |
 
 ## Exact position
 
@@ -90,9 +91,10 @@ Remaining before V1 "done" (issue #22):
 
 ## Branches
 
-`develop` is pushed to origin and holds all work. `main` has only the initial
-commit and is **not** pushed / not updated — the `develop → main` merge and the
-Vercel deploy are the user's call (nothing reaches users until then).
+Both `develop` and `main` are on origin. `main` was merged from `develop` at the
+user's explicit request (release commit `b5ee968`, "Praetoria Vacacional V1 + V2").
+Ongoing work continues on `develop`; merge to `main` again for the next release.
+The Vercel deploy itself is still the user's to trigger.
 
 ## Open items / blocks
 

@@ -67,16 +67,20 @@ async function importOne(slug: string): Promise<ImportReport[]> {
   const reports: ImportReport[] = [];
 
   for (const feed of property.icalImportUrls) {
-    if (!feed.url) {
+    // Admin-entered URL (calendar_syncs.feed_url) wins over the content-file default.
+    const adminUrl = await repo.getImportFeedUrl(property.id, feed.channel).catch(() => null);
+    const url = adminUrl || feed.url;
+
+    if (!url) {
       reports.push({ property: slug, channel: feed.channel, status: "skipped", created: 0, removed: 0, kept: 0 });
       await repo.recordSyncRun(property.id, feed.channel, "import", {
-        status: "skipped: sin URL de feed",
+        status: "Aún no configurado: falta la URL del feed de Booking",
         feedUrl: null,
       });
       continue;
     }
     try {
-      const res = await fetch(feed.url, { headers: { accept: "text/calendar" }, cache: "no-store" });
+      const res = await fetch(url, { headers: { accept: "text/calendar" }, cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       const events = parseIcs(text);
@@ -84,7 +88,7 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       reports.push({ property: slug, channel: feed.channel, status: "ok", ...result });
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "ok",
-        feedUrl: feed.url,
+        feedUrl: url,
         eventsImported: result.created + result.kept,
       });
     } catch (err) {
@@ -101,7 +105,7 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "error",
         error: message,
-        feedUrl: feed.url,
+        feedUrl: url,
       });
     }
   }

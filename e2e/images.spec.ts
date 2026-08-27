@@ -14,27 +14,46 @@ const pages = [
 for (const p of pages) {
   test(`photos load and have size: ${p.name}`, async ({ page }) => {
     await page.goto(p.path);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     // Nudge lazy images into view.
     await page.evaluate(async () => {
-      for (let y = 0; y < document.body.scrollHeight; y += 500) {
+      for (let y = 0; y < document.body.scrollHeight; y += 400) {
         window.scrollTo(0, y);
         await new Promise((r) => setTimeout(r, 40));
       }
+      window.scrollTo(0, 0);
     });
-    await page.waitForTimeout(500);
 
-    const stats = await page.evaluate(() => {
-      const imgs = [...document.querySelectorAll("img")].filter((i) =>
-        (i.currentSrc || i.src).includes("/images/properties/") ||
-        (i.currentSrc || i.src).includes("/_next/image"),
-      );
-      return {
-        total: imgs.length,
-        loaded: imgs.filter((i) => i.complete && i.naturalWidth > 1).length,
-        laidOut: imgs.filter((i) => i.getBoundingClientRect().width > 10).length,
-      };
-    });
+    // Wait until every property image has decoded (the Next optimiser can be
+    // slow on a cold `next start`).
+    await page
+      .waitForFunction(
+        () => {
+          const imgs = [...document.querySelectorAll("img")].filter(
+            (i: HTMLImageElement) =>
+              (i.currentSrc || i.src).includes("/images/properties/") ||
+              (i.currentSrc || i.src).includes("/_next/image"),
+          );
+          return imgs.length > 0 && imgs.every((i) => i.complete && i.naturalWidth > 1);
+        },
+        { timeout: 20_000 },
+      )
+      .catch(() => undefined);
+
+    const stats = await page.evaluate(
+      () => {
+        const imgs = [...document.querySelectorAll("img")].filter(
+          (i: HTMLImageElement) =>
+            (i.currentSrc || i.src).includes("/images/properties/") ||
+            (i.currentSrc || i.src).includes("/_next/image"),
+        );
+        return {
+          total: imgs.length,
+          loaded: imgs.filter((i) => i.complete && i.naturalWidth > 1).length,
+          laidOut: imgs.filter((i) => i.getBoundingClientRect().width > 10).length,
+        };
+      },
+    );
 
     expect(stats.total).toBeGreaterThanOrEqual(p.minImages);
     expect(stats.loaded).toBe(stats.total);

@@ -132,3 +132,33 @@ export async function cancelReservationAction(formData: FormData): Promise<void>
   revalidatePath("/admin/reservas");
   revalidatePath("/admin");
 }
+
+const feedSchema = z.object({
+  propertySlug: z.string(),
+  channel: z.string().min(1).default("booking"),
+  url: z.string().trim().url().or(z.literal("")),
+});
+
+export async function setImportFeedUrlAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  await assertAdmin();
+  const parsed = feedSchema.safeParse({
+    propertySlug: formData.get("propertySlug"),
+    channel: formData.get("channel") || "booking",
+    url: formData.get("url") ?? "",
+  });
+  if (!parsed.success) return { ok: false, error: "URL no válida (debe empezar por https://)" };
+
+  const property = getPropertyBySlug(parsed.data.propertySlug);
+  if (!property) return { ok: false, error: "Alojamiento no encontrado" };
+
+  await getRepository().setImportFeedUrl(
+    property.id,
+    parsed.data.channel,
+    parsed.data.url || null,
+  );
+  revalidatePath("/admin/sincronizacion");
+  return { ok: true };
+}

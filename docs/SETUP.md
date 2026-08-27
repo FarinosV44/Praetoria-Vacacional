@@ -74,12 +74,36 @@ them in any order; each is independent.
 
 ## 7. Content
 
-Replace the placeholder blocks in `src/content/properties/*.ts` with the owner's
-authorised photos, amenities, distances, address and reviews, then flip each
-`status` / `*Status` flag from `"placeholder"` to `"authored"`. Fill the
-`[[PENDIENTE: …]]` markers in `src/content/legal.ts`.
+Property photos and content are **already real** (extracted from the owner's
+Booking listings — see `photo-manifest.json`). Re-run
+`node scripts/fetch-property-photos.mjs` if Booking rotates the signed image URLs.
+Still to fill by the owner: the `operator` block in `src/content/legal.ts`
+(company name / NIF / registered address) — the tourist-registry numbers are
+already in.
+
+## 8. Health & monitoring (issue #42)
+
+- `GET /api/health` — JSON status (200 healthy, 503 if the DB is unreachable).
+  Shows `demoMode`, per-integration state and the deployed commit. No secrets.
+  Point an uptime monitor (UptimeRobot, Betterstack, Vercel Monitoring) at it.
+- On server start the app logs a config banner and, in production without
+  Supabase, a loud warning — check Vercel → Runtime Logs after each deploy.
+- `/admin/configuracion` is the operator-facing view of the same status.
+- `/admin/pagos` shows every payment (with Stripe ids/status) and every
+  transactional email attempt (`sent` / `failed` / `skipped`).
+
+## 9. Backups & recovery (Supabase)
+
+- Supabase **Pro** plan: daily automated backups + Point-in-Time Recovery.
+  Confirm the plan and retention in Database → Backups.
+- **Restore**: Supabase dashboard → Database → Backups → Restore (or download a
+  backup and `pg_restore` into a fresh project). Run one restore drill into a
+  scratch project so the procedure is known before it's needed.
+- The app holds no other durable state: uploaded property photos live in the
+  repo (`public/images/properties/`), env vars in Vercel.
 
 ## Production env checklist
 
 Set in the Vercel project: everything in `.env.example` with real values, plus
-`NEXT_PUBLIC_SITE_URL=https://<domain>`.
+`NEXT_PUBLIC_SITE_URL=https://<domain>`. Then work through
+`docs/launch-checklist.md` — both properties, end to end, on a phone.
