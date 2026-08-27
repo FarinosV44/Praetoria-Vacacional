@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { formatMoney, nightsLabel } from "@/lib/format";
+import { formatMoney, formatRange, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
+import { AvailabilityCalendar, type RangeSelection } from "./AvailabilityCalendar";
 
 interface QuoteResponse {
   available: boolean;
@@ -22,33 +23,32 @@ interface QuoteResponse {
   } | null;
 }
 
-function todayPlus(d: number) {
-  const x = new Date();
-  x.setDate(x.getDate() + d);
-  return x.toISOString().slice(0, 10);
-}
-
 export function BookingWidget({
   propertySlug,
   maxGuests,
+  minNightsHint,
   initial,
 }: {
   propertySlug: string;
   maxGuests: number;
+  minNightsHint?: number;
   initial?: { checkIn?: string; checkOut?: string; guests?: number };
 }) {
   const router = useRouter();
-  const [checkIn, setCheckIn] = useState(initial?.checkIn ?? todayPlus(14));
-  const [checkOut, setCheckOut] = useState(initial?.checkOut ?? todayPlus(17));
+  const [range, setRange] = useState<RangeSelection>({
+    checkIn: initial?.checkIn ?? null,
+    checkOut: initial?.checkOut ?? null,
+  });
   const [guests, setGuests] = useState(initial?.guests ?? 2);
   const [data, setData] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { checkIn, checkOut } = range;
+
   const fetchQuote = useCallback(async () => {
-    if (checkIn >= checkOut) {
+    if (!checkIn || !checkOut) {
       setData(null);
-      setError("La salida debe ser posterior a la entrada.");
       return;
     }
     setLoading(true);
@@ -74,11 +74,12 @@ export function BookingWidget({
   }, [propertySlug, checkIn, checkOut, guests]);
 
   useEffect(() => {
-    const t = setTimeout(fetchQuote, 250);
+    const t = setTimeout(fetchQuote, 200);
     return () => clearTimeout(t);
   }, [fetchQuote]);
 
   function reserve() {
+    if (!checkIn || !checkOut) return;
     track("begin_checkout", { property_slug: propertySlug, nights: data?.quote?.nights ?? 0 });
     const q = new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
     router.push(`/reservar/${propertySlug}?${q}`);
@@ -90,30 +91,24 @@ export function BookingWidget({
     <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-5 shadow-[var(--shadow-card)]">
       <p className="font-display text-lg">Consulta tus fechas</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Entrada</span>
-          <input
-            type="date"
-            value={checkIn}
-            min={todayPlus(0)}
-            onChange={(e) => setCheckIn(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Salida</span>
-          <input
-            type="date"
-            value={checkOut}
-            min={checkIn}
-            onChange={(e) => setCheckOut(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
-          />
-        </label>
+      <div className="mt-3 rounded-xl bg-[var(--color-paper)] p-2 text-center text-sm">
+        {checkIn && checkOut
+          ? `${formatRange(checkIn, checkOut)}`
+          : checkIn
+            ? `Entrada ${checkIn} · elige la salida`
+            : "Elige tus fechas en el calendario"}
       </div>
 
-      <label className="mt-3 block text-sm">
+      <div className="mt-3">
+        <AvailabilityCalendar
+          propertySlug={propertySlug}
+          value={range}
+          onChange={setRange}
+          minNightsHint={minNightsHint}
+        />
+      </div>
+
+      <label className="mt-4 block text-sm">
         <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Huéspedes</span>
         <select
           value={guests}

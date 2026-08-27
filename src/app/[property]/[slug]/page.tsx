@@ -77,7 +77,7 @@ export default async function LandingPage({
         </article>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <BookingWidget propertySlug={prop.slug} maxGuests={prop.capacity.guests} />
+          <BookingWidget propertySlug={prop.slug} maxGuests={prop.capacity.guests} minNightsHint={2} />
         </aside>
       </div>
     </div>

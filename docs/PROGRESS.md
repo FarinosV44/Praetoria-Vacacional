@@ -64,6 +64,19 @@ Double-booking, idempotent checkout and hold expiry verified.
 Next: S5/S6/S24 visual quality pass, then wire real Supabase/Stripe/Resend and
 run S21 QA. Then S15 content, S18 i18n, S20 hardening.
 
+## Unpushed commits (action needed)
+
+The Claude Code auto-mode classifier blocks `git push` without explicit user
+approval, so commits are local-only for now. To publish:
+
+```bash
+git push -u origin main
+git push -u origin develop
+```
+
+Branches: `main` (initial commit `3ec2de2`), `develop` (checked out, work continues here).
+Nothing reaches users until you merge `develop → main` yourself.
+
 ## Open items / blocks
 
 - **External services (non-blocking, by user decision D-003):** Supabase, Stripe, Resend

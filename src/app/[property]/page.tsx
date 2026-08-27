@@ -11,6 +11,7 @@ import { ReviewsBlock, reviewStats } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { guestsLabel } from "@/lib/format";
 import { landingLinksFor } from "@/domains/marketing/navigation";
+import { getRateConfig } from "@/content/rates";
 import Link from "next/link";
 
 export const dynamicParams = false;
@@ -191,7 +192,11 @@ export default async function PropertyPage({
 
         {/* Booking sidebar */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <BookingWidget propertySlug={p.slug} maxGuests={p.capacity.guests} />
+          <BookingWidget
+            propertySlug={p.slug}
+            maxGuests={p.capacity.guests}
+            minNightsHint={getRateConfig(p.slug)?.minNights}
+          />
         </aside>
       </div>
 
