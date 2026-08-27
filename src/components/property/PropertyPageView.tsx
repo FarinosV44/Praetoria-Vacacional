@@ -36,6 +36,8 @@ const T = {
     faqHeading: (n: string) => `Preguntas frecuentes sobre ${n}`,
     stickyCta: "Consultar fechas y reservar",
     ratingOn: (n: number) => `${n} opiniones en Booking`,
+    bestOf: "Lo mejor de este alojamiento",
+    nearbyGuides: "Qué hacer cerca",
   },
   en: {
     home: "Home",
@@ -60,6 +62,8 @@ const T = {
     faqHeading: (n: string) => `Frequently asked questions about ${n}`,
     stickyCta: "Check dates & book",
     ratingOn: (n: number) => `${n} reviews on Booking`,
+    bestOf: "The best of this apartment",
+    nearbyGuides: "What to do nearby",
   },
 } as const;
 
@@ -132,6 +136,31 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
               ))}
             </dl>
           </section>
+
+          {/* Lo mejor de este alojamiento — real, property-specific (issue #44) */}
+          {p.highlights.length > 0 && (
+            <section aria-labelledby="best-heading">
+              <h2 id="best-heading" className="font-display text-2xl">
+                {t.bestOf}
+              </h2>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+                {p.highlights.map((h) => (
+                  <li
+                    key={h.title}
+                    className="rounded-xl border border-[var(--color-line)] p-4"
+                  >
+                    <p className="flex items-start gap-2 font-medium">
+                      <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
+                        ◆
+                      </span>
+                      {h.title}
+                    </p>
+                    <p className="mt-1.5 pl-6 text-sm text-[var(--color-ink-soft)]">{h.body}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {p.sections.map((s) => (
             <section key={s.heading}>
@@ -251,7 +280,9 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
         </aside>
       </div>
 
-      <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
+      <div id="opiniones" className="scroll-mt-24">
+        <ReviewsBlock reviews={p.reviews} propertyName={p.name} rating={p.rating} />
+      </div>
       <FaqBlock items={p.faq} heading={t.faqHeading(p.name)} />
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">

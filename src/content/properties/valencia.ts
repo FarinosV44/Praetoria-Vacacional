@@ -19,6 +19,33 @@ export const valencia: PropertyContent = {
   shortIntro:
     "Un apartamento de 75 m² a 3 minutos a pie de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), con vistas al mar desde el balcón, zona privada de playa y parking gratis. Un tramo de litoral tranquilo junto a la Albufera, a media hora de Valencia capital.",
 
+  highlights: [
+    {
+      title: "Primera línea de la playa Les Palmeretes",
+      body: "A unos 3 minutos a pie de la arena, con vistas directas al Mediterráneo desde el balcón. Bajas del edificio y estás en la playa.",
+    },
+    {
+      title: "Zona privada de playa y recepción 24 horas",
+      body: "El alojamiento cuenta con zona reservada de playa y recepción 24 horas para la entrega de llaves y cualquier incidencia.",
+    },
+    {
+      title: "Barrio tranquilo, ideal para parejas y familias",
+      body: "Un tramo de costa sin el bullicio de la playa urbana, con horario sin ruido de 22:00 a 9:00. Booking valora la ubicación con un 9,4 para viajes en pareja.",
+    },
+    {
+      title: "Parking gratuito",
+      body: "Plaza de aparcamiento gratis, sin depender de la calle en verano.",
+    },
+    {
+      title: "75 m², tres dormitorios y cocina completa",
+      body: "Salón-comedor, cocina totalmente equipada y tres dormitorios para hasta 4 personas. Ropa de cama y toallas incluidas.",
+    },
+    {
+      title: "La Albufera, Cullera y Valencia muy cerca",
+      body: "El Parque Natural de la Albufera a 8 km, el faro de Cullera a 9 km y Valencia capital a media hora en coche.",
+    },
+  ],
+
   location: {
     city: "Mareny de Barraquetes",
     region: "Sueca · Valencia",
@@ -263,5 +290,31 @@ export const valencia: PropertyContent = {
     ],
     cancellationSummary:
       "Free cancellation up to 14 days before check-in. After that, terms apply per the property's policy.",
+    highlights: [
+      {
+        title: "Right on Les Palmeretes beach",
+        body: "About a 3-minute walk from the sand, with direct Mediterranean views from the balcony. Step out of the building and you are on the beach.",
+      },
+      {
+        title: "Private beach area and 24-hour reception",
+        body: "The property has a reserved beach area and 24-hour reception for key handover and anything that comes up.",
+      },
+      {
+        title: "A quiet neighbourhood for couples and families",
+        body: "A stretch of coast without the city-beach crowds, with a no-noise window from 22:00 to 9:00. Booking rates the location 9.4 for couples.",
+      },
+      {
+        title: "Free parking",
+        body: "A free parking space — no relying on the street in summer.",
+      },
+      {
+        title: "75 m², three bedrooms and a full kitchen",
+        body: "A living-dining room, a fully equipped kitchen and three bedrooms for up to 4 people. Linen and towels included.",
+      },
+      {
+        title: "The Albufera, Cullera and Valencia all close",
+        body: "The Albufera natural park 8 km away, the Cullera lighthouse 9 km away and Valencia city half an hour by car.",
+      },
+    ],
   },
 };

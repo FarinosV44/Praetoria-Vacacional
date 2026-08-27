@@ -108,6 +108,12 @@ export interface PropertyContent {
   /** One-liner of what kind of escape this is (issue #31 — concrete language). */
   shortIntro: string;
 
+  /**
+   * "Lo mejor de este alojamiento" — 4–6 real, property-specific selling points
+   * (issues #43, #44). Concrete and source-backed; never generic platform copy.
+   */
+  highlights: { title: string; body: string }[];
+
   location: {
     /** Locality shown to guests (e.g. "Camarena de la Sierra"). */
     city: string;
@@ -184,5 +190,6 @@ export interface PropertyContent {
     sections?: ContentSection[];
     faq?: FaqItem[];
     cancellationSummary?: string;
+    highlights?: { title: string; body: string }[];
   };
 }

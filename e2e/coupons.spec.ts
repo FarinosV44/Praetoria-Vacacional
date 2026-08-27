@@ -39,7 +39,9 @@ test("valid coupon reduces the total server-side; invalid is rejected", async ({
 });
 
 test("checkout persists the discounted total for a valid coupon", async ({ request }) => {
-  const off = 90 + (Math.floor(Date.now() / 1000) % 120);
+  // Far-future window the DEMO seed never touches, plus a random offset, so a
+  // persisted .data/demo.json from an earlier run can't collide with this hold.
+  const off = 430 + Math.floor(Math.random() * 100);
   const dates = { checkIn: futureDate(off), checkOut: futureDate(off + 4), guests: 2 };
 
   const quote = await (
