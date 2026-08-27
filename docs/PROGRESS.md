@@ -67,6 +67,13 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V2g · Final visual polish | #40 | 🟡 | lighter header, hero gradient, palette AA, tactile buttons, skeletons, consistent radii/rhythm. Full manual breakpoint review (375→1920) pending — the screenshot tool was unreliable this session; e2e image-layout test added instead |
 | V2h · Production-ready | #42 | ✅ (code) | `/api/health` (status + integrations, no secrets), boot config banner (`instrumentation.ts`), `error.tsx` + `global-error.tsx`, email log persisted + shown in `/admin/pagos` (payments + emails), internal reservation notification, branded email templates, admin form to set Booking iCal import URLs + "Sincronizar ahora", `/api/admin/sync`. `docs/launch-checklist.md` + backup/recovery in SETUP.md. e2e/production.spec.ts (health, headers, no-secrets-in-bundle). **Ticking the launch checklist needs real credentials + a deploy.** |
 
+### V3 batch (issues #43–#52) — conversion + editorial depth
+
+| Sprint | Issues | Status | Notes |
+|--------|--------|--------|-------|
+| V3 · Discount codes | #45 | ✅ | pure `checkCoupon` (8 tests) + `applyCoupon`; server computes final total (client never sends price/discount); coupon persisted only if server applied it; redeemed exactly once on first confirmation, redemption failure never un-confirms; migration (coupons + redemptions + reservation cols + `redeem_coupon` RPC); memory + supabase repos; `CouponField` on widget & checkout; `/admin/promociones` CRUD; e2e/coupons.spec.ts |
+| V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
+
 ## Exact position
 
 Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34

@@ -42,6 +42,23 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    // Guide URLs moved to destination hubs (issue #46). The old pillar guides
+    // are now the hub pages themselves; Valencia guides moved segment.
+    return [
+      {
+        source: "/guias/valencia/guia-playas-de-valencia",
+        destination: "/guias/valencia-playa",
+        permanent: true,
+      },
+      {
+        source: "/guias/javalambre/guia-de-javalambre",
+        destination: "/guias/javalambre",
+        permanent: true,
+      },
+      { source: "/guias/valencia/:slug", destination: "/guias/valencia-playa/:slug", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

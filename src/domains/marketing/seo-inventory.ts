@@ -1,6 +1,7 @@
 import { getAllProperties } from "@/domains/properties/registry";
 import { publishedLandings, landings as allLandings } from "@/content/landings";
-import { guides as allGuides, publishedGuides } from "@/content/guides";
+import { guides as allGuides, publishedGuides, hubForPropertySlug } from "@/content/guides";
+import { guideHubs } from "@/content/guides/hubs";
 import { legalDocs } from "@/content/legal";
 import { getIndexableRoutes } from "./navigation";
 
@@ -61,10 +62,24 @@ export function buildSeoInventory(): SeoRow[] {
     });
   }
 
-  for (const g of allGuides) {
+  for (const hub of guideHubs) {
     rows.push({
-      path: `/guias/${g.propertySlug}/${g.slug}`,
-      section: g.published ? (g.pillar ? "guía pilar" : "guía") : "guía (borrador)",
+      path: `/guias/${hub.slug}`,
+      section: "guía hub",
+      title: hub.metaTitle,
+      description: hub.metaDescription,
+      intent: "Informacional amplio — hub de destino",
+      h1: hub.h1,
+      hasStructuredData: true,
+      hasHreflang: false,
+    });
+  }
+
+  for (const g of allGuides) {
+    if (g.pillar) continue; // pillar intent lives on the hub page
+    rows.push({
+      path: `/guias/${hubForPropertySlug(g.propertySlug)}/${g.slug}`,
+      section: g.published ? "guía" : "guía (borrador)",
       title: g.title,
       description: g.description,
       intent: `${g.intent} · kw: ${g.keyword}`,
