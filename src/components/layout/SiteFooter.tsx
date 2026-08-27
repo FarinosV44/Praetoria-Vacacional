@@ -26,10 +26,10 @@ export function SiteFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
             Alojamientos
           </p>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-2 space-y-0.5 text-sm">
             {properties.map((p) => (
               <li key={p.slug}>
-                <Link className="hover:text-[var(--accent-700)]" href={`/${p.slug}`}>
+                <Link className="block py-1.5 hover:text-[var(--accent-700)]" href={`/${p.slug}`}>
                   {p.name}
                 </Link>
               </li>
@@ -41,19 +41,19 @@ export function SiteFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
             Descubre
           </p>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-2 space-y-0.5 text-sm">
             <li>
-              <Link className="hover:text-[var(--accent-700)]" href="/guias">
+              <Link className="block py-1.5 hover:text-[var(--accent-700)]" href="/guias">
                 Guías de destino
               </Link>
             </li>
             <li>
-              <Link className="hover:text-[var(--accent-700)]" href="/ventajas-reserva-directa">
+              <Link className="block py-1.5 hover:text-[var(--accent-700)]" href="/ventajas-reserva-directa">
                 Ventajas de reservar directo
               </Link>
             </li>
             <li>
-              <Link className="hover:text-[var(--accent-700)]" href="/contacto">
+              <Link className="block py-1.5 hover:text-[var(--accent-700)]" href="/contacto">
                 Contacto
               </Link>
             </li>
@@ -64,10 +64,10 @@ export function SiteFooter() {
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
             Legal
           </p>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-2 space-y-0.5 text-sm">
             {legal.map((l) => (
               <li key={l.href}>
-                <Link className="hover:text-[var(--accent-700)]" href={l.href}>
+                <Link className="block py-1.5 hover:text-[var(--accent-700)]" href={l.href}>
                   {l.label}
                 </Link>
               </li>

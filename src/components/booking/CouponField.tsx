@@ -56,7 +56,7 @@ export function CouponField({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 text-sm text-[var(--accent-700)] underline"
+        className="mt-2 inline-flex min-h-[40px] items-center text-sm text-[var(--accent-700)] underline"
       >
         {t.toggle}
       </button>
