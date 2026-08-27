@@ -29,6 +29,10 @@ Project class: **web app** (public booking + payments + admin). Profile:
 | CSP | present (partial) | `next.config.ts` — locked directives; `script-src` keeps `'unsafe-inline'` (inline JSON-LD + Next hydration) so static generation is preserved. Nonce/hash upgrade is a follow-up if static rendering is dropped |
 | CSRF on admin server actions | partial | same-site cookie + Next action origin check; add explicit token if admin grows |
 | Timing-safe admin password compare | present | `timingSafeEqual` |
+| Health endpoint leaks no secrets | present | `/api/health` returns states only; `e2e/production.spec.ts` asserts no `sk_`/`whsec_`/`service_role` |
+| Admin-triggered iCal sync auth | present | `/api/admin/sync` checks `isAdminAuthenticated()` (session), not the cron token |
+| No secret-shaped strings in the client bundle | present (checked) | `e2e/production.spec.ts` scans all `.js` responses |
+| Error pages never show stack traces | present | `error.tsx` / `global-error.tsx` log to console, show plain copy |
 
 ## Not defended (deliberate, V1)
 

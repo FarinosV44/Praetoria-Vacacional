@@ -64,6 +64,20 @@ export interface UpsertPaymentInput {
   raw?: unknown;
 }
 
+export interface EmailLogEntry {
+  reservationId?: string | null;
+  kind: "confirmation" | "payment_failed" | "internal";
+  recipient: string;
+  status: "sent" | "failed" | "skipped";
+  providerId?: string | null;
+  error?: string | null;
+}
+
+export interface EmailLogRow extends EmailLogEntry {
+  id: string;
+  createdAt: string;
+}
+
 /** Thrown when a hold/block cannot be created because the dates are taken. */
 export class PropertyUnavailableError extends Error {
   constructor(message = "PROPERTY_UNAVAILABLE") {
@@ -104,6 +118,7 @@ export interface Repository {
   // --- Payments --------------------------------------------------------
   upsertPayment(input: UpsertPaymentInput): Promise<Payment>;
   getPaymentBySession(session: string): Promise<Payment | null>;
+  listPayments(limit?: number): Promise<Payment[]>;
 
   // --- Webhook idempotency -------------------------------------------
   /** Returns true the first time an event id is seen, false afterwards. */
@@ -113,6 +128,14 @@ export interface Repository {
   /** Admin-saved rate config for a property, or null to use the file default. */
   getRateOverride(propertyId: string): Promise<unknown | null>;
   setRateOverride(propertyId: string, rateConfig: unknown): Promise<void>;
+
+  // --- Email log (issue #42) ---------------------------------------
+  logEmail(entry: EmailLogEntry): Promise<void>;
+  listEmailLog(limit?: number): Promise<EmailLogRow[]>;
+
+  // --- Channel import feed URLs, admin-editable (issue #42) --------
+  getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;
+  setImportFeedUrl(propertyId: string, channel: string, url: string | null): Promise<void>;
 
   // --- Calendar sync bookkeeping -----------------------------------
   getSyncRows(propertyId?: string): Promise<CalendarSyncRow[]>;

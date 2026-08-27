@@ -16,6 +16,8 @@ import {
   type AttachGuestInput,
   type CreateBlockInput,
   type CreateHoldInput,
+  type EmailLogEntry,
+  type EmailLogRow,
   type ExternalEvent,
   type Repository,
   type ReservationFilter,
@@ -38,6 +40,8 @@ interface Store {
   webhookEvents: { provider: string; eventId: string }[];
   syncs: CalendarSyncRow[];
   rateOverrides: Record<string, unknown>;
+  emailLog: EmailLogRow[];
+  importFeeds: Record<string, string>; // `${propertyId}:${channel}` -> url
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -88,7 +92,16 @@ function seed(): Store {
       eventsImported: 0,
     })),
   );
-  return { reservations: [], blocks, payments: [], webhookEvents: [], syncs, rateOverrides: {} };
+  return {
+    reservations: [],
+    blocks,
+    payments: [],
+    webhookEvents: [],
+    syncs,
+    rateOverrides: {},
+    emailLog: [],
+    importFeeds: {},
+  };
 }
 
 function load(): Store {
@@ -118,6 +131,8 @@ const g = globalThis as unknown as { __pvStore?: Store };
 const store: Store = g.__pvStore ?? (g.__pvStore = load());
 // Forward-compat for stores persisted by an older version.
 store.rateOverrides ??= {};
+store.emailLog ??= [];
+store.importFeeds ??= {};
 
 function save() {
   persist(store);
@@ -382,6 +397,12 @@ export const memoryRepository: Repository = {
     return store.payments.find((p) => p.providerCheckoutSession === session) ?? null;
   },
 
+  async listPayments(limit = 100) {
+    return [...store.payments]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
+  },
+
   async claimWebhookEvent(provider, eventId) {
     if (store.webhookEvents.some((e) => e.provider === provider && e.eventId === eventId)) {
       return false;
@@ -397,6 +418,31 @@ export const memoryRepository: Repository = {
 
   async setRateOverride(propertyId: string, rateConfig: unknown) {
     store.rateOverrides[propertyId] = rateConfig;
+    save();
+  },
+
+  async logEmail(entry: EmailLogEntry) {
+    store.emailLog.unshift({
+      ...entry,
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+    });
+    store.emailLog = store.emailLog.slice(0, 500);
+    save();
+  },
+
+  async listEmailLog(limit = 100) {
+    return store.emailLog.slice(0, limit);
+  },
+
+  async getImportFeedUrl(propertyId: string, channel: string) {
+    return store.importFeeds[`${propertyId}:${channel}`] ?? null;
+  },
+
+  async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {
+    const key = `${propertyId}:${channel}`;
+    if (url) store.importFeeds[key] = url;
+    else delete store.importFeeds[key];
     save();
   },
 

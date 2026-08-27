@@ -12,6 +12,8 @@ import {
   type AttachGuestInput,
   type CreateBlockInput,
   type CreateHoldInput,
+  type EmailLogEntry,
+  type EmailLogRow,
   type ExternalEvent,
   type Repository,
   type ReservationFilter,
@@ -329,6 +331,17 @@ export const supabaseRepository: Repository = {
     return data ? mapPayment(data) : null;
   },
 
+  async listPayments(limit = 100) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("payments")
+      .select()
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map(mapPayment);
+  },
+
   async claimWebhookEvent(provider, eventId, type, payload) {
     const db = supabaseAdmin();
     const { error } = await db
@@ -357,6 +370,62 @@ export const supabaseRepository: Repository = {
     const { error } = await db
       .from("property_settings")
       .upsert({ property_id: propertyId, rate_config: rateConfig }, { onConflict: "property_id" });
+    if (error) throw error;
+  },
+
+  async logEmail(entry: EmailLogEntry) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("email_log").insert({
+      reservation_id: entry.reservationId ?? null,
+      kind: entry.kind,
+      recipient: entry.recipient,
+      status: entry.status,
+      provider_id: entry.providerId ?? null,
+      error: entry.error ?? null,
+    });
+    if (error) console.error("email_log insert failed", error);
+  },
+
+  async listEmailLog(limit = 100) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("email_log")
+      .select()
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map(
+      (r: any): EmailLogRow => ({
+        id: r.id,
+        reservationId: r.reservation_id,
+        kind: r.kind,
+        recipient: r.recipient,
+        status: r.status,
+        providerId: r.provider_id,
+        error: r.error,
+        createdAt: r.created_at,
+      }),
+    );
+  },
+
+  async getImportFeedUrl(propertyId: string, channel: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("calendar_syncs")
+      .select("feed_url")
+      .eq("property_id", propertyId)
+      .eq("channel", channel)
+      .eq("direction", "import")
+      .maybeSingle();
+    return data?.feed_url ?? null;
+  },
+
+  async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("calendar_syncs").upsert(
+      { property_id: propertyId, channel, direction: "import", feed_url: url },
+      { onConflict: "property_id,channel,direction" },
+    );
     if (error) throw error;
   },
 
