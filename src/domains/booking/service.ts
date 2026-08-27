@@ -6,7 +6,7 @@ import { buildQuote } from "@/domains/pricing/engine";
 import type { Quote } from "@/domains/pricing/types";
 import { checkCoupon, describeRejection, normalizeCode } from "@/domains/pricing/coupons";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
-import { buildCalendar, isRangeAvailable } from "./availability";
+import { buildCalendar, isRangeAvailable, occupancy } from "./availability";
 import type { CalendarDay } from "./types";
 
 /**
@@ -181,6 +181,27 @@ export async function getPropertyCalendar(
   const repo = getRepository();
   const ranges = await repo.getBusyRanges(property.id, from, to);
   return { from, to, days: buildCalendar(ranges, from, to, from) };
+}
+
+/**
+ * Data-backed availability signal for a property over the next `horizonDays`
+ * (issue #49). Returns the real occupancy so the UI can show an honest message
+ * ("filling up" only when it genuinely is). Never invents scarcity.
+ */
+export async function getAvailabilityInsight(
+  slug: string,
+  horizonDays = 45,
+): Promise<{ level: "high" | "medium" | "low"; occupancyPct: number; horizonDays: number } | null> {
+  const property = getPropertyBySlug(slug);
+  if (!property) return null;
+  const from = todayIso();
+  const to = addDays(from, horizonDays);
+  const repo = getRepository();
+  const ranges = await repo.getBusyRanges(property.id, from, to);
+  const { rate } = occupancy(ranges, from, to);
+  const occupancyPct = Math.round(rate * 100);
+  const level = rate >= 0.7 ? "high" : rate >= 0.45 ? "medium" : "low";
+  return { level, occupancyPct, horizonDays };
 }
 
 export { isRangeAvailable, nightsBetween };

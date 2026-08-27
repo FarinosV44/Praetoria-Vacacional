@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { TrackOnMount } from "@/components/TrackOnMount";
 import { operator } from "@/content/legal";
 
 export const metadata: Metadata = pageMetadata({
@@ -13,6 +14,7 @@ export const metadata: Metadata = pageMetadata({
 export default function ContactoPage() {
   return (
     <div>
+      <TrackOnMount event="contact_click" />
       <Breadcrumbs
         items={[
           { name: "Inicio", path: "/" },

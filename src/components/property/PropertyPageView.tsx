@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Gallery } from "@/components/property/Gallery";
 import { BookingWidget } from "@/components/booking/BookingWidget";
+import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
@@ -136,6 +137,7 @@ export function PropertyPageView({ slug, locale }: { slug: string; locale: Local
           <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
         </div>
         <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{p.shortIntro}</p>
+        <AvailabilityNote propertySlug={p.slug} locale={locale === "en" ? "en" : "es"} />
       </header>
 
       <Gallery photos={photos} name={p.name} />

@@ -78,6 +78,32 @@ export function buildCalendar(
   return days;
 }
 
+/**
+ * Real occupancy for [from, to): the fraction of nights in the window that are
+ * already taken by this property's own reservations + blocks. Used only for
+ * data-backed availability messaging (issue #49) — never invented scarcity.
+ */
+export function occupancy(
+  ranges: BusyRange[],
+  from: IsoDate,
+  to: IsoDate,
+): { busyNights: number; totalNights: number; rate: number } {
+  const busy = busyNightSet(ranges);
+  let total = 0;
+  let taken = 0;
+  let cursor = from;
+  while (compareIso(cursor, to) < 0) {
+    total += 1;
+    if (busy.has(cursor)) taken += 1;
+    cursor = addDays(cursor, 1);
+  }
+  return {
+    busyNights: taken,
+    totalNights: total,
+    rate: total === 0 ? 0 : taken / total,
+  };
+}
+
 /** Next N available check-in dates for a minimum stay, scanning forward. */
 export function nextAvailableStays(
   ranges: BusyRange[],

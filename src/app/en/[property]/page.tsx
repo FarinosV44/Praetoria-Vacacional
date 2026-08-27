@@ -5,6 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return getAllProperties().map((p) => ({ property: p.slug }));

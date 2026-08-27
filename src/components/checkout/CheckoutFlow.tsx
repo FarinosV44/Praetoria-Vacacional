@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { formatMoney, formatRange, guestsLabel, nightsLabel } from "@/lib/format";
@@ -83,6 +83,25 @@ export function CheckoutFlow(props: Props) {
     track("select_dates", { property_slug: propertySlug, nights: quote.nights });
   }, [propertySlug, quote.nights]);
 
+  // Per-step funnel events (issue #49).
+  useEffect(() => {
+    track("checkout_step", { property_slug: propertySlug, step, nights: quote.nights });
+  }, [step, propertySlug, quote.nights]);
+
+  // Abandoned-checkout signal: left before reaching payment and not confirmed.
+  const paidRef = useRef(false);
+  const stepRef = useRef<Step>(step);
+  stepRef.current = step;
+  useEffect(() => {
+    function onHide() {
+      if (document.visibilityState !== "hidden") return;
+      if (paidRef.current || stepRef.current >= 3) return;
+      track("checkout_abandoned", { property_slug: propertySlug, step: stepRef.current });
+    }
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [propertySlug]);
+
   async function createHold() {
     setBusy(true);
     setError(null);
@@ -157,6 +176,7 @@ export function CheckoutFlow(props: Props) {
     if (!reservationId) return;
     setBusy(true);
     setError(null);
+    paidRef.current = true;
     track("payment_started", { property_slug: propertySlug });
     try {
       const res = await fetch("/api/checkout/pay", {
@@ -367,6 +387,20 @@ export function CheckoutFlow(props: Props) {
             <span>{formatMoney(q.totalCents)}</span>
           </div>
           <p className="mt-2 text-xs text-[var(--color-ink-soft)]">{t.finalPrice}</p>
+          <ul className="mt-3 space-y-1.5 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-ink-soft)]">
+            <li className="flex gap-2">
+              <span aria-hidden className="text-[var(--accent-600)]">
+                🔒
+              </span>
+              {locale === "en" ? "Secure card payment via Stripe" : "Pago seguro con tarjeta vía Stripe"}
+            </li>
+            <li className="flex gap-2">
+              <span aria-hidden className="text-[var(--accent-600)]">
+                ↩
+              </span>
+              {props.cancellationSummary}
+            </li>
+          </ul>
         </div>
       </aside>
     </div>

@@ -5,6 +5,8 @@ import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
 export const dynamicParams = false;
+// ISR: keep the page static but refresh availability-derived content hourly (#49).
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return getAllProperties().map((p) => ({ property: p.slug }));

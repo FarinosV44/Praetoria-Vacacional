@@ -4,6 +4,7 @@ import {
   busyNightSet,
   firstConflictNight,
   isRangeAvailable,
+  occupancy,
 } from "./availability";
 import type { BusyRange } from "./types";
 
@@ -69,5 +70,27 @@ describe("property independence", () => {
     // Valencia's busy ranges never reach this call — Javalambre stays free.
     const javalambreRanges: BusyRange[] = [];
     expect(isRangeAvailable(javalambreRanges, "2026-03-10", "2026-03-14")).toBe(true);
+  });
+});
+
+describe("occupancy", () => {
+  it("is 0 when nothing is booked in the window", () => {
+    const o = occupancy([], "2026-03-01", "2026-03-31");
+    expect(o.busyNights).toBe(0);
+    expect(o.rate).toBe(0);
+    expect(o.totalNights).toBe(30);
+  });
+  it("counts only nights inside the window", () => {
+    // ranges: 10-13 (4 nights) + 20-21 (2 nights) = 6 busy nights in March 1-31
+    const o = occupancy(ranges, "2026-03-01", "2026-03-31");
+    expect(o.busyNights).toBe(6);
+    expect(o.totalNights).toBe(30);
+    expect(o.rate).toBeCloseTo(6 / 30);
+  });
+  it("clips busy ranges that start before the window", () => {
+    const o = occupancy(ranges, "2026-03-12", "2026-03-14"); // nights 12,13 both busy
+    expect(o.busyNights).toBe(2);
+    expect(o.totalNights).toBe(2);
+    expect(o.rate).toBe(1);
   });
 });
