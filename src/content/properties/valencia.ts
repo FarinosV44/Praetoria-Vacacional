@@ -131,4 +131,51 @@ export const valencia: PropertyContent = {
   },
 
   icalImportUrls: [{ channel: "booking", url: "" }],
+
+  en: {
+    tagline: "Beach, sun and Mediterranean sea in Valencia",
+    shortIntro:
+      "A seafront apartment in Valencia for beach holidays, weekend getaways and days of Mediterranean sun, with the city and its food a step away.",
+    seo: {
+      metaTitle: "Seafront apartment in Valencia | Praetoria Vacacional",
+      metaDescription:
+        "Apartment by the beach in Valencia for holidays and weekend getaways. Book direct, real availability and instant confirmation.",
+      h1: "Seafront apartment in Valencia",
+      ogImage: "/images/og/valencia.svg",
+    },
+    sections: [
+      {
+        heading: "A beach holiday in Valencia, with the city right there",
+        body: [
+          "Praetoria Vacacional by the sea is the place to switch off to the sound of the Mediterranean: beach mornings, rice lunches and evening walks along the promenade.",
+          "Few cities combine an urban beach with a living historic centre, the City of Arts and Sciences and the Albufera natural park a short trip away like Valencia does.",
+        ],
+      },
+      {
+        heading: "A destination that works all year round",
+        body: [
+          "Beyond summer, Valencia's mild climate makes spring and autumn seaside getaways just as pleasant, with fewer people and lower prices.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Is the apartment on the beachfront?",
+        answer:
+          "The property is in Valencia's seafront area. The exact distance to the water will be confirmed with the owner's final details.",
+      },
+      {
+        question: "Is it easy to reach the centre of Valencia from the apartment?",
+        answer:
+          "Yes. Valencia's seafront is well connected to the centre by public transport and bike; exact times will be added with the final information.",
+      },
+      {
+        question: "Is the booking confirmed instantly?",
+        answer:
+          "Yes. After the secure payment you receive a confirmation email with your booking reference and the dates are blocked automatically.",
+      },
+    ],
+    cancellationSummary:
+      "Free cancellation up to 14 days before check-in. After that, terms apply per the property's policy.",
+  },
 };

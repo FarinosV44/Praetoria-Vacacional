@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAllProperties, experienceMeta } from "@/domains/properties/registry";
 import { ButtonLink } from "@/components/ui/Button";
 import { LogoMark } from "./Logo";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function SiteHeader() {
   const properties = getAllProperties();
@@ -36,9 +37,12 @@ export function SiteHeader() {
           </Link>
         </nav>
 
-        <ButtonLink href="/#buscador" size="md" className="shrink-0">
-          Ver disponibilidad
-        </ButtonLink>
+        <div className="flex shrink-0 items-center gap-2">
+          <LanguageSwitcher />
+          <ButtonLink href="/#buscador" size="md">
+            Ver disponibilidad
+          </ButtonLink>
+        </div>
       </div>
     </header>
   );

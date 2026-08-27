@@ -135,4 +135,51 @@ export const javalambre: PropertyContent = {
     // Paste the property's Booking.com iCal export URL here (Sync calendars).
     { channel: "booking", url: "" },
   ],
+
+  en: {
+    tagline: "Snow, mountains and skiing in the Javalambre range",
+    shortIntro:
+      "An apartment for ski and mountain getaways near the Javalambre resort in Teruel: ideal for winter weekends, long weekends and family snow holidays.",
+    seo: {
+      metaTitle: "Accommodation in Javalambre near the ski resort | Praetoria Vacacional",
+      metaDescription:
+        "Apartment for ski and mountain getaways in the Javalambre range (Teruel, Spain). Book direct, real availability and instant confirmation.",
+      h1: "Accommodation in Javalambre for your snow getaways",
+      ogImage: "/images/og/javalambre.svg",
+    },
+    sections: [
+      {
+        heading: "A base for your ski days in Javalambre",
+        body: [
+          "Praetoria Vacacional in Javalambre is meant as a starting point to enjoy the snow with no hassle: arrive, drop your gear and have the slopes close by to make the most of every day.",
+          "The Javalambre range, in the province of Teruel, has one of the most accessible ski resorts in eastern Spain, with a friendly, family atmosphere and a quiet mountain away from the big crowds.",
+        ],
+      },
+      {
+        heading: "Mountain getaways outside the season too",
+        body: [
+          "Outside the ski season, Javalambre and its surroundings are excellent for hiking, stargazing at the Javalambre Astrophysical Observatory and touring the villages of the Gúdar-Javalambre region.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Is the apartment close to the Javalambre slopes?",
+        answer:
+          "The property is in the area of the Javalambre ski resort. The exact distance and access time will be confirmed with the owner's final details.",
+      },
+      {
+        question: "Can I book single weekends?",
+        answer:
+          "Yes. The minimum stay may vary by season; the calendar shows available nights and the full price before you pay.",
+      },
+      {
+        question: "Is the booking confirmed instantly?",
+        answer:
+          "Yes. After the secure card payment you receive a confirmation email with your booking reference and the dates are blocked automatically.",
+      },
+    ],
+    cancellationSummary:
+      "Free cancellation up to 30 days before check-in. After that, terms apply per the property's policy.",
+  },
 };

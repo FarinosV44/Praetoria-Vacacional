@@ -5,6 +5,38 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { formatMoney, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
+import { localizedPath, type Locale } from "@/i18n/config";
+
+const STR = {
+  es: {
+    checkIn: "Entrada",
+    checkOut: "Salida",
+    guests: "Huéspedes",
+    submit: "Ver disponibilidad",
+    checking: "Comprobando…",
+    priceTotal: "precio total",
+    book: "Reservar",
+    seeProperty: "Ver alojamiento",
+    notAvailable: "No disponible para estas fechas",
+    minStay: (n: number) => ` · estancia mínima ${n} noches`,
+    connError: "Problema de conexión. Inténtalo de nuevo.",
+    genericError: "No se pudo comprobar la disponibilidad",
+  },
+  en: {
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    guests: "Guests",
+    submit: "Check availability",
+    checking: "Checking…",
+    priceTotal: "total price",
+    book: "Book",
+    seeProperty: "View property",
+    notAvailable: "Not available for these dates",
+    minStay: (n: number) => ` · minimum stay ${n} nights`,
+    connError: "Connection problem. Please try again.",
+    genericError: "Could not check availability",
+  },
+} as const;
 
 interface QuoteLite {
   totalCents: number;
@@ -26,7 +58,14 @@ function todayPlus(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
+export function AvailabilitySearch({
+  compact = false,
+  locale = "es",
+}: {
+  compact?: boolean;
+  locale?: Locale;
+}) {
+  const t = STR[locale];
   const [checkIn, setCheckIn] = useState(todayPlus(14));
   const [checkOut, setCheckOut] = useState(todayPlus(17));
   const [guests, setGuests] = useState(2);
@@ -48,24 +87,26 @@ export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
       const data = await res.json();
       if (!res.ok) {
         setStatus("error");
-        setMessage(data.error ?? "No se pudo comprobar la disponibilidad");
+        setMessage(data.error ?? t.genericError);
         return;
       }
       setResults(data.results);
       setStatus("done");
     } catch {
       setStatus("error");
-      setMessage("Problema de conexión. Inténtalo de nuevo.");
+      setMessage(t.connError);
     }
   }
 
   const query = new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
+  const reservePath = (slug: string) => localizedPath(locale, `/reservar/${slug}`) + `?${query}`;
+  const propertyPath = (slug: string) => localizedPath(locale, `/${slug}`);
 
   return (
     <div className={compact ? "" : "rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6"}>
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Entrada</span>
+          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkIn}</span>
           <input
             type="date"
             required
@@ -76,7 +117,7 @@ export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Salida</span>
+          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkOut}</span>
           <input
             type="date"
             required
@@ -87,7 +128,7 @@ export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Huéspedes</span>
+          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.guests}</span>
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
@@ -101,7 +142,7 @@ export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
           </select>
         </label>
         <Button type="submit" size="lg" disabled={status === "loading"} className="h-12 sm:h-12">
-          {status === "loading" ? "Comprobando…" : "Ver disponibilidad"}
+          {status === "loading" ? t.checking : t.submit}
         </Button>
       </form>
 
@@ -123,31 +164,29 @@ export function AvailabilitySearch({ compact = false }: { compact?: boolean }) {
                 <p className="font-display text-lg">{r.propertyName}</p>
                 {r.available && r.quote ? (
                   <p className="text-sm text-[var(--color-ink-soft)]">
-                    {formatMoney(r.quote.totalCents)} · {nightsLabel(r.quote.nights)} · precio total
+                    {formatMoney(r.quote.totalCents)} · {nightsLabel(r.quote.nights)} · {t.priceTotal}
                   </p>
                 ) : (
                   <p className="text-sm text-[var(--color-ink-soft)]">
-                    {r.reason ?? "No disponible para estas fechas"}
-                    {r.quote && r.quote.minNights > r.quote.nights
-                      ? ` · estancia mínima ${r.quote.minNights} noches`
-                      : ""}
+                    {r.reason ?? t.notAvailable}
+                    {r.quote && r.quote.minNights > r.quote.nights ? t.minStay(r.quote.minNights) : ""}
                   </p>
                 )}
               </div>
               {r.available ? (
                 <Link
-                  href={`/reservar/${r.propertySlug}?${query}`}
+                  href={reservePath(r.propertySlug)}
                   onClick={() => track("select_property", { property_slug: r.propertySlug })}
                   className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
                 >
-                  Reservar
+                  {t.book}
                 </Link>
               ) : (
                 <Link
-                  href={`/${r.propertySlug}`}
+                  href={propertyPath(r.propertySlug)}
                   className="inline-flex h-11 items-center rounded-full px-4 text-sm font-medium text-[var(--accent-700)] ring-1 ring-[var(--color-line)]"
                 >
-                  Ver alojamiento
+                  {t.seeProperty}
                 </Link>
               )}
             </li>

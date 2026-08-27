@@ -4,8 +4,19 @@ import type { PropertyContent } from "@/domains/properties/types";
 import { experienceMeta } from "@/domains/properties/registry";
 import { getRateConfig } from "@/content/rates";
 import { formatMoney, guestsLabel } from "@/lib/format";
+import { localizedPath, type Locale } from "@/i18n/config";
 
-export function PropertyCard({ property }: { property: PropertyContent }) {
+export function PropertyCard({
+  property,
+  locale = "es",
+}: {
+  property: PropertyContent;
+  locale?: Locale;
+}) {
+  const t =
+    locale === "en"
+      ? { from: "from", perNight: "/ night", cta: "Check availability →", upTo: "Up to", rooms: "bedrooms", beds: "beds", baths: "bathrooms" }
+      : { from: "desde", perNight: "/ noche", cta: "Ver disponibilidad →", upTo: "Hasta", rooms: "habitaciones", beds: "camas", baths: "baños" };
   const hero = property.gallery.find((g) => g.hero) ?? property.gallery[0];
   const meta = experienceMeta[property.experience];
   const rate = getRateConfig(property.slug);
@@ -13,7 +24,7 @@ export function PropertyCard({ property }: { property: PropertyContent }) {
 
   return (
     <Link
-      href={`/${property.slug}`}
+      href={localizedPath(locale, `/${property.slug}`)}
       data-experience={property.experience}
       className="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
@@ -43,17 +54,20 @@ export function PropertyCard({ property }: { property: PropertyContent }) {
       <div className="flex flex-1 flex-col gap-3 p-5">
         <p className="text-[var(--color-ink)]">{property.tagline}</p>
         <p className="text-xs text-[var(--color-ink-soft)]">
-          Hasta {guestsLabel(property.capacity.guests)} · {property.capacity.bedrooms} habitaciones ·{" "}
-          {property.capacity.beds} camas · {property.capacity.bathrooms} baños
+          {t.upTo} {locale === "en" ? `${property.capacity.guests} guests` : guestsLabel(property.capacity.guests)} ·{" "}
+          {property.capacity.bedrooms} {t.rooms} · {property.capacity.beds} {t.beds} ·{" "}
+          {property.capacity.bathrooms} {t.baths}
         </p>
         <div className="mt-auto flex items-end justify-between pt-3">
           {fromNightly && (
             <p className="text-sm text-[var(--color-ink-soft)]">
-              desde <span className="font-semibold text-[var(--color-ink)]">{formatMoney(fromNightly)}</span> / noche
+              {t.from}{" "}
+              <span className="font-semibold text-[var(--color-ink)]">{formatMoney(fromNightly)}</span>{" "}
+              {t.perNight}
             </p>
           )}
           <span className="text-sm font-medium text-[var(--accent-700)] transition-transform group-hover:translate-x-0.5">
-            Ver disponibilidad →
+            {t.cta}
           </span>
         </div>
       </div>

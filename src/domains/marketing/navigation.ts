@@ -41,6 +41,17 @@ export function getIndexableRoutes(): SiteRoute[] {
     });
   }
 
+  // English priority pages (issue #29): home + property pages.
+  routes.push({ path: "/en", changefreq: "weekly", priority: 0.7, section: "home" });
+  for (const property of getAllProperties()) {
+    routes.push({
+      path: `/en/${property.slug}`,
+      changefreq: "weekly",
+      priority: 0.7,
+      section: "propiedad",
+    });
+  }
+
   for (const landing of publishedLandings()) {
     routes.push({
       path: `/${landing.propertySlug}/${landing.slug}`,

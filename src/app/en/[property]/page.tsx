@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
+import { getAllProperties, getPropertyBySlug, localizedProperty } from "@/domains/properties/registry";
 import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
@@ -16,23 +16,25 @@ export async function generateMetadata({
   params: Promise<{ property: string }>;
 }): Promise<Metadata> {
   const { property } = await params;
-  const p = getPropertyBySlug(property);
-  if (!p) return {};
+  const raw = getPropertyBySlug(property);
+  if (!raw) return {};
+  const p = localizedProperty(raw, "en");
   return pageMetadata({
     title: p.seo.metaTitle,
     description: p.seo.metaDescription,
-    path: `/${p.slug}`,
+    path: `/en/${p.slug}`,
+    locale: "en",
     hreflangFor: `/${p.slug}`,
     images: [p.seo.ogImage],
   });
 }
 
-export default async function PropertyPage({
+export default async function EnPropertyPage({
   params,
 }: {
   params: Promise<{ property: string }>;
 }) {
   const { property } = await params;
   if (!getPropertyBySlug(property)) notFound();
-  return <PropertyPageView slug={property} locale="es" />;
+  return <PropertyPageView slug={property} locale="en" />;
 }

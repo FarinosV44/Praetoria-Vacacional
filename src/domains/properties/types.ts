@@ -137,4 +137,19 @@ export interface PropertyContent {
 
   /** Currency is EUR across the platform; kept explicit for clarity. */
   currency: "EUR";
+
+  /**
+   * English overrides for the priority commercial fields (issue #29). Only the
+   * fields provided are translated; anything absent falls back to Spanish and is
+   * flagged so it is never presented as reviewed English copy. Deep sections and
+   * FAQ are intentionally NOT machine-translated.
+   */
+  en?: {
+    tagline: string;
+    shortIntro: string;
+    seo: PropertySeo;
+    sections?: ContentSection[];
+    faq?: FaqItem[];
+    cancellationSummary?: string;
+  };
 }

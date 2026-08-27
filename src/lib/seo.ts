@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { publicEnv } from "./env";
 import type { PropertyContent } from "@/domains/properties/types";
+import { defaultLocale, locales, localizedPath, type Locale } from "@/i18n/config";
 
 const SITE = publicEnv.siteName;
 const BASE = publicEnv.siteUrl.replace(/\/$/, "");
@@ -12,21 +13,39 @@ export function absoluteUrl(path = "/"): string {
 interface PageSeoInput {
   title: string;
   description: string;
+  /** Path in the CURRENT locale, e.g. "/javalambre" or "/en/javalambre". */
   path: string;
   images?: string[];
   noindex?: boolean;
-  locale?: "es" | "en";
+  locale?: Locale;
+  /**
+   * Locale-neutral path ("/javalambre") for hreflang. When set, the page emits
+   * bidirectional <link rel="alternate" hreflang> for every locale + x-default.
+   */
+  hreflangFor?: string;
 }
 
 export function pageMetadata(input: PageSeoInput): Metadata {
+  const locale = input.locale ?? defaultLocale;
   const url = absoluteUrl(input.path);
   const images = (input.images ?? ["/images/og/default.svg"]).map((i) =>
     i.startsWith("http") ? i : absoluteUrl(i),
   );
+
+  const languages = input.hreflangFor
+    ? {
+        ...Object.fromEntries(
+          locales.map((l) => [l, absoluteUrl(localizedPath(l, input.hreflangFor!))]),
+        ),
+        "x-default": absoluteUrl(localizedPath(defaultLocale, input.hreflangFor)),
+      }
+    : undefined;
+
   return {
-    title: input.title,
+    // Full title — callers pass the complete string, so bypass the layout template.
+    title: { absolute: input.title },
     description: input.description,
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages },
     robots: input.noindex
       ? { index: false, follow: false }
       : { index: true, follow: true, "max-image-preview": "large" },
@@ -36,7 +55,7 @@ export function pageMetadata(input: PageSeoInput): Metadata {
       title: input.title,
       description: input.description,
       url,
-      locale: input.locale === "en" ? "en_GB" : "es_ES",
+      locale: locale === "en" ? "en_GB" : "es_ES",
       images,
     },
     twitter: { card: "summary_large_image", title: input.title, description: input.description, images },
