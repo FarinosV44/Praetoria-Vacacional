@@ -10,7 +10,7 @@ import { BookingWidget } from "@/components/booking/BookingWidget";
 import { ReviewsBlock, reviewStats } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { guestsLabel } from "@/lib/format";
-import { landingLinksFor } from "@/domains/marketing/navigation";
+import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
 import { getRateConfig } from "@/content/rates";
 import Link from "next/link";
 
@@ -46,7 +46,7 @@ export default async function PropertyPage({
   if (!p) notFound();
 
   const stats = reviewStats(p.reviews);
-  const landings = landingLinksFor(p.slug);
+  const landings = [...landingLinksFor(p.slug), ...guideLinksFor(p.slug)];
 
   return (
     <div data-experience={p.experience}>
