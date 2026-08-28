@@ -59,6 +59,16 @@ export const trustSignalsEn = [
 
 export const homeFaqEn: FaqItem[] = [
   {
+    question: "How does direct booking with Praetoria Vacacional work?",
+    answer:
+      "Choose the property, enter your dates and the number of guests, check availability and the full price, and complete the secure payment online. Once the payment is confirmed you receive your booking confirmation and the dates are blocked.",
+  },
+  {
+    question: "What's the difference between booking here and booking through a platform?",
+    answer:
+      "You book directly with Praetoria Vacacional, with no intermediaries: direct support, clear pricing and access to exclusive promotions when they are available.",
+  },
+  {
     question: "How do I know if my dates are available?",
     answer:
       "Enter check-in, check-out and the number of guests in the search box. We tell you immediately whether Javalambre, Valencia, both or neither is free, with the full price for each.",
@@ -81,6 +91,16 @@ export const homeFaqEn: FaqItem[] = [
 ];
 
 export const homeFaq: FaqItem[] = [
+  {
+    question: "¿Cómo funciona la reserva directa con Praetoria Vacacional?",
+    answer:
+      "Selecciona el alojamiento, indica las fechas y huéspedes, comprueba la disponibilidad y el precio total y completa el pago seguro online. Una vez confirmado el pago, recibirás la confirmación de la reserva y las fechas quedarán bloqueadas.",
+  },
+  {
+    question: "¿Qué diferencia hay entre reservar aquí y hacerlo a través de una plataforma?",
+    answer:
+      "La reserva es directamente con Praetoria Vacacional, sin intermediarios, con atención directa, información clara del precio y acceso a promociones exclusivas cuando estén disponibles.",
+  },
   {
     question: "¿Cómo sé si hay disponibilidad para mis fechas?",
     answer:

@@ -58,9 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Saltar al contenido
         </a>
         <SiteHeader />
-        <main id="contenido" className="pb-16 lg:pb-0">
-          {children}
-        </main>
+        <main id="contenido">{children}</main>
         <SiteFooter />
         <Analytics />
         <ExperimentTracker />
