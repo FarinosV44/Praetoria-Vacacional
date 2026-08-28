@@ -122,7 +122,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
       <header className="container-page pt-4">
         <p className="eyebrow">
-          {p.location.city} · {p.location.region}
+          {p.location.area} · {p.location.region}
         </p>
         <h1 className="mt-2 font-display text-3xl sm:text-4xl">{p.seo.h1}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
@@ -225,7 +225,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
               {t.location}
             </h2>
             <p className="mt-3 text-[var(--color-ink-soft)]">
-              {p.name} — {p.location.addressLine}, {p.location.postalCode} {p.location.city}.
+              {p.name} — {p.location.addressLine}, {p.location.postalCode} {p.location.region}.
             </p>
 
             <h3 className="mt-6 text-sm font-semibold">{t.gettingThere}</h3>

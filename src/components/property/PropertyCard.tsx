@@ -25,7 +25,7 @@ export function PropertyCard({
     : null;
   const hero = heroPhoto(property.slug);
   const keyFeature =
-    property.experience === "ski" ? "Chimenea y guardaesquís" : "Zona privada de playa";
+    property.experience === "ski" ? "Chimenea y guardaesquís" : "A pie de playa";
 
   const t =
     locale === "en"
@@ -59,7 +59,7 @@ export function PropertyCard({
         <div className="absolute inset-x-4 bottom-4 text-white">
           <h3 className="font-display text-2xl leading-tight drop-shadow">{property.name}</h3>
           <p className="text-sm text-white/90 drop-shadow">
-            {property.location.city} · {property.location.region}
+            {property.location.area} · {property.location.region}
           </p>
         </div>
       </div>

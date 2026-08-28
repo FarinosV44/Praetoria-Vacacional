@@ -31,11 +31,11 @@ const es: Dictionary = {
   nav: { guides: "Guías", seeAvailability: "Ver disponibilidad", book: "Reservar" },
   home: {
     eyebrow: "Praetoria Vacacional",
-    h1: "La nieve de Javalambre y el mar de Valencia, en reserva directa.",
+    h1: "Del Mediterráneo a la nieve, desde Valencia. En reserva directa.",
     sub: "Disponibilidad real, precio total y reserva en tres pasos. Sin comisiones de intermediarios y con confirmación inmediata.",
     chooseHeading: "Elige tu escapada",
     chooseSub:
-      "Cada alojamiento tiene su propio calendario, sus precios y su personalidad. El motor de reserva y el pago seguro son los mismos.",
+      "El mismo eje —Valencia— y dos experiencias muy distintas: el Mediterráneo a pie de la playa de la Llastra o la nieve de Javalambre desde un pueblo serrano. Cada alojamiento tiene su calendario, sus precios y su personalidad; el motor de reserva y el pago seguro son los mismos.",
     whyDirect: "Por qué reservar directamente",
     faqHeading: "Preguntas frecuentes",
     searchHeading: "Buscar disponibilidad",
@@ -53,7 +53,7 @@ const es: Dictionary = {
   },
   footer: {
     tagline:
-      "Reserva directa en alojamientos de playa y montaña. Sin intermediarios, con confirmación inmediata.",
+      "Del Mediterráneo a la nieve, desde Valencia. Reserva directa, sin intermediarios y con confirmación inmediata.",
     accommodations: "Alojamientos",
     discover: "Descubre",
     legal: "Legal",
@@ -64,11 +64,11 @@ const en: Dictionary = {
   nav: { guides: "Guides", seeAvailability: "Check availability", book: "Book" },
   home: {
     eyebrow: "Praetoria Vacacional",
-    h1: "The snow of Javalambre and the sea of Valencia — book direct.",
+    h1: "From the Mediterranean to the snow, out of Valencia — book direct.",
     sub: "Real-time availability, the full price up front, and booking in three steps. No middleman fees, instant confirmation.",
     chooseHeading: "Choose your getaway",
     chooseSub:
-      "Each place has its own calendar, prices and character. The booking engine and secure payment are shared.",
+      "One axis — Valencia — and two very different experiences: the Mediterranean right on la Llastra beach, or the Javalambre snow from a mountain village. Each place has its own calendar, prices and character; the booking engine and secure payment are shared.",
     whyDirect: "Why book direct",
     faqHeading: "Frequently asked questions",
     searchHeading: "Check availability",
@@ -86,7 +86,7 @@ const en: Dictionary = {
   },
   footer: {
     tagline:
-      "Book beach and mountain stays directly. No middlemen, instant confirmation.",
+      "From the Mediterranean to the snow, out of Valencia. Book direct — no middlemen, instant confirmation.",
     accommodations: "Stays",
     discover: "Discover",
     legal: "Legal",

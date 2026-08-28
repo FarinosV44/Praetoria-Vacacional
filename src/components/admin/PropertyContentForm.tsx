@@ -78,7 +78,7 @@ export function PropertyContentForm({
           label="Distancias (qué tienes cerca)"
           name="nearby"
           defaultValue={o.nearby ?? base.nearby}
-          hint='[{ "name": "Playa Les Palmeretes", "distance": "3 min a pie" }]'
+          hint='[{ "name": "Playa de la Llastra", "distance": "A pie de playa" }]'
         />
         <Json
           label="FAQ"

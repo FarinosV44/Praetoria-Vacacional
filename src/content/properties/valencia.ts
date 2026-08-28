@@ -3,11 +3,16 @@ import type { PropertyContent } from "@/domains/properties/types";
 /**
  * Valencia Frente al Mar — the SEA property.
  *
- * Content extracted (issue #35) from the owner's Booking listing:
- * https://www.booking.com/hotel/es/valencia-frente-al-mar.es.html
- * The apartment is in Mareny de Barraquetes (Sueca), on the quiet beach south
- * of Valencia city, right on the Mediterranean. Photos live in
- * public/images/properties/valencia and are served locally.
+ * Content originally extracted (issue #35) from the owner's Booking listing and
+ * repositioned in issue #53: the apartment is on the playa de la Llastra, a
+ * quiet stretch of the southern Valencia coast between Les Palmeres and El
+ * Perelló, in the municipality of Sueca, right on the Mediterranean. The
+ * commercial copy no longer names Mareny de Barraquetes / Les Palmeretes.
+ *
+ * Structured location data (coordinates, street address, postal code) and the
+ * legal tourist-registry line are kept unchanged per D-008 — the copy moves,
+ * the machine data does not. Photos live in public/images/properties/valencia
+ * and are served locally.
  */
 export const valencia: PropertyContent = {
   slug: "valencia",
@@ -15,14 +20,18 @@ export const valencia: PropertyContent = {
   name: "Valencia Frente al Mar",
   experience: "sea",
   currency: "EUR",
-  tagline: "Apartamento en primera línea de la playa Les Palmeretes, al sur de Valencia",
+  tagline: "Apartamento a pie de la playa de la Llastra, litoral sur de Valencia",
   shortIntro:
-    "Un apartamento de 75 m² a 3 minutos a pie de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), con vistas al mar desde el balcón, zona privada de playa y parking gratis. Un tramo de litoral tranquilo junto a la Albufera, a media hora de Valencia capital.",
+    "Un apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo desde el balcón, zona privada de playa y parking gratis. Un tramo de costa valenciana tranquilo, junto a la Albufera y a media hora de la ciudad de Valencia.",
 
   highlights: [
     {
-      title: "Primera línea de la playa Les Palmeretes",
-      body: "A unos 3 minutos a pie de la arena, con vistas directas al Mediterráneo desde el balcón. Bajas del edificio y estás en la playa.",
+      title: "A pie de la playa de la Llastra, a unos 5 metros de la arena",
+      body: "Bajas del edificio y estás sobre la arena. El apartamento está en primera línea, con vistas frontales al mar desde el balcón: te duermes y te despiertas con el Mediterráneo delante.",
+    },
+    {
+      title: "Una playa de carácter local, poco masificada",
+      body: "Arena clara, agua habitualmente limpia y buena calidad de baño, en un tramo de costa alejado de los grandes complejos turísticos. Entre Les Palmeres y El Perelló, al sur de Valencia.",
     },
     {
       title: "Zona privada de playa y recepción 24 horas",
@@ -30,35 +39,31 @@ export const valencia: PropertyContent = {
     },
     {
       title: "Barrio tranquilo, ideal para parejas y familias",
-      body: "Un tramo de costa sin el bullicio de la playa urbana, con horario sin ruido de 22:00 a 9:00. Booking valora la ubicación con un 9,4 para viajes en pareja.",
+      body: "Un litoral que mantiene una escala baja y tradicional, con horario sin ruido de 22:00 a 9:00. Booking valora la ubicación con un 9,4 para viajes en pareja.",
     },
     {
-      title: "Parking gratuito",
-      body: "Plaza de aparcamiento gratis, sin depender de la calle en verano.",
+      title: "75 m², tres dormitorios, cocina completa y parking gratis",
+      body: "Salón-comedor, cocina totalmente equipada y tres dormitorios para hasta 4 personas. Plaza de aparcamiento gratuita, sin depender de la calle en verano. Ropa de cama y toallas incluidas.",
     },
     {
-      title: "75 m², tres dormitorios y cocina completa",
-      body: "Salón-comedor, cocina totalmente equipada y tres dormitorios para hasta 4 personas. Ropa de cama y toallas incluidas.",
-    },
-    {
-      title: "La Albufera, Cullera y Valencia muy cerca",
-      body: "El Parque Natural de la Albufera a 8 km, el faro de Cullera a 9 km y Valencia capital a media hora en coche.",
+      title: "La Albufera, El Perelló, Cullera y Valencia muy cerca",
+      body: "El Parque Natural de la Albufera a 8 km, el faro de Cullera a 9 km y la ciudad de Valencia a media hora en coche. Base ideal para combinar playa, arroz, naturaleza y ciudad.",
     },
   ],
 
   location: {
     city: "Mareny de Barraquetes",
     region: "Sueca · Valencia",
-    area: "Frente al mar",
+    area: "Playa de la Llastra",
     addressLine: "Carrer del Mestre Navarro 1, pta 3",
     postalCode: "46419",
     country: "ES",
     geo: { lat: 39.3243, lng: -0.294 },
     status: "authored",
     gettingThere: [
-      "En coche desde Valencia por la V-31 y la CV-500, unos 30 minutos hasta Mareny de Barraquetes.",
+      "En coche desde Valencia por la V-31 y la CV-500, unos 30 minutos hasta este tramo del litoral sur, entre Les Palmeres y El Perelló.",
       "En tren, las estaciones de Sueca (8 km) y Cullera (11 km) son las más cercanas; desde allí, taxi o bus local hasta la playa.",
-      "El Aeropuerto de Valencia está a 34 km. La Ciudad de las Artes y las Ciencias y el Oceanográfic quedan a unos 24 km.",
+      "El Aeropuerto de Valencia está a 34 km. La Ciudad de las Artes y las Ciencias y el Oceanogràfic quedan a unos 24 km.",
     ],
   },
 
@@ -75,9 +80,9 @@ export const valencia: PropertyContent = {
     {
       category: "Mar y playa",
       items: [
-        "Situado frente a la playa Les Palmeretes",
+        "A pie de la playa de la Llastra",
         "Zona privada de playa",
-        "Balcón con vistas al mar",
+        "Balcón con vistas frontales al mar",
         "Terraza",
       ],
     },
@@ -107,37 +112,44 @@ export const valencia: PropertyContent = {
   amenitiesStatus: "authored",
 
   nearby: [
-    { name: "Playa Les Palmeretes", category: "beach", distance: "3 min a pie" },
+    { name: "Playa de la Llastra", category: "beach", distance: "A pie de playa" },
     { name: "Restaurante La Manduca Maresa", category: "food", distance: "500 m" },
     { name: "Bar Autónomo", category: "food", distance: "950 m" },
     { name: "Restaurante Llobarro", category: "food", distance: "1,7 km" },
-    { name: "Platja del Mareny de Barraquetes", category: "beach", distance: "1,8 km" },
+    { name: "Playa de El Perelló", category: "beach", distance: "2 km" },
     { name: "Parque Natural de la Albufera", category: "nature", distance: "8 km" },
     { name: "Estación de tren de Sueca", category: "transport", distance: "8 km" },
     { name: "Faro de Cullera", category: "landmark", distance: "9 km" },
     { name: "Estación de tren de Cullera", category: "transport", distance: "11 km" },
-    { name: "Ciudad de las Artes y las Ciencias / Oceanográfic", category: "landmark", distance: "24 km" },
+    { name: "Ciudad de las Artes y las Ciencias / Oceanogràfic", category: "landmark", distance: "24 km" },
     { name: "Aeropuerto de Valencia", category: "airport", distance: "34 km" },
   ],
   distancesStatus: "authored",
-  headlineDistance: { label: "A la playa Les Palmeretes", value: "3 min a pie" },
+  headlineDistance: { label: "A la playa de la Llastra", value: "~5 m a la arena" },
 
   galleryStatus: "authored",
 
   sections: [
     {
-      heading: "Primera línea de mar en un tramo de costa tranquilo",
+      heading: "Dormir prácticamente sobre el Mediterráneo",
       body: [
-        "El apartamento está en Mareny de Barraquetes, en el municipio de Sueca, en la playa Les Palmeretes: un arenal amplio y tranquilo del litoral sur de Valencia, lejos del bullicio de la playa urbana.",
-        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y un balcón con vistas directas al Mediterráneo. Nada más bajar del edificio estás en la arena, y el alojamiento cuenta con zona privada de playa y recepción 24 horas.",
+        "El apartamento está a pie de la playa de la Llastra, en el litoral sur de Valencia, entre Les Palmeres y El Perelló. A unos cinco metros de la arena: no hay carretera de por medio ni un paseo largo, bajas del portal y ya estás en la playa.",
+        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y un balcón con vistas frontales al mar. Desayunar frente al agua, bajar descalzo a primera hora y volver a mediodía sin coger el coche es el plan que permite la ubicación. El alojamiento cuenta con zona privada de playa y recepción 24 horas.",
         "A las parejas les encanta la ubicación —Booking la valora con un 9,4 para viajes de dos personas— y el barrio es especialmente tranquilo, con un horario sin ruido de 22:00 a 9:00.",
+      ],
+    },
+    {
+      heading: "Una playa con esencia de costa valenciana",
+      body: [
+        "La Llastra es un arenal de arena clara, con agua habitualmente limpia y buena calidad de baño, en un tramo del litoral que ha mantenido una escala más tradicional: casas bajas vinculadas históricamente al mar, poca edificación en altura y ninguno de los grandes complejos turísticos que han transformado otras costas.",
+        "Es una franja de litoral menos concurrida, buena para quien busca playa de verdad sin el bullicio de los destinos más masificados. Hacia el sur, El Perelló con su puerto y sus arroces; hacia el interior, los arrozales y la Albufera.",
       ],
     },
     {
       heading: "La Albufera, Cullera y Valencia, muy cerca",
       body: [
-        "El Parque Natural de la Albufera queda a 8 km: paseos en barca al atardecer y arroces en El Palmar. El faro y el castillo de Cullera están a unos 9 km.",
-        "Valencia capital, con su casco histórico, la Ciudad de las Artes y las Ciencias y el Oceanográfic, está a una media hora en coche.",
+        "El Parque Natural de la Albufera queda a 8 km: paseos en barca al atardecer saliendo de El Palmar o El Perellonet, y arroces en el pueblo. El faro y el castillo de Cullera están a unos 9 km.",
+        "La ciudad de Valencia, con su casco histórico, la Ciudad de las Artes y las Ciencias y el Oceanogràfic, está a una media hora en coche. Se puede pasar la mañana en la playa y la tarde en la ciudad sin agobios.",
       ],
     },
     {
@@ -152,12 +164,17 @@ export const valencia: PropertyContent = {
     {
       question: "¿El apartamento está realmente frente a la playa?",
       answer:
-        "Sí. Está en primera línea de la playa Les Palmeretes, a unos 3 minutos a pie de la arena, con vistas al mar desde el balcón y zona privada de playa.",
+        "Sí. Está a pie de la playa de la Llastra, a unos cinco metros de la arena, en primera línea y con vistas frontales al mar desde el balcón. También tiene zona privada de playa.",
     },
     {
       question: "¿Dónde está exactamente?",
       answer:
-        "En Mareny de Barraquetes, en el municipio de Sueca, en el litoral sur de la provincia de Valencia, junto al Parque Natural de la Albufera. Valencia capital está a una media hora en coche.",
+        "En la playa de la Llastra, en el litoral sur de la provincia de Valencia, entre Les Palmeres y El Perelló (municipio de Sueca), junto al Parque Natural de la Albufera. La ciudad de Valencia está a una media hora en coche.",
+    },
+    {
+      question: "¿Cómo es la playa de la Llastra?",
+      answer:
+        "Un arenal de arena clara y agua habitualmente limpia, poco masificado y alejado de los grandes complejos turísticos. Un tramo de costa valenciana que conserva parte de su carácter local y una escala más tradicional.",
     },
     {
       question: "¿Cuántas personas caben?",
@@ -251,40 +268,47 @@ export const valencia: PropertyContent = {
   },
 
   seo: {
-    metaTitle: "Apartamento frente al mar en la playa Les Palmeretes (Valencia) | Praetoria Vacacional",
+    metaTitle: "Apartamento frente al mar en la playa de la Llastra (Valencia) | Praetoria Vacacional",
     metaDescription:
-      "Apartamento de 75 m² a 3 min de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), litoral sur de Valencia. Vistas al mar, zona privada de playa y parking gratis. Reserva directa.",
-    h1: "Apartamento frente al mar en la playa Les Palmeretes, al sur de Valencia",
+      "Apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, litoral sur de Valencia. Vistas frontales al mar, zona privada de playa y parking gratis. Reserva directa.",
+    h1: "Apartamento frente al mar en la playa de la Llastra, al sur de Valencia",
     ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
   },
 
   icalImportUrls: [{ channel: "booking", url: "" }],
 
   en: {
-    tagline: "Beachfront apartment on Les Palmeretes beach, south of Valencia",
+    tagline: "Apartment right on la Llastra beach, southern Valencia coast",
     shortIntro:
-      "A 75 m² apartment a 3-minute walk from Les Palmeretes beach in Mareny de Barraquetes (Sueca), with sea views from the balcony, a private beach area and free parking. A quiet stretch of coast next to the Albufera, half an hour from Valencia city.",
+      "A 75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, with head-on Mediterranean views from the balcony, a private beach area and free parking. A quiet stretch of the Valencian coast, next to the Albufera and half an hour from the city of Valencia.",
     seo: {
-      metaTitle: "Beachfront apartment on Les Palmeretes beach (Valencia) | Praetoria Vacacional",
+      metaTitle: "Beachfront apartment on la Llastra beach (Valencia) | Praetoria Vacacional",
       metaDescription:
-        "75 m² apartment 3 min from Les Palmeretes beach, Mareny de Barraquetes (Sueca), south of Valencia. Sea views, private beach area, free parking. Book direct.",
-      h1: "Beachfront apartment on Les Palmeretes beach, south of Valencia",
+        "75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, southern Valencia coast. Head-on sea views, private beach area, free parking. Book direct.",
+      h1: "Beachfront apartment on la Llastra beach, southern Valencia coast",
       ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
     },
     sections: [
       {
-        heading: "Right on the sea, on a quiet stretch of coast",
+        heading: "Sleeping almost on top of the Mediterranean",
         body: [
-          "The apartment is in Mareny de Barraquetes, in the municipality of Sueca, on Les Palmeretes beach: a wide, calm stretch of sand on the coast south of Valencia, away from the bustle of the city beach.",
-          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a balcony with direct Mediterranean views. Step out of the building and you are on the sand, and the property has a private beach area and 24-hour reception.",
+          "The apartment sits right on la Llastra beach, on the southern Valencia coast between Les Palmeres and El Perelló — about five metres from the sand. No road to cross, no long walk: you step out of the door and you are on the beach.",
+          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a balcony with head-on sea views. Breakfast facing the water, an early barefoot walk down to the sand, back at midday without touching the car — that is the plan the location makes possible. The property has a private beach area and 24-hour reception.",
           "Couples love the location — Booking rates it 9.4 for two-person trips — and the neighbourhood is especially quiet, with a no-noise window from 22:00 to 9:00.",
+        ],
+      },
+      {
+        heading: "A beach with real Valencian-coast character",
+        body: [
+          "La Llastra is a stretch of pale, clean sand with water that is usually clear and good for swimming, on a part of the coast that has kept a more traditional scale: low houses with a long tie to the sea, little high-rise building and none of the large tourist complexes that have reshaped other coastlines.",
+          "It is a quieter, less crowded strip — good for anyone who wants a real beach without the bustle of the busier destinations. South lies El Perelló, with its marina and rice restaurants; inland, the rice fields and the Albufera.",
         ],
       },
       {
         heading: "The Albufera, Cullera and Valencia, all close",
         body: [
-          "The Albufera natural park is 8 km away: boat trips at sunset and rice dishes in El Palmar. The Cullera lighthouse and castle are about 9 km away.",
-          "Valencia city, with its old town, the City of Arts and Sciences and the Oceanogràfic, is about half an hour by car.",
+          "The Albufera natural park is 8 km away: boat trips at sunset from El Palmar or El Perellonet, and rice dishes in the village. The Cullera lighthouse and castle are about 9 km away.",
+          "The city of Valencia — its old town, the City of Arts and Sciences and the Oceanogràfic — is about half an hour by car. You can spend the morning on the beach and the afternoon in the city without rushing.",
         ],
       },
     ],
@@ -292,8 +316,12 @@ export const valencia: PropertyContent = {
       "Free cancellation up to 14 days before check-in. After that, terms apply per the property's policy.",
     highlights: [
       {
-        title: "Right on Les Palmeretes beach",
-        body: "About a 3-minute walk from the sand, with direct Mediterranean views from the balcony. Step out of the building and you are on the beach.",
+        title: "Right on la Llastra beach, about 5 metres from the sand",
+        body: "Step out of the building and you are on the sand. The apartment is on the front line, with head-on sea views from the balcony: you fall asleep and wake up with the Mediterranean in front of you.",
+      },
+      {
+        title: "A local, uncrowded beach",
+        body: "Pale sand, water that is usually clean and good for swimming, on a stretch of coast away from the big tourist complexes. Between Les Palmeres and El Perelló, south of Valencia.",
       },
       {
         title: "Private beach area and 24-hour reception",
@@ -301,19 +329,15 @@ export const valencia: PropertyContent = {
       },
       {
         title: "A quiet neighbourhood for couples and families",
-        body: "A stretch of coast without the city-beach crowds, with a no-noise window from 22:00 to 9:00. Booking rates the location 9.4 for couples.",
+        body: "A coastline that has kept a low, traditional scale, with a no-noise window from 22:00 to 9:00. Booking rates the location 9.4 for couples.",
       },
       {
-        title: "Free parking",
-        body: "A free parking space — no relying on the street in summer.",
+        title: "75 m², three bedrooms, full kitchen and free parking",
+        body: "A living-dining room, a fully equipped kitchen and three bedrooms for up to 4 people. A free parking space — no relying on the street in summer. Linen and towels included.",
       },
       {
-        title: "75 m², three bedrooms and a full kitchen",
-        body: "A living-dining room, a fully equipped kitchen and three bedrooms for up to 4 people. Linen and towels included.",
-      },
-      {
-        title: "The Albufera, Cullera and Valencia all close",
-        body: "The Albufera natural park 8 km away, the Cullera lighthouse 9 km away and Valencia city half an hour by car.",
+        title: "The Albufera, El Perelló, Cullera and Valencia all close",
+        body: "The Albufera natural park 8 km away, the Cullera lighthouse 9 km away and the city of Valencia half an hour by car. An ideal base for combining beach, rice, nature and city.",
       },
     ],
   },
