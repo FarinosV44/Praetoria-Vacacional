@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Gallery } from "@/components/property/Gallery";
 import { BookingWidget } from "@/components/booking/BookingWidget";
+import { bookingSectionId, bookingSectionHref } from "@/domains/booking/anchor";
 import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
@@ -302,7 +303,10 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
           )}
         </div>
 
-        <aside id="contenido" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
+        <aside
+          id={bookingSectionId(p.slug)}
+          className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start"
+        >
           <BookingWidget
             propertySlug={p.slug}
             maxGuests={p.capacity.guests}
@@ -327,7 +331,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
           <p className="mt-2 max-w-xl text-[var(--color-ink-soft)]">{t.closingBody}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href="#contenido"
+              href={bookingSectionHref(p.slug)}
               className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
             >
               {t.closingCta}
@@ -344,7 +348,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
         <a
-          href="#contenido"
+          href={bookingSectionHref(p.slug)}
           className="flex h-12 items-center justify-center rounded-full bg-[var(--accent-600)] font-medium text-white"
         >
           {t.stickyCta}
