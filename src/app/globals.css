@@ -127,3 +127,27 @@
     }
   }
 }
+
+/*
+ * Issue #55 — when a "Ver fechas / disponibilidad" CTA jumps to the booking
+ * module (#reserva-<slug>), give it a brief, subtle ring so the eye lands on it.
+ * Static fallback everywhere; the gentle fade only where motion is welcome.
+ */
+[id^="reserva-"]:target {
+  border-radius: var(--radius-card, 1rem);
+  outline: 2px solid var(--accent-500);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes booking-target-fade {
+    from {
+      outline-color: var(--accent-500);
+    }
+    to {
+      outline-color: transparent;
+    }
+  }
+  [id^="reserva-"]:target {
+    animation: booking-target-fade 2s ease-out 0.4s forwards;
+  }
+}

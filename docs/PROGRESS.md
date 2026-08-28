@@ -81,6 +81,7 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V3 · CRO avanzado | #49 | ✅ | checkout summary always shows breakdown + "pago seguro Stripe" + cancellation summary; quick contact CTA (secondary, non-competing) on home + property + property closing band; **real** scarcity from `occupancy()` (pure, tested) via `getAvailabilityInsight` + `<AvailabilityNote>`, property routes ISR 1h; funnel events `checkout_step`, `checkout_abandoned`, `contact_click`; `docs/cro/cro-v3.md` (events table + abandoned-checkout plan gated on explicit opt-in) |
 | V3 · SEO estacional | #48 | ✅ | `src/content/seasonal` + `/ofertas/[slug]`, hand-written pages only (no date×keyword combos, `dynamicParams=false`). `status: draft` → routable but `noindex` + out of sitemap; `published` → indexable + in sitemap + linked from guide hub. 2 published (Navidad Javalambre, verano Valencia) + 1 draft. e2e/seasonal.spec.ts (3 tests: indexable/noindex/404) |
 | V3 · Reposicionamiento de marca | #53 | ✅ | "Del Mediterráneo a la nieve, desde Valencia". Valencia repositioned to **playa de la Llastra** (entre Les Palmeres y El Perelló, Sueca), **a pie de playa (~5 m)**, vistas frontales — "Mareny de Barraquetes"/"Les Palmeretes" out of all commercial copy (home, fichas, cards, guide hubs + satellites, landings, seasonal, OG/meta, EN, photo alts). Javalambre drive to slopes corrected **~20 → ~10 min** everywhere (copy, metadata, JSON-LD via headlineDistance/nearby, FAQs, photo alt, paraphrased review). Camarena de la Sierra given village protagonism. Structured data (geo, address, postal, `legal.ts` registry) unchanged per D-008 — `location.city` now feeds only JSON-LD `addressLocality`; components render `location.area · region`. New editorial cluster pages deferred. `tsc` + `next lint` + `build` + 56 unit + 64 chromium e2e green. `docs/seo/keyword-map.md` + `canonical-map.md` updated |
+| V3 · CTAs de disponibilidad | #55 | ✅ | Fixed the property-page booking CTAs that jumped to the top: the `<aside>` holding `BookingWidget` used `id="contenido"`, which also belongs to the `<main>` landmark (skip-link target) — the browser resolved `#contenido` to the first match at the top. Now each property's booking module has a stable unique id `#reserva-<slug>` via the new centralized `bookingSectionId`/`bookingSectionHref` helper (`domains/booking/anchor.ts`); closing CTA + sticky mobile CTA both use it. `<main id="contenido">` stays the unique skip-link target. `scroll-mt-24` keeps the module clear of the sticky header; subtle `:target` ring (reduced-motion-safe) on arrival. State (dates/guests/coupon) untouched — anchor nav, no reload. 3 unit + 5 e2e (`property-cta.spec.ts`: both properties, closing + sticky CTA, scrolls away from top, no CTA points at `#`/`#contenido`/`/`). Home/cards/landings/guides CTAs audited — they link to property pages or `#buscador` (unique), no bug. `tsc`+`lint`+`build`+64 unit+70 chromium e2e green |
 | V3 · Cupón 10PRAETORIA10 | #54 | ✅ | Activates the promo code `10PRAETORIA10` (10% off, both properties, no expiry/limit, `active`). Production DB via migration `20260828120000_coupon_10praetoria10.sql` (upsert by `code`, re-activates on re-run); DEMO mode seeds the same object from the new `PRAETORIA10_COUPON` domain constant (+ forward-compat upsert for existing stores). Discount is server-computed only (client never sends price/percentage) — infra from #45. 13 coupon unit tests + e2e `10PRAETORIA10` on both properties (incl. lower-case normalization). Shows in `/admin/promociones` via existing `listCoupons`. `tsc`+`lint`+`build`+61 unit+65 chromium e2e green |
 | V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
 
@@ -124,7 +125,7 @@ The Vercel deploy itself is still the user's to trigger.
 
 ## Ready for `main`
 
-**V3 batch (#43–#52) + issue #53 (brand repositioning) + issue #54 (10PRAETORIA10 coupon) are complete on `develop`.**
+**V3 batch (#43–#52) + issue #53 (brand repositioning) + issue #54 (10PRAETORIA10 coupon) + issue #55 (availability CTA anchors) are complete on `develop`.**
 Home V3, property pages V3, guide hubs + 301s, discount codes, transactional SEO
 consolidation, seasonal pages, CRO, light CMS, final audit, mobile-first pass, and
 the "Del Mediterráneo a la nieve, desde Valencia" repositioning (playa de la
@@ -132,8 +133,7 @@ Llastra + Javalambre ~10 min correction) — all committed, with `tsc` + `next l
 + `npm run build` + 56 unit + 64 chromium e2e green.
 
 Merged to `main` at the user's explicit request (2026-08-27, then 2026-08-28
-after issue #53, then again 2026-08-28 after issue #54 — release commit
-`c0d7203`). Post-merge manual gates remain (real service keys +
+after issue #53, then #54, then #55). Post-merge manual gates remain (real service keys +
 `docs/launch-checklist.md`, Lighthouse on the deployed URL, iOS Safari flow pass)
 — see `docs/audits/final-audit.md`. The Vercel deploy is the owner's call.
 
