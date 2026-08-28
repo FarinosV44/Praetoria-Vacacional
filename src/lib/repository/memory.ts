@@ -24,7 +24,11 @@ import {
   type ReservationFilter,
   type UpsertPaymentInput,
 } from "./types";
-import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
+import {
+  normalizeCode,
+  PRAETORIA10_COUPON,
+  type Coupon,
+} from "@/domains/pricing/coupons";
 
 /**
  * In-memory repository backing DEMO mode (no Supabase configured, D-003).
@@ -121,6 +125,7 @@ function seed(): Store {
       active: true,
       description: "Código de ejemplo (modo demostración)",
     },
+    { ...PRAETORIA10_COUPON, id: randomUUID() },
   ];
   return {
     reservations: [],
@@ -167,6 +172,16 @@ store.rateOverrides ??= {};
 store.emailLog ??= [];
 store.importFeeds ??= {};
 store.coupons ??= [];
+// Forward-compat: ensure the issue #54 promo code exists in a store persisted
+// before it was seeded, and that it is active.
+{
+  const existing = store.coupons.find((c) => c.code === PRAETORIA10_COUPON.code);
+  if (!existing) {
+    store.coupons.push({ ...PRAETORIA10_COUPON, id: randomUUID() });
+  } else if (!existing.active) {
+    existing.active = true;
+  }
+}
 store.redemptions ??= [];
 store.contentOverrides ??= {};
 

@@ -19,6 +19,16 @@ run `git push` or approve it. A `.claude/settings.json` Bash allow-rule for
 live in `src/components/**`, never exported from route files. **How to apply:**
 if two routes need the same helper, it goes in `src/components/`.
 
+## L-004 — Playwright `reuseExistingServer` can attach to a foreign dev server
+**When:** 2026-08-28 (issue #53). `playwright.config.ts` has
+`reuseExistingServer: !CI`. On this machine an unrelated app ("PatrimonIA")
+was serving `http://localhost:3000`, so Playwright reused it and every test
+returned 404 / "Página no encontrada" — nothing to do with the code change.
+**How to apply:** run our own build on a free port and pass `E2E_BASE_URL`:
+`npx next start -p 3100`, then
+`E2E_BASE_URL=http://localhost:3100 npx playwright test --project=chromium`
+(setting `E2E_BASE_URL` also disables the config's `webServer`).
+
 ## L-003 — Pricing/availability tests must pin `now`
 **When:** 2026-08-27. `buildQuote` rejects past check-in dates via `leadTimeDays`,
 so fixture dates silently became invalid as real "today" moved. All time-sensitive
