@@ -132,8 +132,21 @@ the "Del Mediterráneo a la nieve, desde Valencia" repositioning (playa de la
 Llastra + Javalambre ~10 min correction) — all committed, with `tsc` + `next lint`
 + `npm run build` + 56 unit + 64 chromium e2e green.
 
+**Polish (2026-08-28, no issue):** removed the excessive whitespace between the
+home FAQ accordion and the footer — the gap was three compounding spacers
+(`FaqBlock py-14` + `<main> pb-16` + `footer mt-24`). Now: `FaqBlock` bottom
+padding is `pb-10 sm:pb-20` (content-sized, ~40px mobile / ~80px desktop), `<main>`
+has no bottom padding, `footer` has no top margin (its `border-t` + `py-14` carry
+the separation), and the mobile/tablet sticky-bar clearance moved to the footer's
+last row (`pb-16 lg:pb-0`) so it is real clearance, not visible gap. Added the two
+new general FAQs (ES + EN): "¿Cómo funciona la reserva directa…?" and "¿Qué
+diferencia hay entre reservar aquí y hacerlo a través de una plataforma?".
+`e2e/home-faq-spacing.spec.ts` locks the desktop gap to 64–96px and the mobile
+gap tighter.
+
 Merged to `main` at the user's explicit request (2026-08-27, then 2026-08-28
-after issue #53, then #54, then #55). Post-merge manual gates remain (real service keys +
+after issue #53, then #54 `c0d7203`, then #55 `8e2ec3a`, then the FAQ-spacing
+polish). Post-merge manual gates remain (real service keys +
 `docs/launch-checklist.md`, Lighthouse on the deployed URL, iOS Safari flow pass)
 — see `docs/audits/final-audit.md`. The Vercel deploy is the owner's call.
 

@@ -12,7 +12,7 @@ export function SiteFooter() {
   const properties = getAllProperties();
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-24 border-t border-[var(--color-line)] bg-white">
+    <footer className="border-t border-[var(--color-line)] bg-white">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <p className="font-display text-lg">Praetoria Vacacional</p>
@@ -75,7 +75,9 @@ export function SiteFooter() {
           </ul>
         </nav>
       </div>
-      <div className="border-t border-[var(--color-line)]">
+      {/* bottom clearance so the mobile/tablet sticky booking bar never covers
+          the copyright line; removed once that bar is gone (lg+) */}
+      <div className="border-t border-[var(--color-line)] pb-16 lg:pb-0">
         <p className="container-page py-6 text-xs text-[var(--color-ink-soft)]">
           © {year} Praetoria Vacacional. Pagos seguros procesados por Stripe.
         </p>
