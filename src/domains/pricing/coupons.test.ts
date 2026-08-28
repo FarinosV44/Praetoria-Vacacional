@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { checkCoupon, normalizeCode, type Coupon, type CouponContext } from "./coupons";
+import {
+  checkCoupon,
+  normalizeCode,
+  PRAETORIA10_CODE,
+  PRAETORIA10_COUPON,
+  type Coupon,
+  type CouponContext,
+} from "./coupons";
 
 const base: Coupon = {
   id: "c1",
@@ -65,6 +72,46 @@ describe("checkCoupon", () => {
   it("never returns a negative or oversized discount", () => {
     const r = checkCoupon({ ...base, kind: "percent", value: 100 }, ctx);
     expect(r.discountCents).toBe(40000);
+  });
+});
+
+describe("10PRAETORIA10 (issue #54)", () => {
+  const coupon: Coupon = { ...PRAETORIA10_COUPON, id: "praetoria10" };
+
+  it("applies exactly 10% on both properties", () => {
+    for (const propertySlug of ["javalambre", "valencia"]) {
+      const r = checkCoupon(coupon, { ...ctx, propertySlug, baseTotalCents: 50000 });
+      expect(r.ok).toBe(true);
+      expect(r.discountCents).toBe(5000); // 500 € → -50 €
+      expect(r.label).toContain(PRAETORIA10_CODE);
+    }
+  });
+
+  it("has no expiry, no usage limit and is active", () => {
+    expect(coupon.active).toBe(true);
+    expect(coupon.endsOn).toBeNull();
+    expect(coupon.startsOn).toBeNull();
+    expect(coupon.maxUses).toBeNull();
+    expect(coupon.maxUsesPerEmail).toBeNull();
+    expect(checkCoupon(coupon, { ...ctx, now: "2030-01-01" }).ok).toBe(true);
+  });
+
+  it("normalizes user input to the stored code", () => {
+    expect(normalizeCode(" 10praetoria10 ")).toBe(PRAETORIA10_CODE);
+  });
+
+  it("a code that isn't found gets no discount", () => {
+    // an unknown / mistyped code: the repository lookup returns null
+    const r = checkCoupon(null, ctx);
+    expect(r.ok).toBe(false);
+    expect(r.discountCents).toBe(0);
+  });
+
+  it("the discount is a function of the server total only — no client-supplied amount", () => {
+    // CouponContext carries only server-computed figures (baseTotalCents); the
+    // percentage comes from the stored coupon, never from the request.
+    const r = checkCoupon(coupon, { ...ctx, baseTotalCents: 12345 });
+    expect(r.discountCents).toBe(Math.round(12345 * 0.1));
   });
 });
 

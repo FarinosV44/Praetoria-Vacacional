@@ -38,6 +38,29 @@ test("valid coupon reduces the total server-side; invalid is rejected", async ({
   expect(bad.quote.totalCents).toBe(baseTotal);
 });
 
+test("10PRAETORIA10 applies 10% on both properties (issue #54)", async ({ request }) => {
+  for (const property of ["javalambre", "valencia"]) {
+    const body = { property, checkIn: futureDate(60), checkOut: futureDate(65), guests: 2 };
+
+    const plain = await (await request.post("/api/quote", { data: body })).json();
+    expect(plain.available).toBe(true);
+    const baseTotal = plain.quote.totalCents;
+
+    const withCoupon = await (
+      await request.post("/api/quote", { data: { ...body, coupon: "10PRAETORIA10" } })
+    ).json();
+    expect(withCoupon.quote.coupon.applied).toBe(true);
+    expect(withCoupon.quote.coupon.discountCents).toBe(Math.round(baseTotal * 0.1));
+    expect(withCoupon.quote.totalCents).toBe(baseTotal - withCoupon.quote.coupon.discountCents);
+
+    // lower-case input is normalized to the stored code
+    const lower = await (
+      await request.post("/api/quote", { data: { ...body, coupon: " 10praetoria10 " } })
+    ).json();
+    expect(lower.quote.coupon.applied).toBe(true);
+  }
+});
+
 test("checkout persists the discounted total for a valid coupon", async ({ request }) => {
   // Far-future window the DEMO seed never touches, plus a random offset, so a
   // persisted .data/demo.json from an earlier run can't collide with this hold.

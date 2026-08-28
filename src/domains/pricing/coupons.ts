@@ -128,3 +128,28 @@ export function describeRejection(rejection: CouponRejection, locale: "es" | "en
 export function normalizeCode(input: string): string {
   return input.trim().toUpperCase().replace(/\s+/g, "");
 }
+
+/**
+ * Issue #54 — the live promotional code. 10% off, both properties, no expiry,
+ * no usage limit, active. The production DB gets it via the migration
+ * `supabase/migrations/20260828120000_coupon_10praetoria10.sql`; DEMO mode seeds
+ * this same object (see the memory repository) so both agree.
+ */
+export const PRAETORIA10_CODE = "10PRAETORIA10";
+
+export const PRAETORIA10_COUPON: Omit<Coupon, "id"> = {
+  code: PRAETORIA10_CODE,
+  kind: "percent",
+  value: 10,
+  propertySlug: null,
+  startsOn: null,
+  endsOn: null,
+  minNights: 0,
+  minTotalCents: 0,
+  maxUses: null,
+  usesCount: 0,
+  maxUsesPerEmail: null,
+  autoApply: false,
+  active: true,
+  description: "Promoción 10PRAETORIA10 · 10% de descuento (todos los alojamientos)",
+};
