@@ -47,6 +47,28 @@ All money stored and computed as integer cents (`bigint`/`number` of cents), cur
 Pricing is computed and re-validated server-side on every quote and again at checkout and
 again in the Stripe webhook. The browser never supplies a price.
 
+## D-008 — Issue #53: brand repositioning "Del Mediterráneo a la nieve, desde Valencia"
+**Date:** 2026-08-28 · user choice (batched question on issue #53)
+Issue #53 reframes the two properties as one year-round Valencia story (sea + city +
+snow) and corrects two location facts the owner supplied as real:
+- **Valencia Frente al Mar** is marketed as **playa de la Llastra** (entre Les Palmeres
+  y El Perelló, litoral sur de Valencia, municipio de Sueca), **a pie de playa (~5 m de
+  la arena)** with **frontal sea views**. "Mareny de Barraquetes" and "Les Palmeretes"
+  are removed from all commercial copy.
+- **Javalambre**: the drive to the slopes is **~10 min**, not ~20 min — corrected in
+  every surface (copy, metadata, JSON-LD via `headlineDistance`/`nearby`, FAQs, photo
+  alt text, and the paraphrased Booking review that stated "20 min").
+**Scope chosen by the user:** *copy only* — geo coordinates, street address, postal
+code and the legal tourist-registry line (`legal.ts`, which legally references Sueca /
+Mareny de Barraquetes) are **kept unchanged**. `location.city` stays "Mareny de
+Barraquetes" as structured data only: it now feeds JSON-LD `addressLocality` but is no
+longer rendered — `PropertyPageView`/`PropertyCard` show `location.area · region`
+instead, and `location.area` becomes the positioning label ("playa de la Llastra" /
+"Camarena de la Sierra"). New editorial cluster pages proposed in the issue are
+**deferred** to a follow-up (avoid thin content).
+**Why:** the owner authored the corrected facts; without verified new coordinates/
+address we do not invent structured location data (cf. D-004).
+
 ## D-007 — Availability source of truth
 **Date:** 2026-08-27
 `reservations` (status in confirmed/pending-not-expired) + `availability_blocks` together

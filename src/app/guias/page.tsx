@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = pageMetadata({
   title: "Guías de destino: Javalambre y la costa sur de Valencia",
   description:
-    "Guías prácticas para preparar tu escapada: la sierra de Javalambre y Camarena de la Sierra, y la playa Les Palmeretes y la costa sur de Valencia.",
+    "Guías prácticas para preparar tu escapada: la sierra de Javalambre y Camarena de la Sierra, y la playa de la Llastra y el litoral sur de Valencia.",
   path: "/guias",
 });
 

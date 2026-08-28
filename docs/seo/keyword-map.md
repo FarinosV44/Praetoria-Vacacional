@@ -3,13 +3,14 @@
 Every indexable URL has ONE differentiated intent. Transactional and local
 intents are prioritised. No two URLs target the same query.
 
-**Real locations** (corrected in V2 after extracting the Booking listings):
+**Real locations** (corrected in V2, repositioned in issue #53):
 
-- **Javalambre** → the apartment is in **Camarena de la Sierra** (Teruel), ~20 min
+- **Javalambre** → the apartment is in **Camarena de la Sierra** (Teruel), **~10 min**
   by car from the ski slopes.
-- **Valencia** → the apartment is in **Mareny de Barraquetes (Sueca)**, on
-  **Les Palmeretes beach**, on the coast **south** of Valencia city, next to the
-  Albufera — not the city beach.
+- **Valencia** → the apartment is right on **la Llastra beach**, between **Les Palmeres
+  and El Perelló** (municipality of **Sueca**), on the coast **south** of Valencia city,
+  next to the Albufera — not the city beach. The commercial copy no longer names Mareny
+  de Barraquetes / Les Palmeretes (see D-008).
 
 ## Javalambre (snow)
 
@@ -30,7 +31,7 @@ intents are prioritised. No two URLs target the same query.
 
 | URL | Primary keyword | Intent |
 |---|---|---|
-| `/valencia` | apartamento frente al mar Valencia / playa Les Palmeretes | Transactional (property) |
+| `/valencia` | apartamento frente al mar Valencia / playa de la Llastra | Transactional (property) |
 | `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | Transactional |
 | `/valencia/alojamiento-frente-al-mar-valencia` | alojamiento frente al mar Valencia / primera línea | Transactional specific |
 | `/valencia/vacaciones-playa-valencia` | apartamento vacaciones Valencia playa | Transactional seasonal |
@@ -39,13 +40,14 @@ intents are prioritised. No two URLs target the same query.
 | `/guias/valencia/como-moverse-de-la-playa-al-centro-de-valencia` | cómo llegar a Valencia desde la playa del sur | Practical |
 | `/guias/valencia/valencia-con-ninos-y-playa` | playa con niños al sur de Valencia | Info |
 | `/guias/valencia/escapada-fin-de-semana-junto-al-mar-valencia` | escapada fin de semana junto al mar Valencia | Transactional |
-| `/guias/valencia/restaurantes-y-ocio-cerca-de-la-playa-valencia` | restaurantes cerca de la playa Mareny / El Perelló | Info local |
+| `/guias/valencia/restaurantes-y-ocio-cerca-de-la-playa-valencia` | restaurantes cerca de la playa de la Llastra / El Perelló | Info local |
 
 ## Entity signals (issue #39)
 
 - **Praetoria Vacacional** — Organization + WebSite JSON-LD (home + all pages).
-- **Each property** — VacationRental JSON-LD with real address, geo, floorSize,
-  aggregateRating (8.7, from Booking), image list. BreadcrumbList on every page.
+- **Each property** — VacationRental JSON-LD with real address (structured
+  `addressLocality` unchanged), geo, floorSize, aggregateRating (8.7, from Booking),
+  image list. BreadcrumbList on every page.
 - **Each destination** — real distances rendered server-side in the "Qué tienes
   cerca" table (crawlable without JS), plus the getting-there paragraphs.
 

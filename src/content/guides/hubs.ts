@@ -31,11 +31,11 @@ export const guideHubs: GuideHub[] = [
     metaDescription:
       "Guía práctica para tu escapada a Javalambre: la estación de esquí, Camarena de la Sierra, cómo llegar, dónde alojarse y qué hacer con o sin nieve.",
     h1: "Guía de Javalambre y Camarena de la Sierra",
-    lead: "Todo lo que necesitas para preparar una escapada a la sierra de Javalambre, en el sur de Teruel: la estación de esquí, el pueblo de Camarena de la Sierra a sus pies, cómo llegar y qué hacer durante todo el año.",
+    lead: "Todo lo que necesitas para preparar una escapada a la sierra de Javalambre, en el sur de Teruel: la estación de esquí más cómoda para ir desde Valencia, el pueblo de Camarena de la Sierra a diez minutos de las pistas, cómo llegar y qué hacer durante todo el año.",
     quickFacts: [
       { label: "Dónde", value: "Sierra de Javalambre, sur de Teruel (Aragón)" },
       { label: "Pueblo base", value: "Camarena de la Sierra" },
-      { label: "A las pistas", value: "~20 min en coche desde Camarena" },
+      { label: "A las pistas", value: "~10 min en coche desde Camarena" },
       { label: "Desde Valencia / Zaragoza", value: "~2 h en coche" },
       { label: "Temporada de esquí", value: "diciembre – marzo (según nieve)" },
       { label: "Tren más cercano", value: "Puebla de Valverde (15 km)" },
@@ -52,13 +52,13 @@ export const guideHubs: GuideHub[] = [
         heading: "La estación de esquí de Javalambre",
         body: [
           "Javalambre forma parte del grupo Aramón junto con Valdelinares. Es una estación de tamaño medio, con pistas amplias y un perfil especialmente cómodo para familias y para quienes están aprendiendo. La cota alta supera los 2.000 m.",
-          "No hay alojamiento a pie de pistas: la mayoría de visitantes se aloja en Camarena de la Sierra (unos 20 minutos en coche) o en los pueblos de la comarca.",
+          "No hay alojamiento a pie de pistas: la mayoría de visitantes se aloja en Camarena de la Sierra (unos 10 minutos en coche) o en los pueblos de la comarca.",
         ],
       },
       {
-        heading: "Camarena de la Sierra, la villa de las 100 fuentes",
+        heading: "Camarena de la Sierra, la villa de las fuentes",
         body: [
-          "Camarena es un pueblo de piedra en un valle con numerosos nacimientos de agua. Además de ser la base para esquiar, es punto de partida de rutas de senderismo, BTT y escalada, y tiene una ruta fluvial apta para hacer en familia.",
+          "Camarena es un pueblo serrano de piedra en un valle con numerosos nacimientos de agua, a unos 10 minutos de la estación. Conserva una atmósfera de pueblo de montaña tradicional, con calles, fuentes y un ritmo alejados de los grandes resorts de esquí. Además de ser la base para esquiar, es punto de partida de rutas de senderismo, BTT y escalada, y tiene una ruta fluvial apta para hacer en familia.",
         ],
       },
       {
@@ -77,7 +77,7 @@ export const guideHubs: GuideHub[] = [
       {
         question: "¿Dónde es mejor alojarse para esquiar en Javalambre?",
         answer:
-          "En Camarena de la Sierra, el pueblo más cercano a la estación (unos 20 minutos en coche), con servicios y guardaesquís.",
+          "En Camarena de la Sierra, el pueblo más cercano a la estación (unos 10 minutos en coche), con servicios y guardaesquís.",
       },
       {
         question: "¿Merece la pena ir a Javalambre sin esquiar?",
@@ -90,17 +90,17 @@ export const guideHubs: GuideHub[] = [
   {
     slug: "valencia-playa",
     propertySlug: "valencia",
-    eyebrow: "Guía de destino · Costa sur de Valencia",
-    title: "Guía de la playa Les Palmeretes y la costa sur de Valencia",
-    metaTitle: "Guía de la costa sur de Valencia: Les Palmeretes, Albufera y Sueca",
+    eyebrow: "Guía de destino · Litoral sur de Valencia",
+    title: "Guía de la playa de la Llastra y el litoral sur de Valencia",
+    metaTitle: "Guía de la playa de la Llastra: El Perelló, Albufera y Valencia",
     metaDescription:
-      "Guía práctica de la costa sur de Valencia: la playa Les Palmeretes en Mareny de Barraquetes, la Albufera, Cullera, Sueca, cómo llegar a Valencia y dónde comer arroz.",
-    h1: "Guía de la playa Les Palmeretes y la costa sur de Valencia",
-    lead: "Todo para preparar una escapada al litoral sur de la provincia de Valencia: la playa Les Palmeretes en Mareny de Barraquetes, el Parque Natural de la Albufera, Cullera y Sueca, con la ciudad de Valencia a media hora.",
+      "Guía práctica del litoral sur de Valencia: la playa de la Llastra entre Les Palmeres y El Perelló, la Albufera, Cullera, cómo llegar a la ciudad de Valencia y dónde comer arroz.",
+    h1: "Guía de la playa de la Llastra y el litoral sur de Valencia",
+    lead: "Todo para preparar una escapada al litoral sur de la provincia de Valencia: la playa de la Llastra entre Les Palmeres y El Perelló, el Parque Natural de la Albufera, Cullera y los arrozales, con la ciudad de Valencia a media hora.",
     quickFacts: [
-      { label: "Dónde", value: "Mareny de Barraquetes (Sueca), sur de Valencia" },
-      { label: "Playa", value: "Les Palmeretes, arenal amplio y tranquilo" },
-      { label: "A Valencia capital", value: "~30 min en coche" },
+      { label: "Dónde", value: "Playa de la Llastra (Sueca), litoral sur de Valencia" },
+      { label: "Playa", value: "La Llastra: arena clara, poco masificada" },
+      { label: "A Valencia ciudad", value: "~30 min en coche" },
       { label: "A la Albufera", value: "8 km" },
       { label: "A Cullera", value: "~9 km" },
       { label: "Tren más cercano", value: "Sueca (8 km) / Cullera (11 km)" },
@@ -109,14 +109,15 @@ export const guideHubs: GuideHub[] = [
       {
         heading: "Dónde está y cómo llegar",
         body: [
-          "La playa Les Palmeretes está en Mareny de Barraquetes, un núcleo costero del municipio de Sueca, en el litoral sur de la provincia de Valencia, justo al lado del Parque Natural de la Albufera.",
+          "La playa de la Llastra está en el litoral sur de la provincia de Valencia, entre Les Palmeres y El Perelló, en el municipio de Sueca y junto al Parque Natural de la Albufera.",
           "En coche desde Valencia se llega por la V-31 y la CV-500 en unos 30 minutos. Las estaciones de tren de Sueca (8 km) y Cullera (11 km) están en la línea C-1 de Cercanías. El Aeropuerto de Valencia está a 34 km.",
         ],
       },
       {
-        heading: "La playa y el entorno",
+        heading: "La playa y su carácter",
         body: [
-          "Les Palmeretes es un arenal amplio y tranquilo, con paseo marítimo y ambiente familiar, lejos del bullicio de la playa urbana de Valencia. Hacia el sur se suceden El Perelló y El Perellonet, y más allá, la larga playa de Cullera con su faro y su castillo.",
+          "La Llastra es un arenal de arena clara y agua habitualmente limpia, poco masificado y alejado de los grandes complejos turísticos. Es un tramo de costa valenciana que mantiene una escala más tradicional, con casas bajas vinculadas al mar y ambiente familiar, lejos del bullicio de la playa urbana de Valencia.",
+          "Hacia el sur está El Perelló, con su puerto deportivo y su oferta de arroces; al norte, Les Palmeres y El Perellonet; y más allá, la larga playa de Cullera con su faro y su castillo.",
         ],
       },
       {
@@ -128,15 +129,20 @@ export const guideHubs: GuideHub[] = [
       {
         heading: "Valencia ciudad, a media hora",
         body: [
-          "La ciudad de Valencia —casco histórico, Mercado Central, la Lonja, la Ciudad de las Artes y las Ciencias y el Oceanogràfic— está a unos 30 minutos en coche o en Cercanías desde Sueca.",
+          "La ciudad de Valencia —casco histórico, Mercado Central, la Lonja, la Ciudad de las Artes y las Ciencias y el Oceanogràfic— está a unos 30 minutos en coche o en Cercanías desde Sueca. Playa por la mañana y ciudad por la tarde es un plan perfectamente posible desde aquí.",
         ],
       },
     ],
     faq: [
       {
-        question: "¿La playa Les Palmeretes está masificada?",
+        question: "¿La playa de la Llastra está masificada?",
         answer:
-          "No. Es un arenal amplio y tranquilo del litoral sur de Valencia, muy diferente de la playa urbana de la ciudad.",
+          "No. Es un arenal tranquilo del litoral sur de Valencia, con arena clara y agua habitualmente limpia, muy diferente de la playa urbana de la ciudad y alejado de los grandes complejos turísticos.",
+      },
+      {
+        question: "¿Dónde está exactamente la playa de la Llastra?",
+        answer:
+          "En el municipio de Sueca, entre Les Palmeres y El Perelló, en la costa sur de la provincia de Valencia, junto a la Albufera. La ciudad de Valencia queda a una media hora en coche.",
       },
       {
         question: "¿Se puede ir a la ciudad de Valencia desde aquí sin coche?",
@@ -146,10 +152,10 @@ export const guideHubs: GuideHub[] = [
       {
         question: "¿Dónde se come el mejor arroz de la zona?",
         answer:
-          "En los restaurantes de Mareny de Barraquetes y El Perelló, y sobre todo en El Palmar, en el corazón de la Albufera.",
+          "En los restaurantes de El Perelló y del entorno, y sobre todo en El Palmar, en el corazón de la Albufera.",
       },
     ],
-    updated: "2026-08-27",
+    updated: "2026-08-28",
   },
 ];
 

@@ -80,6 +80,7 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V3 · CMS ligero | #50 | ✅ | `content_overrides` KV (memory + supabase + migration); `/admin/contenido` edits property SEO/tagline/intro/highlights/nearby/FAQ (with live Google SERP preview + char counts) and guide title/excerpt/lead/**status draft↔published**/order — no deploy. Pure merge in `merge.ts` files (11 unit tests). All content routes ISR 1h + `revalidatePath` on save. Drafts: noindex + out of sitemap + unlinked + preview banner. Slugs immutable (no dup risk). `docs/cms.md` |
 | V3 · CRO avanzado | #49 | ✅ | checkout summary always shows breakdown + "pago seguro Stripe" + cancellation summary; quick contact CTA (secondary, non-competing) on home + property + property closing band; **real** scarcity from `occupancy()` (pure, tested) via `getAvailabilityInsight` + `<AvailabilityNote>`, property routes ISR 1h; funnel events `checkout_step`, `checkout_abandoned`, `contact_click`; `docs/cro/cro-v3.md` (events table + abandoned-checkout plan gated on explicit opt-in) |
 | V3 · SEO estacional | #48 | ✅ | `src/content/seasonal` + `/ofertas/[slug]`, hand-written pages only (no date×keyword combos, `dynamicParams=false`). `status: draft` → routable but `noindex` + out of sitemap; `published` → indexable + in sitemap + linked from guide hub. 2 published (Navidad Javalambre, verano Valencia) + 1 draft. e2e/seasonal.spec.ts (3 tests: indexable/noindex/404) |
+| V3 · Reposicionamiento de marca | #53 | ✅ | "Del Mediterráneo a la nieve, desde Valencia". Valencia repositioned to **playa de la Llastra** (entre Les Palmeres y El Perelló, Sueca), **a pie de playa (~5 m)**, vistas frontales — "Mareny de Barraquetes"/"Les Palmeretes" out of all commercial copy (home, fichas, cards, guide hubs + satellites, landings, seasonal, OG/meta, EN, photo alts). Javalambre drive to slopes corrected **~20 → ~10 min** everywhere (copy, metadata, JSON-LD via headlineDistance/nearby, FAQs, photo alt, paraphrased review). Camarena de la Sierra given village protagonism. Structured data (geo, address, postal, `legal.ts` registry) unchanged per D-008 — `location.city` now feeds only JSON-LD `addressLocality`; components render `location.area · region`. New editorial cluster pages deferred. `tsc` + `next lint` + `build` + 56 unit + 64 chromium e2e green. `docs/seo/keyword-map.md` + `canonical-map.md` updated |
 | V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
 
 ## Exact position
@@ -122,12 +123,20 @@ The Vercel deploy itself is still the user's to trigger.
 
 ## Ready for `main`
 
-**V3 batch (#43–#52) is complete on `develop`.** Home V3, property pages V3,
-guide hubs + 301s, discount codes, transactional SEO consolidation, seasonal
-pages, CRO, light CMS, final audit and mobile-first pass — all committed, with
-`tsc` + `next lint` + `npm run build` + 56 unit + 64 chromium e2e green.
+**V3 batch (#43–#52) + issue #53 (brand repositioning) are complete on `develop`.**
+Home V3, property pages V3, guide hubs + 301s, discount codes, transactional SEO
+consolidation, seasonal pages, CRO, light CMS, final audit, mobile-first pass, and
+the "Del Mediterráneo a la nieve, desde Valencia" repositioning (playa de la
+Llastra + Javalambre ~10 min correction) — all committed, with `tsc` + `next lint`
++ `npm run build` + 56 unit + 64 chromium e2e green.
 
-Merged to `main` at the user's explicit request (2026-08-27). Post-merge manual
-gates remain (real service keys + `docs/launch-checklist.md`, Lighthouse on the
-deployed URL, iOS Safari flow pass) — see `docs/audits/final-audit.md`. The
-Vercel deploy is the owner's call.
+Merged to `main` at the user's explicit request (2026-08-27, then again 2026-08-28
+after issue #53). Post-merge manual gates remain (real service keys +
+`docs/launch-checklist.md`, Lighthouse on the deployed URL, iOS Safari flow pass)
+— see `docs/audits/final-audit.md`. The Vercel deploy is the owner's call.
+
+**Owner check for #53:** the geo coordinates / street address / postal code for
+Valencia were NOT changed (no verified new values). If the apartment's real
+coordinates should point to la Llastra rather than the current Mareny de
+Barraquetes point, provide them and the JSON-LD `addressLocality` + address block
+can be updated in a follow-up.

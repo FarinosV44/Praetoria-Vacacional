@@ -20,15 +20,15 @@ import {
 
 const COPY = {
   es: {
-    heroKicker: "Reserva directa · Playa y montaña",
-    heroTitle: "Dos casas: una frente al mar, otra frente a la nieve.",
+    heroKicker: "Reserva directa · Del Mediterráneo a la nieve",
+    heroTitle: "Del Mediterráneo a la nieve, desde Valencia.",
     heroSub:
-      "El Mediterráneo al sur de Valencia y la sierra de Javalambre, en reserva directa y con precio total desde el principio.",
+      "Dos apartamentos para vivir Valencia todo el año: uno a pie de la playa de la Llastra, al sur de la ciudad; otro en Camarena de la Sierra, a diez minutos de las pistas de Javalambre. Verano mediterráneo, escapadas de nieve en invierno y una gran ciudad en medio. En reserva directa y con precio total desde el principio.",
     discover: (n: string) => `Descubrir ${n}`,
     trust: [
+      "Dos destinos, un mismo eje: Valencia todo el año",
       "Reserva directa, sin comisiones de intermediarios",
-      "Pago seguro con tarjeta vía Stripe",
-      "Calendario sincronizado y confirmación inmediata",
+      "Pago seguro con tarjeta y confirmación inmediata",
     ],
     bookHeading: "Reserva tu escapada",
     bookSub: "Consulta disponibilidad y precio total en los dos alojamientos.",
@@ -42,20 +42,20 @@ const COPY = {
     closingHeading: "Reservar aquí tiene ventajas concretas",
     seeAllReviews: "Ver todas las opiniones",
     story: {
-      sea: { eyebrow: "Mediterráneo", h: "Días de playa, tardes junto a la Albufera" },
-      ski: { eyebrow: "Montaña", h: "Nieve, chimenea y cielo de estrellas" },
+      sea: { eyebrow: "Mediterráneo", h: "Días de playa en la Llastra, tardes junto a la Albufera" },
+      ski: { eyebrow: "Sierra", h: "Nieve a diez minutos, chimenea y cielo de estrellas" },
     },
   },
   en: {
-    heroKicker: "Book direct · Beach and mountains",
-    heroTitle: "Two homes — one by the sea, one by the snow.",
+    heroKicker: "Book direct · From the Mediterranean to the snow",
+    heroTitle: "From the Mediterranean to the snow, out of Valencia.",
     heroSub:
-      "The Mediterranean south of Valencia and the Javalambre range, booked direct, with the full price up front.",
+      "Two apartments for a year-round Valencia: one right on la Llastra beach, south of the city; the other in Camarena de la Sierra, ten minutes from the Javalambre slopes. Mediterranean summers, winter snow escapes and a great city in between. Booked direct, with the full price up front.",
     discover: (n: string) => `Discover ${n}`,
     trust: [
+      "Two destinations on one axis: Valencia, all year",
       "Book direct, no middleman fees",
-      "Secure card payment via Stripe",
-      "Synced calendar and instant confirmation",
+      "Secure card payment and instant confirmation",
     ],
     bookHeading: "Book your getaway",
     bookSub: "Check availability and the full price at both properties.",
@@ -69,8 +69,8 @@ const COPY = {
     closingHeading: "Booking here has concrete advantages",
     seeAllReviews: "See all reviews",
     story: {
-      sea: { eyebrow: "Mediterranean", h: "Beach days, evenings by the Albufera" },
-      ski: { eyebrow: "Mountains", h: "Snow, a stove and a sky full of stars" },
+      sea: { eyebrow: "Mediterranean", h: "Beach days on la Llastra, evenings by the Albufera" },
+      ski: { eyebrow: "Mountains", h: "Snow ten minutes away, a stove and a sky full of stars" },
     },
   },
 } as const;

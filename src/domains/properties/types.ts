@@ -47,7 +47,7 @@ export interface AmenityGroup {
 export interface NearbyPoint {
   name: string;
   category: "beach" | "ski" | "transport" | "food" | "nature" | "landmark" | "airport";
-  /** e.g. "0 m", "500 m", "14 km", "~20 min en coche". Verbatim from source. */
+  /** e.g. "0 m", "500 m", "14 km", "~10 min en coche". Verbatim from source. */
   distance: string;
 }
 

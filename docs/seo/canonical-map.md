@@ -39,11 +39,11 @@ product). Re-evaluate if GSC shows both ranking p.1–2 for the same query.
 
 | URL | Primary keyword | Secondary | Intent | Canonical |
 |---|---|---|---|---|
-| `/valencia` | apartamento frente al mar Les Palmeretes (head) | Mareny de Barraquetes, playa Sueca | Transaccional — ficha | self |
-| `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | apartamento playa Sueca; apartamento Les Palmeretes; apartamento Mareny de Barraquetes | Transaccional | self |
+| `/valencia` | apartamento frente al mar playa de la Llastra (head) | playa Sueca, cerca de El Perelló | Transaccional — ficha | self |
+| `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | apartamento playa Sueca; apartamento playa de la Llastra; alojamiento cerca de El Perelló | Transaccional | self |
 | `/valencia/alojamiento-frente-al-mar-valencia` | alojamiento frente al mar Valencia | apartamento primera línea playa Valencia; alojamiento con vistas al mar Valencia | Transaccional específico | self |
 | `/valencia/vacaciones-playa-valencia` | vacaciones playa Valencia | alojamiento cerca de la Albufera; apartamento vacaciones costa de Valencia | Transaccional estacional | self |
-| `/guias/valencia-playa` | guía costa sur de Valencia / Les Palmeretes | Albufera, Cullera, Sueca | Informacional (hub) | self |
+| `/guias/valencia-playa` | guía litoral sur de Valencia / playa de la Llastra | Albufera, Cullera, El Perelló, Sueca | Informacional (hub) | self |
 
 **Overlap watch:** `apartamento-playa-valencia` vs
 `alojamiento-frente-al-mar-valencia`. Distinct primary phrases ("playa" as a

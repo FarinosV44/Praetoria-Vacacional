@@ -268,7 +268,7 @@ export const guides: Guide[] = [
     keyword: "playas del sur de Valencia",
     title: "Guía de las playas del sur de Valencia: de la Albufera a Cullera",
     description:
-      "Guía de las playas de la costa sur de Valencia: El Saler, El Perellonet, El Perelló, Mareny de Barraquetes, Les Palmeretes y Cullera. Arena amplia, dunas y ambiente tranquilo.",
+      "Guía de las playas de la costa sur de Valencia: El Saler, El Perellonet, El Perelló, la playa de la Llastra y Cullera. Arena amplia, dunas y ambiente tranquilo.",
     h1: "Guía de las playas del sur de Valencia",
     lead: "Al sur de la ciudad de Valencia, entre la Albufera y Cullera, se extiende un litoral de playas amplias y tranquilas, con dunas y pinar en algunos tramos y pueblos costeros de casas bajas. Esta guía ayuda a elegir según lo que busques.",
     sections: [
@@ -279,12 +279,12 @@ export const guides: Guide[] = [
         ],
       },
       {
-        heading: "El Perellonet, El Perelló y Mareny de Barraquetes",
+        heading: "El Perellonet, El Perelló y la playa de la Llastra",
         body: [
-          "Más al sur, ya en los municipios de Sueca y Valencia, se suceden playas urbanas tranquilas de casas de veraneo: El Perellonet, El Perelló y Mareny de Barraquetes. Arenales anchos, paseo marítimo y ambiente familiar sin masificación.",
+          "Más al sur, ya en los municipios de Valencia y Sueca, se suceden playas tranquilas de casas de veraneo: El Perellonet, El Perelló y, entre Les Palmeres y El Perelló, la playa de la Llastra. Arenales de arena clara, paseo marítimo y ambiente familiar sin masificación.",
         ],
         list: [
-          "Playa Les Palmeretes (Mareny de Barraquetes): amplia y tranquila, junto a este apartamento.",
+          "Playa de la Llastra: arena clara y tranquila, poco masificada; aquí está este apartamento, a pie de arena.",
           "El Perelló: pueblo con puerto deportivo y buena oferta de arroces.",
           "El Perellonet: entre el mar y la Albufera, punto de partida de paseos en barca.",
         ],
@@ -292,7 +292,7 @@ export const guides: Guide[] = [
       {
         heading: "Cullera",
         body: [
-          "Al final de este tramo, Cullera combina una larga playa urbana con el faro, el castillo y el monte con vistas al Mediterráneo. Está a unos 9 km del apartamento.",
+          "Al final de este tramo, Cullera combina una larga playa urbana con el faro, el castillo y el monte con vistas al Mediterráneo. Está a unos 9 km de la playa de la Llastra.",
         ],
       },
     ],
@@ -300,7 +300,7 @@ export const guides: Guide[] = [
       {
         question: "¿Cuál es la mejor playa del sur de Valencia para ir con niños?",
         answer:
-          "Les Palmeretes, El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada, y suelen estar menos concurridas que la playa urbana de Valencia.",
+          "La Llastra, El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada, y suelen estar menos concurridas que la playa urbana de Valencia.",
       },
       {
         question: "¿Se puede ir a estas playas en transporte público?",
@@ -320,7 +320,7 @@ export const guides: Guide[] = [
     description:
       "Planes sin alejarte de la costa sur de Valencia: la Albufera en barca, arroces en El Palmar, el castillo de Cullera y los pueblos costeros de Sueca.",
     h1: "Qué hacer junto al mar al sur de Valencia",
-    lead: "Desde la playa Les Palmeretes puedes pasar varios días sin separarte de la costa y no repetir plan. Estas son las mejores opciones cerca.",
+    lead: "Desde la playa de la Llastra puedes pasar varios días sin separarte de la costa y no repetir plan. Estas son las mejores opciones cerca.",
     sections: [
       {
         heading: "La Albufera en barca al atardecer",
@@ -337,7 +337,7 @@ export const guides: Guide[] = [
       {
         heading: "Los pueblos costeros y sus puertos",
         body: [
-          "El Perelló y su puerto deportivo, el mercadillo de verano de Mareny y los paseos marítimos de la zona dan para tardes tranquilas de bici y helado.",
+          "El Perelló y su puerto deportivo, los mercadillos de verano de la zona y los paseos marítimos dan para tardes tranquilas de bici y helado.",
         ],
       },
     ],
@@ -351,7 +351,7 @@ export const guides: Guide[] = [
     keyword: "cómo llegar a Valencia desde la playa del sur",
     title: "Cómo llegar a Valencia capital desde la playa del sur",
     description:
-      "Opciones para ir de Mareny de Barraquetes / Les Palmeretes a la ciudad de Valencia: coche, tren desde Sueca o Cullera y autobús. Tiempos y consejos.",
+      "Opciones para ir de la playa de la Llastra (Sueca) a la ciudad de Valencia: coche, tren desde Sueca o Cullera y autobús. Tiempos y consejos.",
     h1: "Cómo llegar a Valencia capital desde la playa del sur",
     lead: "El apartamento está en la costa sur de la provincia, a una media hora de la ciudad de Valencia. Estas son las formas de moverte.",
     sections: [
@@ -384,14 +384,14 @@ export const guides: Guide[] = [
     keyword: "playa con niños al sur de Valencia",
     title: "Playa con niños al sur de Valencia: plan para toda la familia",
     description:
-      "Cómo combinar playa tranquila y planes para niños desde la costa sur de Valencia: Les Palmeretes, la Albufera, Cullera y, a media hora, el Oceanogràfic y el Bioparc.",
+      "Cómo combinar playa tranquila y planes para niños desde la costa sur de Valencia: la playa de la Llastra, la Albufera, Cullera y, a media hora, el Oceanogràfic y el Bioparc.",
     h1: "Playa con niños al sur de Valencia",
     lead: "La costa sur de Valencia es muy cómoda para viajar con niños: playas amplias de arena fina y pendiente suave, ambiente tranquilo y grandes atractivos familiares a media hora en coche.",
     sections: [
       {
         heading: "Playa con niños",
         body: [
-          "Les Palmeretes y las playas vecinas de El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada. Al estar menos concurridas que la playa urbana, es más fácil montar la sombrilla y no perder de vista a los peques. Ir a primera hora o a última tarde evita el sol fuerte.",
+          "La playa de la Llastra y las vecinas de El Perelló y El Perellonet tienen arena fina, pendiente suave, paseo y servicios en temporada. Al estar menos concurridas que la playa urbana, es más fácil montar la sombrilla y no perder de vista a los peques. Ir a primera hora o a última tarde evita el sol fuerte.",
         ],
       },
       {
@@ -423,14 +423,14 @@ export const guides: Guide[] = [
     keyword: "escapada de fin de semana junto al mar en Valencia",
     title: "Escapada de fin de semana junto al mar, al sur de Valencia",
     description:
-      "Un plan de dos días junto al mar en la costa sur de Valencia: playa Les Palmeretes, Albufera en barca, Cullera y, si apetece, una tarde en la ciudad. Con alojamiento en reserva directa.",
+      "Un plan de dos días junto al mar en la costa sur de Valencia: playa de la Llastra, Albufera en barca, Cullera y, si apetece, una tarde en la ciudad. Con alojamiento en reserva directa.",
     h1: "Escapada de fin de semana junto al mar, al sur de Valencia",
-    lead: "Con un fin de semana da tiempo a mezclar playa tranquila, naturaleza y algo de ciudad sin agobios. Esta es una propuesta equilibrada partiendo de un apartamento frente al mar en Les Palmeretes.",
+    lead: "Con un fin de semana da tiempo a mezclar playa tranquila, naturaleza y algo de ciudad sin agobios. Esta es una propuesta equilibrada partiendo de un apartamento a pie de la playa de la Llastra.",
     sections: [
       {
         heading: "Viernes: llegada y atardecer en la playa",
         body: [
-          "Llegar, dejar las cosas y bajar a la arena a ver el atardecer. Cena de arroz o de tapas en El Perelló o en el propio Mareny.",
+          "Llegar, dejar las cosas y bajar a la arena a ver el atardecer. Cena de arroz o de tapas en El Perelló.",
         ],
       },
       {
@@ -453,17 +453,17 @@ export const guides: Guide[] = [
     propertySlug: "valencia",
     pillar: false,
     intent: "Informacional local",
-    keyword: "restaurantes cerca de la playa de Mareny / El Perelló",
+    keyword: "restaurantes cerca de la playa de la Llastra / El Perelló",
     title: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
     description:
-      "Dónde comer arroz, tapear y salir cerca de Les Palmeretes, Mareny de Barraquetes y El Perelló, en la costa sur de Valencia. Consejos prácticos.",
+      "Dónde comer arroz, tapear y salir cerca de la playa de la Llastra y El Perelló, en la costa sur de Valencia. Consejos prácticos.",
     h1: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
     lead: "La costa sur de Valencia es tierra de arroz: la paella valenciana y el arroz a banda se toman aquí en su versión más tradicional, muchas veces con el arrozal a la vista. Esto es lo que conviene saber cerca del apartamento.",
     sections: [
       {
         heading: "Arroces cerca del apartamento",
         body: [
-          "En Mareny de Barraquetes y El Perelló hay restaurantes de arroz a pocos minutos: La Manduca Maresa está a unos 500 m del apartamento y el Restaurante Llobarro a 1,7 km. La paella se come tradicionalmente a mediodía; conviene reservar en fin de semana y en verano.",
+          "Junto a la playa de la Llastra y hacia El Perelló hay restaurantes de arroz a pocos minutos: La Manduca Maresa está a unos 500 m del apartamento y el Restaurante Llobarro a 1,7 km. La paella se come tradicionalmente a mediodía; conviene reservar en fin de semana y en verano.",
         ],
       },
       {

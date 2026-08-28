@@ -36,7 +36,7 @@ export const seasonalPages: SeasonalPage[] = [
     period: "Diciembre – Reyes",
     title: "Navidad y puente de diciembre en Javalambre | Apartamento en Camarena",
     description:
-      "Escápate a la nieve en Navidad o el puente de diciembre: apartamento en Camarena de la Sierra, a 20 min de las pistas de Javalambre. Chimenea, parking y guardaesquís. Reserva directa.",
+      "Escápate a la nieve en Navidad o el puente de diciembre: apartamento en Camarena de la Sierra, a 10 min de las pistas de Javalambre. Chimenea, parking y guardaesquís. Reserva directa.",
     h1: "Navidad y puente de diciembre en Javalambre",
     lead: "El puente de la Constitución y las vacaciones de Navidad son la primera gran ventana de esquí de la temporada en Javalambre. Este apartamento en Camarena de la Sierra es una base cómoda para esos días, con chimenea de pellets para las tardes frías.",
     blocks: [
@@ -81,14 +81,14 @@ export const seasonalPages: SeasonalPage[] = [
     period: "Junio – septiembre",
     title: "Verano en la playa al sur de Valencia | Apartamento frente al mar",
     description:
-      "Verano frente al mar en Les Palmeretes (Sueca), al sur de Valencia: playa amplia y tranquila, vistas al Mediterráneo, zona privada de playa y parking gratis. Reserva directa.",
+      "Verano frente al mar en la playa de la Llastra (Sueca), al sur de Valencia: arena clara y tranquila, vistas frontales al Mediterráneo, zona privada de playa y parking gratis. Reserva directa.",
     h1: "Verano en la playa al sur de Valencia",
-    lead: "Julio y agosto son temporada alta en la costa sur de Valencia, y junio y septiembre mantienen buen tiempo de baño con menos gente. Este apartamento en primera línea de la playa Les Palmeretes es una base tranquila para el verano, con Valencia y la Albufera a media hora.",
+    lead: "Julio y agosto son temporada alta en la costa sur de Valencia, y junio y septiembre mantienen buen tiempo de baño con menos gente. Este apartamento a pie de la playa de la Llastra es una base tranquila para el verano, con Valencia y la Albufera a media hora.",
     blocks: [
       {
-        heading: "Cómo es el verano en Les Palmeretes",
+        heading: "Cómo es el verano en la playa de la Llastra",
         body: [
-          "Un arenal amplio de la costa sur, en Mareny de Barraquetes (Sueca), lejos del bullicio de la playa urbana. Nada más bajar del edificio estás en la arena, y el alojamiento tiene zona privada de playa y recepción 24 horas.",
+          "Un arenal de arena clara del litoral sur, entre Les Palmeres y El Perelló (Sueca), lejos del bullicio de la playa urbana. Nada más bajar del edificio estás en la arena, y el alojamiento tiene zona privada de playa y recepción 24 horas.",
         ],
       },
       {

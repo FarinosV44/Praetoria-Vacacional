@@ -3,9 +3,9 @@
  *
  * Content is written for humans first, with concrete, verifiable information
  * about the real location of each property:
- *  - Javalambre → Camarena de la Sierra (Teruel), ~20 min from the slopes
- *  - Valencia   → Mareny de Barraquetes (Sueca), Les Palmeretes beach, south of
- *                 Valencia city, next to the Albufera
+ *  - Javalambre → Camarena de la Sierra (Teruel), ~10 min from the slopes
+ *  - Valencia   → playa de la Llastra (Sueca), between Les Palmeres and El
+ *                 Perelló, on the southern Valencia coast, next to the Albufera
  * Every landing links to the property page and to availability (issue #28).
  *
  * Issue #47 — one strong URL per search intent. `keyword` is the single primary
@@ -40,9 +40,9 @@ export const landings: Landing[] = [
     secondaryKeywords: ["apartamento Javalambre", "dónde alojarse en Javalambre"],
     title: "Alojamiento en Javalambre: apartamento en Camarena de la Sierra",
     description:
-      "Apartamento en Camarena de la Sierra, a 20 minutos de las pistas de Javalambre. 70 m², chimenea de pellets, cocina completa, parking gratis y guardaesquís. Reserva directa.",
+      "Apartamento en Camarena de la Sierra, a 10 minutos de las pistas de Javalambre. 70 m², chimenea de pellets, cocina completa, parking gratis y guardaesquís. Reserva directa.",
     h1: "Alojamiento en Javalambre",
-    lead: "El alojamiento más práctico para esquiar en Javalambre es un apartamento en Camarena de la Sierra, el pueblo a los pies de la sierra. A unos 20 minutos en coche de las pistas, con parking y guardaesquís, es una base cómoda para un fin de semana de nieve.",
+    lead: "El alojamiento más práctico para esquiar en Javalambre es un apartamento en Camarena de la Sierra, el pueblo a los pies de la sierra. A unos 10 minutos en coche de las pistas, con parking y guardaesquís, es una base cómoda para un fin de semana de nieve.",
     blocks: [
       {
         heading: "Dónde alojarse para esquiar en Javalambre",
@@ -68,7 +68,7 @@ export const landings: Landing[] = [
       {
         question: "¿Dónde está el alojamiento?",
         answer:
-          "En Camarena de la Sierra (Teruel), en la Calle San Mateo, a unos 20 minutos en coche de la estación de esquí de Javalambre.",
+          "En Camarena de la Sierra (Teruel), en la Calle San Mateo, a unos 10 minutos en coche de la estación de esquí de Javalambre.",
       },
       {
         question: "¿Tiene parking?",
@@ -92,7 +92,7 @@ export const landings: Landing[] = [
       {
         heading: "Camarena de la Sierra",
         body: [
-          "El pueblo más cercano a la estación (unos 20 minutos en coche). Conocido como la villa de las 100 fuentes, está en un valle con nacimientos de agua y rutas de senderismo. Es la mejor opción si vas a esquiar. Aquí está este apartamento.",
+          "El pueblo más cercano a la estación (unos 10 minutos en coche). Conocido como la villa de las 100 fuentes, está en un valle con nacimientos de agua y rutas de senderismo. Es la mejor opción si vas a esquiar. Aquí está este apartamento.",
         ],
       },
       {
@@ -112,7 +112,7 @@ export const landings: Landing[] = [
       {
         question: "¿Cuál es la mejor zona para dormir si voy a esquiar?",
         answer:
-          "Camarena de la Sierra, el pueblo más cercano a la estación de Javalambre, a unos 20 minutos en coche de las pistas.",
+          "Camarena de la Sierra, el pueblo más cercano a la estación de Javalambre, a unos 10 minutos en coche de las pistas.",
       },
       {
         question: "¿Hay alojamiento a pie de pistas en Javalambre?",
@@ -133,9 +133,9 @@ export const landings: Landing[] = [
     ],
     title: "Alojamiento cerca de la estación de esquí de Javalambre",
     description:
-      "Apartamento en Camarena de la Sierra, a unos 20 minutos de la estación de esquí de Javalambre. Parking, guardaesquís y forfaits en el edificio. Reserva directa con precio total.",
+      "Apartamento en Camarena de la Sierra, a unos 10 minutos de la estación de esquí de Javalambre. Parking, guardaesquís y forfaits en el edificio. Reserva directa con precio total.",
     h1: "Alojamiento cerca de la estación de esquí de Javalambre",
-    lead: "Camarena de la Sierra es el pueblo más próximo a la estación de Javalambre. Alojarte aquí reduce los desplazamientos diarios a unos 20 minutos y te permite volver a comer o descansar entre jornadas.",
+    lead: "Camarena de la Sierra es el pueblo más próximo a la estación de Javalambre. Alojarte aquí reduce los desplazamientos diarios a unos 10 minutos y te permite volver a comer o descansar entre jornadas.",
     blocks: [
       {
         heading: "Ventajas de alojarse en Camarena",
@@ -159,7 +159,7 @@ export const landings: Landing[] = [
     faq: [
       {
         question: "¿A cuánto está el apartamento de las pistas?",
-        answer: "A unos 20 minutos en coche de la estación de esquí de Javalambre.",
+        answer: "A unos 10 minutos en coche de la estación de esquí de Javalambre.",
       },
       {
         question: "¿Hay guardaesquís?",
@@ -176,20 +176,20 @@ export const landings: Landing[] = [
     keyword: "apartamento playa Valencia",
     secondaryKeywords: [
       "apartamento playa Sueca",
-      "apartamento Les Palmeretes",
-      "apartamento Mareny de Barraquetes",
+      "apartamento playa de la Llastra",
+      "alojamiento cerca de El Perelló",
     ],
     title: "Apartamento en la playa, al sur de Valencia | Reserva directa",
     description:
-      "Apartamento en primera línea de la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), litoral sur de Valencia. 75 m², vistas al mar, parking gratis. Reserva directa.",
+      "Apartamento a pie de la playa de la Llastra, entre Les Palmeres y El Perelló (Sueca), litoral sur de Valencia. 75 m², vistas frontales al mar, parking gratis. Reserva directa.",
     h1: "Apartamento en la playa, al sur de Valencia",
-    lead: "Un apartamento frente al mar en la playa Les Palmeretes, en Mareny de Barraquetes, en la costa sur de la provincia de Valencia. Arena amplia y tranquila, vistas al Mediterráneo y reserva directa.",
+    lead: "Un apartamento a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, en la costa sur de la provincia de Valencia. Arena clara, agua limpia, vistas frontales al Mediterráneo y reserva directa.",
     blocks: [
       {
         heading: "Playa tranquila, con Valencia y la Albufera cerca",
         body: [
-          "Les Palmeretes es un arenal amplio del litoral sur de Valencia, en el municipio de Sueca, junto al Parque Natural de la Albufera. Lejos del bullicio de la playa urbana, pero con Valencia capital a una media hora en coche.",
-          "El apartamento tiene 75 m², tres dormitorios, cocina completa y un balcón con vistas directas al mar. Nada más bajar del edificio estás en la arena.",
+          "La Llastra es un arenal de arena clara del litoral sur de Valencia, en el municipio de Sueca, junto al Parque Natural de la Albufera. Poco masificado y alejado de los grandes complejos turísticos, pero con la ciudad de Valencia a una media hora en coche.",
+          "El apartamento tiene 75 m², tres dormitorios, cocina completa y un balcón con vistas frontales al mar. A unos cinco metros de la arena: bajas del edificio y ya estás en la playa.",
         ],
       },
       {
@@ -209,7 +209,7 @@ export const landings: Landing[] = [
       {
         question: "¿El apartamento está en la playa de Valencia ciudad?",
         answer:
-          "No. Está en la playa Les Palmeretes, en Mareny de Barraquetes (Sueca), en la costa sur de la provincia, a una media hora en coche de la ciudad de Valencia.",
+          "No. Está a pie de la playa de la Llastra, entre Les Palmeres y El Perelló (Sueca), en la costa sur de la provincia, a una media hora en coche de la ciudad de Valencia.",
       },
       {
         question: "¿Cuántas personas caben?",
@@ -226,14 +226,14 @@ export const landings: Landing[] = [
     secondaryKeywords: ["apartamento primera línea playa Valencia", "alojamiento con vistas al mar Valencia"],
     title: "Alojamiento frente al mar en la provincia de Valencia",
     description:
-      "Alojamiento en primera línea de mar en Les Palmeretes (Sueca), al sur de Valencia. Despiertas con el Mediterráneo delante. Reserva directa con disponibilidad real y precio total.",
+      "Alojamiento en primera línea de mar en la playa de la Llastra (Sueca), al sur de Valencia. Despiertas con el Mediterráneo delante. Reserva directa con disponibilidad real y precio total.",
     h1: "Alojamiento frente al mar en la provincia de Valencia",
-    lead: "Estar en primera línea de playa significa bajar a la arena en minutos y tener el mar como salón. Este apartamento está en primera línea de la playa Les Palmeretes, en la costa sur de Valencia.",
+    lead: "Estar en primera línea de playa significa bajar a la arena en segundos y tener el mar como salón. Este apartamento está a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, en la costa sur de Valencia.",
     blocks: [
       {
         heading: "Qué aporta la primera línea",
         body: [
-          "Menos desplazamientos, más tiempo de playa, mañanas con vista al mar desde el balcón y acceso directo a la arena y a los restaurantes del frente marítimo de Mareny de Barraquetes.",
+          "Menos desplazamientos, más tiempo de playa, mañanas con vistas frontales al mar desde el balcón y acceso directo a la arena y a los restaurantes del frente marítimo.",
         ],
       },
       {
@@ -256,7 +256,7 @@ export const landings: Landing[] = [
       },
       {
         question: "¿A qué distancia está la arena?",
-        answer: "A unos 3 minutos a pie. El edificio está en primera línea de la playa Les Palmeretes.",
+        answer: "A unos cinco metros. El edificio está a pie de la playa de la Llastra, en primera línea.",
       },
     ],
     published: true,
@@ -269,9 +269,9 @@ export const landings: Landing[] = [
     secondaryKeywords: ["alojamiento cerca de la Albufera", "apartamento vacaciones costa de Valencia"],
     title: "Vacaciones de playa al sur de Valencia | Apartamento frente al mar",
     description:
-      "Apartamento para vacaciones de playa en Les Palmeretes (Sueca), litoral sur de Valencia: verano, primavera y otoño con clima suave. Reserva directa, disponibilidad real y precio total.",
+      "Apartamento para vacaciones de playa en la playa de la Llastra (Sueca), litoral sur de Valencia: verano, primavera y otoño con clima suave. Reserva directa, disponibilidad real y precio total.",
     h1: "Vacaciones de playa al sur de Valencia",
-    lead: "La costa sur de Valencia, junto a la Albufera, es un destino de playa que funciona más allá del verano. Este apartamento frente al mar en Les Palmeretes es una buena base para tus vacaciones.",
+    lead: "La costa sur de Valencia, junto a la Albufera, es un destino de playa que funciona más allá del verano. Este apartamento a pie de la playa de la Llastra es una buena base para tus vacaciones.",
     blocks: [
       {
         heading: "Cuándo ir",

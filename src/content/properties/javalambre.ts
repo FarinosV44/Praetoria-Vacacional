@@ -5,9 +5,11 @@ import type { PropertyContent } from "@/domains/properties/types";
  *
  * Content extracted (issue #35) from the owner's Booking listing:
  * https://www.booking.com/hotel/es/javalambre-mountain-resort.es.html
- * Every field below is real and source-backed. Photos live in
- * public/images/properties/javalambre (see photo-manifest.json) and are served
- * locally — the site never depends on Booking at runtime.
+ * Every field below is real and source-backed. The drive to the slopes was
+ * corrected to ~10 minutes and the village of Camarena de la Sierra given more
+ * weight in issue #53. Photos live in public/images/properties/javalambre (see
+ * photo-manifest.json) and are served locally — the site never depends on
+ * Booking at runtime.
  */
 export const javalambre: PropertyContent = {
   slug: "javalambre",
@@ -15,14 +17,14 @@ export const javalambre: PropertyContent = {
   name: "Javalambre Mountain SuperSki",
   experience: "ski",
   currency: "EUR",
-  tagline: "Apartamento en Camarena de la Sierra, a los pies de Javalambre",
+  tagline: "Apartamento en Camarena de la Sierra, a 10 minutos de las pistas de Javalambre",
   shortIntro:
-    "Un apartamento nuevo de 70 m² en Camarena de la Sierra, la villa de las 100 fuentes, con vistas a la montaña y a un corto trayecto de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: la base ideal para un fin de semana de nieve en Teruel.",
+    "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
 
   highlights: [
     {
-      title: "A 20 minutos de las pistas de Javalambre",
-      body: "El apartamento está en Camarena de la Sierra, el pueblo más cercano a la estación. Sales por la mañana y en 20 minutos estás calzando los esquís.",
+      title: "A unos 10 minutos en coche de las pistas de Javalambre",
+      body: "El apartamento está en Camarena de la Sierra, el pueblo más cercano a la estación. Sales por la mañana y en unos 10 minutos estás calzando los esquís.",
     },
     {
       title: "Guardaesquís, forfaits y alquiler de material",
@@ -33,32 +35,32 @@ export const javalambre: PropertyContent = {
       body: "Salón con chimenea de pellets además de la calefacción. Varios huéspedes destacan lo cálido que se mantiene el apartamento en pleno invierno.",
     },
     {
-      title: "Parking privado gratuito en el edificio",
-      body: "Plaza de aparcamiento gratis en el mismo edificio, sin buscar sitio en la calle con nieve.",
+      title: "Apartamento nuevo de 70 m², parking gratis y balcón a la montaña",
+      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, balcón con vistas a la sierra y plaza de aparcamiento gratuita en el mismo edificio, sin buscar sitio en la calle con nieve. Para hasta 6 personas.",
     },
     {
-      title: "Apartamento nuevo de 70 m² con balcón y vistas a la montaña",
-      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, y balcón con vistas a la sierra. Para hasta 6 personas.",
+      title: "En un pueblo serrano de verdad, no en un resort",
+      body: "Camarena de la Sierra conserva una atmósfera de pueblo de montaña tradicional: calles de piedra, fuentes, paisaje y un ritmo ajeno al turismo de masas. Además del esquí, la experiencia de pasar unos días en un pueblo serrano español.",
     },
     {
-      title: "Cielo Starlight y montaña todo el año",
-      body: "La comarca Gúdar-Javalambre es Destino Turístico Starlight; fuera de temporada, senderismo, BTT, escalada y el Observatorio Astrofísico muy cerca.",
+      title: "Ideal para familias y para la primera vez en la nieve",
+      body: "Javalambre es una estación cómoda para aprender y disfrutar sin agobios. Con la proximidad del apartamento a las pistas, es una escapada de fin de semana fácil de organizar, también con niños.",
     },
   ],
 
   location: {
     city: "Camarena de la Sierra",
     region: "Teruel · Aragón",
-    area: "Sierra de Javalambre",
+    area: "Camarena de la Sierra",
     addressLine: "24 Calle San Mateo",
     postalCode: "44459",
     country: "ES",
     geo: { lat: 40.0961, lng: -1.0447 },
     status: "authored",
     gettingThere: [
-      "En coche por la A-23 (Sagunto–Teruel) y luego carreteras de montaña hasta Camarena de la Sierra. En invierno conviene llevar cadenas o neumáticos de invierno.",
+      "En coche por la A-23 (Sagunto–Teruel), autovía casi todo el trayecto, y luego una corta subida de montaña hasta Camarena de la Sierra. En invierno conviene llevar cadenas o neumáticos de invierno.",
       "Desde Valencia son unas 2 horas; desde Teruel capital, unos 40 minutos; desde Zaragoza, algo más de 2 horas. La estación de tren más cercana es Puebla de Valverde, a 15 km.",
-      "Las pistas de la estación de esquí de Javalambre quedan a unos 20 minutos en coche desde el apartamento.",
+      "Las pistas de la estación de esquí de Javalambre quedan a unos 10 minutos en coche desde el apartamento.",
     ],
   },
 
@@ -118,7 +120,7 @@ export const javalambre: PropertyContent = {
   amenitiesStatus: "authored",
 
   nearby: [
-    { name: "Estación de esquí de Javalambre", category: "ski", distance: "~20 min en coche" },
+    { name: "Estación de esquí de Javalambre", category: "ski", distance: "~10 min en coche" },
     { name: "Restaurante La Fondica", category: "food", distance: "14 km" },
     { name: "Restaurante El Salón (Riodeva)", category: "food", distance: "15 km" },
     { name: "El Ventorrillo", category: "food", distance: "16 km" },
@@ -127,23 +129,24 @@ export const javalambre: PropertyContent = {
     { name: "Aeropuerto de Valencia", category: "airport", distance: "137 km" },
   ],
   distancesStatus: "authored",
-  headlineDistance: { label: "A las pistas de Javalambre", value: "~20 min en coche" },
+  headlineDistance: { label: "A las pistas de Javalambre", value: "~10 min en coche" },
 
   galleryStatus: "authored",
 
   sections: [
     {
-      heading: "Una base a pie de sierra para tus días de esquí",
+      heading: "Una base a diez minutos de las pistas",
       body: [
-        "El apartamento está en Camarena de la Sierra, un pueblo de piedra en un valle rodeado de manantiales —de ahí su nombre de villa de las 100 fuentes—, a un corto trayecto de la estación de esquí de Javalambre.",
+        "El apartamento está en el centro de Camarena de la Sierra, a unos 10 minutos en coche de la estación de esquí de Javalambre. Es de las formas más cómodas de esquiar cerca de Valencia: sales, llegas a pistas antes de las colas y vuelves a comer o a descansar al apartamento sin recorrer medio valle.",
         "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. Tiene guardaesquís, punto de forfaits y alquiler de material, así que puedes llegar, dejar el equipo y centrarte en esquiar.",
-        "La estación de Javalambre, del grupo Aramón, es una de las más accesibles del este peninsular y especialmente cómoda para familias y para quienes empiezan.",
+        "La estación de Javalambre, del grupo Aramón, es una de las más accesibles del este peninsular y especialmente cómoda para familias y para quienes se estrenan en la nieve.",
       ],
     },
     {
-      heading: "Montaña también fuera de la temporada de nieve",
+      heading: "Camarena de la Sierra, un pueblo serrano con vida propia",
       body: [
-        "Camarena de la Sierra y su entorno son un destino de montaña todo el año: senderismo, BTT, escalada, micología y barranquismo, además de una ruta fluvial por el pueblo apta para hacer en familia.",
+        "Camarena conserva una atmósfera de pueblo de montaña tradicional, con un ritmo y una escala que parecen ajenos al turismo de masas: calles de piedra, fuentes por todo el casco —de ahí que se la conozca como la villa de las fuentes—, y el paisaje de la sierra siempre delante. Pasear por el pueblo al caer la tarde es parte del plan, no solo esquiar.",
+        "Su entorno es además un destino de montaña todo el año: senderismo, BTT, escalada, micología y barranquismo, con una ruta fluvial por el propio pueblo apta para hacer en familia.",
         "La comarca Gúdar-Javalambre es Destino Turístico Starlight y una de las zonas con menos contaminación lumínica de Europa; el Observatorio Astrofísico de Javalambre está muy cerca.",
       ],
     },
@@ -159,7 +162,7 @@ export const javalambre: PropertyContent = {
     {
       question: "¿A qué distancia está el apartamento de las pistas de Javalambre?",
       answer:
-        "La estación de esquí de Javalambre está a unos 20 minutos en coche desde el apartamento, en Camarena de la Sierra.",
+        "La estación de esquí de Javalambre está a unos 10 minutos en coche desde el apartamento, en Camarena de la Sierra.",
     },
     {
       question: "¿Cuántas personas caben?",
@@ -200,7 +203,7 @@ export const javalambre: PropertyContent = {
     {
       author: "Carla",
       rating: 9,
-      text: "Vistas a la montaña, limpio, cómodo, con ascensor, silencioso. Pistas a 20 min en coche.",
+      text: "Vistas a la montaña, limpio, cómodo, con ascensor, silencioso. Pistas a 10 min en coche.",
       date: "2025-01-22",
       source: "booking",
       locale: "es",
@@ -259,7 +262,7 @@ export const javalambre: PropertyContent = {
   seo: {
     metaTitle: "Alojamiento en Camarena de la Sierra junto a Javalambre | Praetoria Vacacional",
     metaDescription:
-      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a 20 min de las pistas de Javalambre. Chimenea, cocina completa, parking gratis y guardaesquís. Reserva directa.",
+      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a unos 10 min en coche de las pistas de Javalambre. Chimenea, cocina completa, parking gratis y guardaesquís. Reserva directa.",
     h1: "Apartamento en Camarena de la Sierra, junto a la estación de Javalambre",
     ogImage: "/images/properties/javalambre/salon-comedor-1200.webp",
   },
@@ -267,29 +270,30 @@ export const javalambre: PropertyContent = {
   icalImportUrls: [{ channel: "booking", url: "" }],
 
   en: {
-    tagline: "Apartment in Camarena de la Sierra, at the foot of Javalambre",
+    tagline: "Apartment in Camarena de la Sierra, 10 minutes from the Javalambre slopes",
     shortIntro:
-      "A new 70 m² apartment in Camarena de la Sierra, the village of the 100 springs, with mountain views and a short drive from the Javalambre slopes. Pellet stove, full kitchen, free parking and ski storage — the ideal base for a snow weekend in Teruel.",
+      "A new 70 m² apartment in Camarena de la Sierra, a traditional stone-and-springs mountain village, with mountain views and about a 10-minute drive from the Javalambre slopes. Pellet stove, full kitchen, free parking and ski storage — one of the easiest snow escapes from Valencia, with no big mountain trip to organise.",
     seo: {
       metaTitle: "Accommodation in Camarena de la Sierra near Javalambre | Praetoria Vacacional",
       metaDescription:
-        "New 70 m² apartment in Camarena de la Sierra (Teruel, Spain), a 20-minute drive from the Javalambre slopes. Stove, full kitchen, free parking, ski storage. Book direct.",
+        "New 70 m² apartment in Camarena de la Sierra (Teruel, Spain), about a 10-minute drive from the Javalambre slopes. Stove, full kitchen, free parking, ski storage. Book direct.",
       h1: "Apartment in Camarena de la Sierra, next to the Javalambre resort",
       ogImage: "/images/properties/javalambre/salon-comedor-1200.webp",
     },
     sections: [
       {
-        heading: "A base at the foot of the range for your ski days",
+        heading: "A base ten minutes from the slopes",
         body: [
-          "The apartment is in Camarena de la Sierra, a stone village in a valley full of springs — hence its nickname, the village of the 100 springs — a short drive from the Javalambre ski resort.",
+          "The apartment is in the centre of Camarena de la Sierra, about a 10-minute drive from the Javalambre ski resort. It is one of the most comfortable ways to ski near Valencia: you set off, reach the slopes before the queues, and come back to eat or rest at the apartment without crossing half the valley.",
           "It is a new 70 m² apartment with two bedrooms, a living room with a pellet stove, a fully equipped kitchen and a balcony with mountain views. It has ski storage, a ski-pass point and equipment rental, so you can arrive, drop your gear and focus on skiing.",
-          "The Javalambre resort, part of the Aramón group, is one of the most accessible in eastern Spain and especially comfortable for families and beginners.",
+          "The Javalambre resort, part of the Aramón group, is one of the most accessible in eastern Spain and especially comfortable for families and first-timers on snow.",
         ],
       },
       {
-        heading: "Mountains beyond the ski season, too",
+        heading: "Camarena de la Sierra, a mountain village with a life of its own",
         body: [
-          "Camarena de la Sierra and its surroundings are a year-round mountain destination: hiking, mountain biking, climbing, mushroom foraging and canyoning, plus a river walk through the village that works well with children.",
+          "Camarena keeps the feel of a traditional mountain village, with a pace and a scale that seem untouched by mass tourism: stone streets, springs all through the old centre, and the range always in view. An evening stroll through the village is part of the trip, not just the skiing.",
+          "Its surroundings are a year-round mountain destination too: hiking, mountain biking, climbing, mushroom foraging and canyoning, plus a river walk through the village that works well with children.",
           "The Gúdar-Javalambre region is a Starlight Tourist Destination and one of the darkest skies in Europe; the Javalambre Astrophysical Observatory is nearby.",
         ],
       },
@@ -298,8 +302,8 @@ export const javalambre: PropertyContent = {
       "Free cancellation up to 30 days before check-in. After that, terms apply per the property's policy.",
     highlights: [
       {
-        title: "20 minutes from the Javalambre slopes",
-        body: "The apartment is in Camarena de la Sierra, the closest village to the resort. Leave in the morning and you are clipping into your skis 20 minutes later.",
+        title: "About 10 minutes' drive from the Javalambre slopes",
+        body: "The apartment is in Camarena de la Sierra, the closest village to the resort. Leave in the morning and you are clipping into your skis about 10 minutes later.",
       },
       {
         title: "Ski storage, passes and equipment rental",
@@ -310,16 +314,16 @@ export const javalambre: PropertyContent = {
         body: "A living room with a pellet stove on top of the central heating. Guests keep mentioning how warm the apartment stays in midwinter.",
       },
       {
-        title: "Free private parking in the building",
-        body: "A free parking space in the same building — no hunting for a spot in the snow.",
+        title: "New 70 m² apartment, free parking and a mountain-view balcony",
+        body: "Two bedrooms, a fully equipped kitchen with dishwasher and oven, a balcony facing the range and a free parking space in the same building. Sleeps up to 6.",
       },
       {
-        title: "New 70 m² apartment with a mountain-view balcony",
-        body: "Two bedrooms, a fully equipped kitchen with dishwasher and oven, and a balcony facing the range. Sleeps up to 6.",
+        title: "A real mountain village, not a resort",
+        body: "Camarena de la Sierra keeps the feel of a traditional mountain village — stone streets, springs, landscape and a pace far from mass tourism. Beyond the skiing, the experience of a few days in a Spanish mountain village.",
       },
       {
-        title: "Starlight skies and year-round mountains",
-        body: "The Gúdar-Javalambre region is a Starlight Tourist Destination; off-season there is hiking, mountain biking, climbing and the Astrophysical Observatory nearby.",
+        title: "Great for families and a first time on snow",
+        body: "Javalambre is an easy resort to learn and enjoy without stress. With the apartment so close to the slopes, it is a weekend escape that is simple to organise, children included.",
       },
     ],
   },
