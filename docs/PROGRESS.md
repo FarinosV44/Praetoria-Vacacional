@@ -133,7 +133,8 @@ Llastra + Javalambre ~10 min correction) — all committed, with `tsc` + `next l
 + `npm run build` + 56 unit + 64 chromium e2e green.
 
 Merged to `main` at the user's explicit request (2026-08-27, then 2026-08-28
-after issue #53, then #54, then #55). Post-merge manual gates remain (real service keys +
+after issue #53, then #54 `c0d7203`, then #55 `8e2ec3a`). Post-merge manual
+gates remain (real service keys +
 `docs/launch-checklist.md`, Lighthouse on the deployed URL, iOS Safari flow pass)
 — see `docs/audits/final-audit.md`. The Vercel deploy is the owner's call.
 
