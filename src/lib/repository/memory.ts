@@ -22,6 +22,7 @@ import {
   type ExternalEvent,
   type Repository,
   type ReservationFilter,
+  type ReservationPatch,
   type UpsertPaymentInput,
 } from "./types";
 import {
@@ -29,6 +30,28 @@ import {
   PRAETORIA10_COUPON,
   type Coupon,
 } from "@/domains/pricing/coupons";
+import type { Customer, CustomerInput } from "@/domains/crm/types";
+import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
+import { buildCustomerProfile } from "@/domains/crm/profile";
+
+/** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
+function blankIntranetFields() {
+  return {
+    customerId: null,
+    channelDetail: null,
+    guestDocType: null,
+    guestDocNumber: null,
+    guestAddress: null,
+    guestPostalCode: null,
+    guestCity: null,
+    guestProvince: null,
+    guestCountry: null,
+    externalLocator: null,
+    invoiceNumber: null,
+    paymentMethod: null,
+    paymentState: "pending" as const,
+  };
+}
 
 /**
  * In-memory repository backing DEMO mode (no Supabase configured, D-003).
@@ -57,6 +80,7 @@ interface Store {
     createdAt: string;
   }[];
   contentOverrides: Record<string, { value: unknown; updatedAt: string }>;
+  customers: Customer[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -139,6 +163,7 @@ function seed(): Store {
     coupons,
     redemptions: [],
     contentOverrides: {},
+    customers: [],
   };
 }
 
@@ -184,6 +209,7 @@ store.coupons ??= [];
 }
 store.redemptions ??= [];
 store.contentOverrides ??= {};
+store.customers ??= [];
 
 function save() {
   persist(store);
@@ -254,6 +280,7 @@ export const memoryRepository: Repository = {
       notes: null,
       createdAt: nowIso,
       updatedAt: nowIso,
+      ...blankIntranetFields(),
     };
     store.reservations.push(reservation);
     save();
@@ -509,6 +536,190 @@ export const memoryRepository: Repository = {
 
   async getImportFeedUrl(propertyId: string, channel: string) {
     return store.importFeeds[`${propertyId}:${channel}`] ?? null;
+  },
+
+  // --- Customers / CRM (issue #56) -------------------------------------
+  async listCustomers(filter) {
+    let rows = store.customers.filter((c) => !c.mergedInto);
+    if (filter?.channel) rows = rows.filter((c) => c.channelOrigin === filter.channel);
+    if (filter?.consentOnly) rows = rows.filter((c) => c.marketingConsent);
+    if (filter?.q) {
+      const t = filter.q.toLowerCase();
+      rows = rows.filter((c) =>
+        [c.firstName, c.lastName, c.email, c.phone, c.docNumber]
+          .filter(Boolean)
+          .some((v) => v!.toLowerCase().includes(t)),
+      );
+    }
+    if (filter?.repeatersOnly || filter?.property) {
+      rows = rows.filter((c) => {
+        const confirmed = store.reservations.filter(
+          (r) => r.customerId === c.id && r.status === "confirmed",
+        );
+        if (filter.repeatersOnly && confirmed.length < 2) return false;
+        if (filter.property && !confirmed.some((r) => r.propertyId === filter.property)) return false;
+        return true;
+      });
+    }
+    return [...rows].sort((a, b) =>
+      `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+    );
+  },
+
+  async getCustomer(id) {
+    return store.customers.find((c) => c.id === id) ?? null;
+  },
+
+  async createCustomer(input: CustomerInput) {
+    const now = new Date().toISOString();
+    const consent = input.marketingConsent ?? false;
+    const customer: Customer = {
+      id: randomUUID(),
+      firstName: input.firstName ?? "",
+      lastName: input.lastName ?? "",
+      email: input.email ?? null,
+      phone: input.phone ?? null,
+      whatsapp: input.whatsapp ?? null,
+      docType: input.docType ?? null,
+      docNumber: input.docNumber ?? null,
+      address: input.address ?? null,
+      postalCode: input.postalCode ?? null,
+      city: input.city ?? null,
+      province: input.province ?? null,
+      country: input.country ?? null,
+      language: input.language ?? null,
+      channelOrigin: input.channelOrigin ?? null,
+      marketingConsent: consent,
+      marketingConsentAt: consent ? now : null,
+      marketingConsentSource: consent ? (input.marketingConsentSource ?? "admin") : null,
+      notes: input.notes ?? null,
+      mergedInto: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.customers.push(customer);
+    save();
+    return customer;
+  },
+
+  async updateCustomer(id, patch) {
+    const c = store.customers.find((x) => x.id === id);
+    if (!c) throw new Error("CUSTOMER_NOT_FOUND");
+    const scalarKeys: (keyof CustomerInput)[] = [
+      "firstName", "lastName", "email", "phone", "whatsapp", "docType", "docNumber",
+      "address", "postalCode", "city", "province", "country", "language", "channelOrigin", "notes",
+    ];
+    for (const k of scalarKeys) {
+      if (patch[k] !== undefined) (c as unknown as Record<string, unknown>)[k] = patch[k];
+    }
+    if (patch.marketingConsent !== undefined) {
+      c.marketingConsent = patch.marketingConsent;
+      c.marketingConsentAt = patch.marketingConsent ? new Date().toISOString() : null;
+      c.marketingConsentSource = patch.marketingConsent
+        ? (patch.marketingConsentSource ?? c.marketingConsentSource ?? "admin")
+        : null;
+    }
+    c.updatedAt = new Date().toISOString();
+    save();
+    return c;
+  },
+
+  async customerProfile(id) {
+    const customer = store.customers.find((c) => c.id === id);
+    if (!customer) return null;
+    return buildCustomerProfile(customer, store.reservations);
+  },
+
+  async findCustomerDuplicates(id) {
+    const target = store.customers.find((c) => c.id === id);
+    if (!target) return [];
+    return findDuplicates(target, store.customers);
+  },
+
+  async mergeCustomers(primaryId, duplicateId, actorEmail) {
+    const primary = store.customers.find((c) => c.id === primaryId);
+    const dup = store.customers.find((c) => c.id === duplicateId);
+    if (!primary || !dup) throw new Error("CUSTOMER_NOT_FOUND");
+    if (primaryId === duplicateId) return primary;
+    const merged = mergedFields(primary, dup);
+    Object.assign(primary, merged, { id: primaryId, updatedAt: new Date().toISOString() });
+    for (const r of store.reservations) {
+      if (r.customerId === duplicateId) r.customerId = primaryId;
+    }
+    dup.mergedInto = primaryId;
+    dup.updatedAt = new Date().toISOString();
+    void actorEmail;
+    save();
+    return primary;
+  },
+
+  async updateReservation(id, patch: ReservationPatch) {
+    const r = store.reservations.find((x) => x.id === id);
+    if (!r) throw new Error("RESERVATION_NOT_FOUND");
+    const keys: (keyof ReservationPatch)[] = [
+      "source", "channelDetail", "customerId", "guestName", "guestEmail", "guestPhone",
+      "guestDocType", "guestDocNumber", "guestAddress", "guestPostalCode", "guestCity",
+      "guestProvince", "guestCountry", "externalLocator", "invoiceNumber", "paymentMethod",
+      "paymentState", "notes",
+    ];
+    for (const k of keys) {
+      if (patch[k] !== undefined) (r as unknown as Record<string, unknown>)[k] = patch[k];
+    }
+    r.updatedAt = new Date().toISOString();
+    save();
+    return r;
+  },
+
+  async linkOrCreateCustomerFromReservation(reservationId) {
+    const r = store.reservations.find((x) => x.id === reservationId);
+    if (!r) return null;
+    if (r.customerId) return store.customers.find((c) => c.id === r.customerId) ?? null;
+    if (!r.guestEmail && !r.guestPhone && !r.guestName) return null;
+    const synthetic: Customer = {
+      id: "__new__",
+      firstName: (r.guestName ?? "").split(" ")[0] ?? "",
+      lastName: (r.guestName ?? "").split(" ").slice(1).join(" "),
+      email: r.guestEmail,
+      phone: r.guestPhone,
+      whatsapp: null,
+      docType: (r.guestDocType as Customer["docType"]) ?? null,
+      docNumber: r.guestDocNumber,
+      address: r.guestAddress,
+      postalCode: r.guestPostalCode,
+      city: r.guestCity,
+      province: r.guestProvince,
+      country: r.guestCountry,
+      language: null,
+      channelOrigin: r.source,
+      marketingConsent: false,
+      marketingConsentAt: null,
+      marketingConsentSource: null,
+      notes: null,
+      mergedInto: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    const dup = findDuplicates(synthetic, store.customers)[0];
+    const customer = dup
+      ? dup.customer
+      : await this.createCustomer({
+          firstName: synthetic.firstName,
+          lastName: synthetic.lastName,
+          email: synthetic.email,
+          phone: synthetic.phone,
+          docType: synthetic.docType,
+          docNumber: synthetic.docNumber,
+          address: synthetic.address,
+          postalCode: synthetic.postalCode,
+          city: synthetic.city,
+          province: synthetic.province,
+          country: synthetic.country,
+          channelOrigin: synthetic.channelOrigin,
+        });
+    r.customerId = customer.id;
+    r.updatedAt = new Date().toISOString();
+    save();
+    return customer;
   },
 
   async getCouponByCode(codeStr: string) {

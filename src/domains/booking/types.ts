@@ -1,8 +1,9 @@
 import type { IsoDate } from "@/lib/dates";
 
 export type ReservationStatus = "pending" | "confirmed" | "cancelled" | "expired";
-export type ReservationSource = "direct" | "booking" | "manual";
+export type ReservationSource = "direct" | "booking" | "airbnb" | "manual" | "other";
 export type BlockSource = "booking" | "airbnb" | "manual" | "other";
+export type PaymentState = "pending" | "partial" | "paid" | "refunded";
 
 export interface Reservation {
   id: string;
@@ -30,6 +31,21 @@ export interface Reservation {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+
+  // --- Intranet fields (issue #56) ------------------------------------
+  customerId: string | null;
+  channelDetail: string | null;
+  guestDocType: string | null;
+  guestDocNumber: string | null;
+  guestAddress: string | null;
+  guestPostalCode: string | null;
+  guestCity: string | null;
+  guestProvince: string | null;
+  guestCountry: string | null;
+  externalLocator: string | null;
+  invoiceNumber: string | null;
+  paymentMethod: string | null;
+  paymentState: PaymentState;
 }
 
 export interface AvailabilityBlock {

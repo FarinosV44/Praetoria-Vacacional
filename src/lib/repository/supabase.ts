@@ -21,6 +21,9 @@ import {
   type UpsertPaymentInput,
 } from "./types";
 import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
+import type { Customer, CustomerInput } from "@/domains/crm/types";
+import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
+import { buildCustomerProfile } from "@/domains/crm/profile";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -51,7 +54,75 @@ function mapReservation(row: any): Reservation {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    customerId: row.customer_id ?? null,
+    channelDetail: row.channel_detail ?? null,
+    guestDocType: row.guest_doc_type ?? null,
+    guestDocNumber: row.guest_doc_number ?? null,
+    guestAddress: row.guest_address ?? null,
+    guestPostalCode: row.guest_postal_code ?? null,
+    guestCity: row.guest_city ?? null,
+    guestProvince: row.guest_province ?? null,
+    guestCountry: row.guest_country ?? null,
+    externalLocator: row.external_locator ?? null,
+    invoiceNumber: row.invoice_number ?? null,
+    paymentMethod: row.payment_method ?? null,
+    paymentState: row.payment_state ?? "pending",
   };
+}
+
+function mapCustomer(row: any): Customer {
+  return {
+    id: row.id,
+    firstName: row.first_name ?? "",
+    lastName: row.last_name ?? "",
+    email: row.email,
+    phone: row.phone,
+    whatsapp: row.whatsapp,
+    docType: row.doc_type,
+    docNumber: row.doc_number,
+    address: row.address,
+    postalCode: row.postal_code,
+    city: row.city,
+    province: row.province,
+    country: row.country,
+    language: row.language,
+    channelOrigin: row.channel_origin,
+    marketingConsent: !!row.marketing_consent,
+    marketingConsentAt: row.marketing_consent_at,
+    marketingConsentSource: row.marketing_consent_source,
+    notes: row.notes,
+    mergedInto: row.merged_into ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function customerToRow(input: Partial<CustomerInput>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  const set = (k: string, v: unknown) => {
+    if (v !== undefined) row[k] = v;
+  };
+  set("first_name", input.firstName);
+  set("last_name", input.lastName);
+  set("email", input.email);
+  set("phone", input.phone);
+  set("whatsapp", input.whatsapp);
+  set("doc_type", input.docType);
+  set("doc_number", input.docNumber);
+  set("address", input.address);
+  set("postal_code", input.postalCode);
+  set("city", input.city);
+  set("province", input.province);
+  set("country", input.country);
+  set("language", input.language);
+  set("channel_origin", input.channelOrigin);
+  set("notes", input.notes);
+  if (input.marketingConsent !== undefined) {
+    row.marketing_consent = input.marketingConsent;
+    row.marketing_consent_at = input.marketingConsent ? new Date().toISOString() : null;
+    if (input.marketingConsent) row.marketing_consent_source = input.marketingConsentSource ?? "admin";
+  }
+  return row;
 }
 
 function mapBlock(row: any): AvailabilityBlock {
@@ -483,6 +554,237 @@ export const supabaseRepository: Repository = {
         createdAt: r.created_at,
       }),
     );
+  },
+
+  // --- Customers / CRM (issue #56) -------------------------------------
+  async listCustomers(filter) {
+    const db = supabaseAdmin();
+    let q = db
+      .from("customers")
+      .select()
+      .is("merged_into", null)
+      .order("last_name", { ascending: true });
+    if (filter?.channel) q = q.eq("channel_origin", filter.channel);
+    if (filter?.consentOnly) q = q.eq("marketing_consent", true);
+    if (filter?.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(
+        `first_name.ilike.${t},last_name.ilike.${t},email.ilike.${t},phone.ilike.${t},doc_number.ilike.${t}`,
+      );
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    let rows = (data ?? []).map(mapCustomer);
+    if (filter?.repeatersOnly || filter?.property) {
+      const { data: res } = await db.from("reservations").select("customer_id, property_id, status");
+      const byCustomer = new Map<string, { props: Set<string>; confirmed: number }>();
+      for (const r of res ?? []) {
+        if (!r.customer_id) continue;
+        const e = byCustomer.get(r.customer_id) ?? { props: new Set(), confirmed: 0 };
+        if (r.status === "confirmed") {
+          e.props.add(r.property_id);
+          e.confirmed++;
+        }
+        byCustomer.set(r.customer_id, e);
+      }
+      rows = rows.filter((c) => {
+        const e = byCustomer.get(c.id);
+        if (filter.repeatersOnly && (!e || e.confirmed < 2)) return false;
+        if (filter.property && (!e || !e.props.has(filter.property))) return false;
+        return true;
+      });
+    }
+    return rows;
+  },
+
+  async getCustomer(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("customers").select().eq("id", id).maybeSingle();
+    return data ? mapCustomer(data) : null;
+  },
+
+  async createCustomer(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("customers")
+      .insert(customerToRow({ ...input, firstName: input.firstName, lastName: input.lastName }))
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCustomer(data);
+  },
+
+  async updateCustomer(id, patch) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("customers")
+      .update(customerToRow(patch))
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCustomer(data);
+  },
+
+  async customerProfile(id) {
+    const db = supabaseAdmin();
+    const customer = await this.getCustomer(id);
+    if (!customer) return null;
+    const { data } = await db.from("reservations").select().eq("customer_id", id);
+    return buildCustomerProfile(customer, (data ?? []).map(mapReservation));
+  },
+
+  async findCustomerDuplicates(id) {
+    const target = await this.getCustomer(id);
+    if (!target) return [];
+    const all = await this.listCustomers();
+    return findDuplicates(target, all);
+  },
+
+  async mergeCustomers(primaryId, duplicateId, actorEmail) {
+    const db = supabaseAdmin();
+    const primary = await this.getCustomer(primaryId);
+    const dup = await this.getCustomer(duplicateId);
+    if (!primary || !dup) throw new Error("CUSTOMER_NOT_FOUND");
+    if (primaryId === duplicateId) return primary;
+
+    const merged = mergedFields(primary, dup);
+    await db.from("reservations").update({ customer_id: primaryId }).eq("customer_id", duplicateId);
+    const { data, error } = await db
+      .from("customers")
+      .update(
+        customerToRow({
+          firstName: merged.firstName,
+          lastName: merged.lastName,
+          email: merged.email,
+          phone: merged.phone,
+          whatsapp: merged.whatsapp,
+          docType: merged.docType,
+          docNumber: merged.docNumber,
+          address: merged.address,
+          postalCode: merged.postalCode,
+          city: merged.city,
+          province: merged.province,
+          country: merged.country,
+          language: merged.language,
+          channelOrigin: merged.channelOrigin,
+          notes: merged.notes,
+        }),
+      )
+      .eq("id", primaryId)
+      .select()
+      .single();
+    if (error) throw error;
+    if (merged.marketingConsent && !primary.marketingConsent) {
+      await db
+        .from("customers")
+        .update({
+          marketing_consent: true,
+          marketing_consent_at: merged.marketingConsentAt,
+          marketing_consent_source: merged.marketingConsentSource,
+        })
+        .eq("id", primaryId);
+    }
+    await db.from("customers").update({ merged_into: primaryId }).eq("id", duplicateId);
+    await db
+      .from("customer_merges")
+      .insert({ primary_id: primaryId, merged_id: duplicateId, actor_email: actorEmail ?? null, snapshot: dup });
+    await db.from("admin_audit_log").insert({
+      actor_email: actorEmail ?? null,
+      action: "customer.merge",
+      entity: "customer",
+      entity_id: primaryId,
+      meta: { merged: duplicateId },
+    });
+    return mapCustomer(data);
+  },
+
+  async updateReservation(id, patch) {
+    const db = supabaseAdmin();
+    const row: Record<string, unknown> = {};
+    const set = (k: string, v: unknown) => {
+      if (v !== undefined) row[k] = v;
+    };
+    set("source", patch.source);
+    set("channel_detail", patch.channelDetail);
+    set("customer_id", patch.customerId);
+    set("guest_name", patch.guestName);
+    set("guest_email", patch.guestEmail);
+    set("guest_phone", patch.guestPhone);
+    set("guest_doc_type", patch.guestDocType);
+    set("guest_doc_number", patch.guestDocNumber);
+    set("guest_address", patch.guestAddress);
+    set("guest_postal_code", patch.guestPostalCode);
+    set("guest_city", patch.guestCity);
+    set("guest_province", patch.guestProvince);
+    set("guest_country", patch.guestCountry);
+    set("external_locator", patch.externalLocator);
+    set("invoice_number", patch.invoiceNumber);
+    set("payment_method", patch.paymentMethod);
+    set("payment_state", patch.paymentState);
+    set("notes", patch.notes);
+    const { data, error } = await db
+      .from("reservations")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapReservation(data);
+  },
+
+  async linkOrCreateCustomerFromReservation(reservationId) {
+    const r = await this.getReservation(reservationId);
+    if (!r) return null;
+    if (r.customerId) return this.getCustomer(r.customerId);
+    if (!r.guestEmail && !r.guestPhone && !r.guestName) return null;
+    const all = await this.listCustomers();
+    const synthetic: Customer = {
+      id: "__new__",
+      firstName: (r.guestName ?? "").split(" ")[0] ?? "",
+      lastName: (r.guestName ?? "").split(" ").slice(1).join(" "),
+      email: r.guestEmail,
+      phone: r.guestPhone,
+      whatsapp: null,
+      docType: (r.guestDocType as Customer["docType"]) ?? null,
+      docNumber: r.guestDocNumber,
+      address: r.guestAddress,
+      postalCode: r.guestPostalCode,
+      city: r.guestCity,
+      province: r.guestProvince,
+      country: r.guestCountry,
+      language: null,
+      channelOrigin: r.source,
+      marketingConsent: false,
+      marketingConsentAt: null,
+      marketingConsentSource: null,
+      notes: null,
+      mergedInto: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    const dup = findDuplicates(synthetic, all)[0];
+    let customer: Customer;
+    if (dup) {
+      customer = dup.customer;
+    } else {
+      customer = await this.createCustomer({
+        firstName: synthetic.firstName,
+        lastName: synthetic.lastName,
+        email: synthetic.email,
+        phone: synthetic.phone,
+        docType: synthetic.docType,
+        docNumber: synthetic.docNumber,
+        address: synthetic.address,
+        postalCode: synthetic.postalCode,
+        city: synthetic.city,
+        province: synthetic.province,
+        country: synthetic.country,
+        channelOrigin: synthetic.channelOrigin,
+      });
+    }
+    await this.updateReservation(reservationId, { customerId: customer.id });
+    return customer;
   },
 
   async getImportFeedUrl(propertyId: string, channel: string) {

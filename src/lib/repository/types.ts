@@ -9,6 +9,8 @@ import type {
   ReservationStatus,
 } from "@/domains/booking/types";
 import type { Coupon } from "@/domains/pricing/coupons";
+import type { Customer, CustomerFilter, CustomerInput, CustomerProfile } from "@/domains/crm/types";
+import type { DuplicateMatch } from "@/domains/crm/dedup";
 
 export interface CreateHoldInput {
   propertyId: string;
@@ -47,6 +49,28 @@ export interface AttachGuestInput {
   guestEmail: string;
   guestPhone?: string | null;
   termsAccepted: boolean;
+  notes?: string | null;
+}
+
+/** Fields the intranet can set on a reservation (issue #56 §2). */
+export interface ReservationPatch {
+  source?: import("@/domains/booking/types").ReservationSource;
+  channelDetail?: string | null;
+  customerId?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  guestDocType?: string | null;
+  guestDocNumber?: string | null;
+  guestAddress?: string | null;
+  guestPostalCode?: string | null;
+  guestCity?: string | null;
+  guestProvince?: string | null;
+  guestCountry?: string | null;
+  externalLocator?: string | null;
+  invoiceNumber?: string | null;
+  paymentMethod?: string | null;
+  paymentState?: import("@/domains/booking/types").PaymentState;
   notes?: string | null;
 }
 
@@ -182,6 +206,25 @@ export interface Repository {
   couponRedemptions(couponId: string): Promise<
     { reservationCode: string; discountCents: number; email: string | null; createdAt: string }[]
   >;
+
+  // --- Customers / CRM (issue #56 §4) -----------------------------
+  listCustomers(filter?: CustomerFilter): Promise<Customer[]>;
+  getCustomer(id: string): Promise<Customer | null>;
+  createCustomer(input: CustomerInput): Promise<Customer>;
+  updateCustomer(id: string, patch: Partial<CustomerInput>): Promise<Customer>;
+  customerProfile(id: string): Promise<CustomerProfile | null>;
+  findCustomerDuplicates(id: string): Promise<DuplicateMatch[]>;
+  /** Fold `duplicateId` into `primaryId`; reservations follow, dup is hidden. */
+  mergeCustomers(
+    primaryId: string,
+    duplicateId: string,
+    actorEmail?: string | null,
+  ): Promise<Customer>;
+
+  // --- Reservation editing from the intranet (issue #56 §2) -------
+  updateReservation(id: string, patch: ReservationPatch): Promise<Reservation>;
+  /** Get-or-create a customer from a reservation's guest fields and link it. */
+  linkOrCreateCustomerFromReservation(reservationId: string): Promise<Customer | null>;
 
   // --- Channel import feed URLs, admin-editable (issue #42) --------
   getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;

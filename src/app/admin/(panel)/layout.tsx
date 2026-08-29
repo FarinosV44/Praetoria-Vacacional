@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 const nav = [
   { href: "/admin", label: "Panel" },
   { href: "/admin/reservas", label: "Reservas" },
+  { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/pagos", label: "Pagos y emails" },
   { href: "/admin/promociones", label: "Promociones" },
   { href: "/admin/contenido", label: "Contenido" },

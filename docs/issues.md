@@ -19,8 +19,8 @@ works and persists. Decision: D-009.
 | Sprint | Scope | Status |
 |--------|-------|--------|
 | 56-A | Part A — PRAETORIA, S.L. legal data centralised (`company.ts`), aviso legal + registry data, footer, contact page, Organization JSON-LD, email footer | ✅ code |
-| 56-B | Data model — customers, invoices, invoice_items, daily_rates, promotions/uses, marketing_consents, segments, campaigns, campaign_recipients; reservation fields (channel, fiscal data, external locator, manual invoice number); repository (memory + supabase) | ⬜ |
-| 56-C | Reservations intranet — create/edit, all channels, all fields, link to customer, manual invoice number | ⬜ |
+| 56-B | CRM foundation — `customers` table + `customer_merges`; reservation enrichment (customer_id, channel detail, guest fiscal data, external locator, manual invoice number, payment_state); `reservation_source` widened (airbnb, other); pure dedup (email/phone/doc/name) + merge + profile stats; repository CRM methods (memory + supabase); `/admin/clientes` list+filters, detail (stats, history, duplicates+merge), manual create/edit. 20 unit tests | ✅ code |
+| 56-C | Reservations intranet — create/edit, all channels, all fields, link to customer, manual invoice number, payment state; auto-link customer on guest attach + iCal import | ⬜ |
 | 56-D | Customers / CRM — list, detail (history, spend, consents, notes), manual create, duplicate detection + merge | ⬜ |
 | 56-E | Invoicing — series JAV/PALM, manual number + suggestion + duplicate/gap detection, "Emitir factura" from reservation, per-property PDF, immutable history, states, configurable tax | ⬜ |
 | 56-F | Operational calendar + pricing — monthly visual grid, per/both properties, channel colours, fast price/block editing over ranges | ⬜ |
