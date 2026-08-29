@@ -14,6 +14,8 @@ import { getAllProperties, getPropertyById } from "@/domains/properties/registry
 import {
   PropertyUnavailableError,
   type AttachGuestInput,
+  type AuditEntry,
+  type AuditRow,
   type CouponInput,
   type CreateBlockInput,
   type CreateHoldInput,
@@ -110,6 +112,7 @@ interface Store {
   campaigns: Campaign[];
   campaignRecipients: CampaignRecipient[];
   unsubscribes: { email: string; unsubscribedAt: string; source: string | null }[];
+  auditLog: AuditRow[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -201,6 +204,7 @@ function seed(): Store {
     campaigns: [],
     campaignRecipients: [],
     unsubscribes: [],
+    auditLog: [],
   };
 }
 
@@ -255,6 +259,7 @@ store.segments ??= [];
 store.campaigns ??= [];
 store.campaignRecipients ??= [];
 store.unsubscribes ??= [];
+store.auditLog ??= [];
 
 function save() {
   persist(store);
@@ -827,6 +832,24 @@ export const memoryRepository: Repository = {
 
   async listEmailLog(limit = 100) {
     return store.emailLog.slice(0, limit);
+  },
+
+  async auditLog(entry: AuditEntry) {
+    store.auditLog.unshift({
+      id: randomUUID(),
+      actorEmail: entry.actorEmail ?? null,
+      action: entry.action,
+      entity: entry.entity ?? null,
+      entityId: entry.entityId ?? null,
+      meta: entry.meta ?? {},
+      createdAt: new Date().toISOString(),
+    });
+    store.auditLog = store.auditLog.slice(0, 1000);
+    save();
+  },
+
+  async listAuditLog(limit = 200) {
+    return store.auditLog.slice(0, limit);
   },
 
   async getImportFeedUrl(propertyId: string, channel: string) {

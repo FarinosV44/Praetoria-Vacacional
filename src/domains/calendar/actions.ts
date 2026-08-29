@@ -6,11 +6,17 @@ import { isAdminAuthenticated } from "@/domains/admin/auth";
 import { getRepository, PropertyUnavailableError } from "@/lib/repository";
 import { getPropertyBySlug } from "@/domains/properties/registry";
 import { addDays, isIsoDate } from "@/lib/dates";
+import { assertCapability } from "@/domains/admin/roles";
+import { logAction } from "@/domains/admin/audit";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 async function assertAdmin() {
   if (!(await isAdminAuthenticated())) throw new Error("No autorizado");
+}
+
+function guard() {
+  assertCapability("calendar.write");
 }
 
 function selectedDates(formData: FormData): string[] {
@@ -53,6 +59,7 @@ const minNightsSchema = z.coerce.number().int().min(1).max(60);
 
 export async function applyDayPriceAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
   await assertAdmin();
+  guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -70,6 +77,7 @@ export async function applyDayMinNightsAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
+  guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -82,6 +90,7 @@ export async function applyDayMinNightsAction(
 
 export async function clearDayRatesAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (dates.length) await getRepository().clearDailyRates(property.id, dates);
@@ -90,6 +99,7 @@ export async function clearDayRatesAction(formData: FormData): Promise<void> {
 
 export async function closeDatesAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
   await assertAdmin();
+  guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -111,12 +121,18 @@ export async function closeDatesAction(_prev: unknown, formData: FormData): Prom
     }
     throw err;
   }
+  await logAction("calendar.close_dates", {
+    entity: "property",
+    entityId: property.id,
+    meta: { dates: dates.length },
+  });
   revalidateFor(property.slug);
   return { ok: true };
 }
 
 export async function openDatesAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  guard();
   const property = await propertyFromForm(formData);
   const dates = new Set(selectedDates(formData));
   const repo = getRepository();

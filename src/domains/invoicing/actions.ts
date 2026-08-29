@@ -11,6 +11,8 @@ import {
 } from "@/lib/repository";
 import { getPropertyById } from "@/domains/properties/registry";
 import { todayIso } from "@/lib/dates";
+import { assertCapability } from "@/domains/admin/roles";
+import { logAction } from "@/domains/admin/audit";
 import { draftInvoiceFromReservation } from "./draft";
 import { numberingInsight } from "./numbering";
 import { yearCodeOf } from "./numbering";
@@ -161,25 +163,37 @@ export async function saveInvoiceDraftAction(
 
 export async function issueInvoiceAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
-  if (id) await getRepository().issueInvoice(id);
+  if (id) {
+    const inv = await getRepository().issueInvoice(id);
+    await logAction("invoice.issue", { entity: "invoice", entityId: id, meta: { number: inv.number } });
+  }
   revalidatePath("/admin/facturas");
   revalidatePath(`/admin/facturas/${id}`);
 }
 
 export async function setInvoiceStatusAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as InvoiceStatus;
-  if (id && status) await getRepository().setInvoiceStatus(id, status);
+  if (id && status) {
+    await getRepository().setInvoiceStatus(id, status);
+    await logAction(`invoice.${status}`, { entity: "invoice", entityId: id });
+  }
   revalidatePath("/admin/facturas");
   revalidatePath(`/admin/facturas/${id}`);
 }
 
 export async function deleteInvoiceDraftAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
-  if (id) await getRepository().deleteInvoiceDraft(id);
+  if (id) {
+    await getRepository().deleteInvoiceDraft(id);
+    await logAction("invoice.draft_delete", { entity: "invoice", entityId: id });
+  }
   revalidatePath("/admin/facturas");
   redirect("/admin/facturas");
 }

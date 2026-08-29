@@ -8,6 +8,8 @@ import { getPropertyBySlug } from "@/domains/properties/registry";
 import { isIsoDate } from "@/lib/dates";
 import { getRateConfig } from "@/content/rates";
 import { rateConfigSchema } from "@/domains/pricing/schema";
+import { assertCapability } from "./roles";
+import { logAction } from "./audit";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -126,9 +128,13 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
 
 export async function cancelReservationAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("reservations.write");
   const id = String(formData.get("id") ?? "");
   const reason = String(formData.get("reason") ?? "Cancelada desde administración");
-  if (id) await getRepository().cancelReservation(id, reason);
+  if (id) {
+    await getRepository().cancelReservation(id, reason);
+    await logAction("reservation.cancel", { entity: "reservation", entityId: id, meta: { reason } });
+  }
   revalidatePath("/admin/reservas");
   revalidatePath("/admin");
 }
@@ -200,8 +206,12 @@ export async function toggleCouponAction(formData: FormData): Promise<void> {
 
 export async function deleteCouponAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("promotions.write");
   const id = String(formData.get("id") ?? "");
-  if (id) await getRepository().deleteCoupon(id);
+  if (id) {
+    await getRepository().deleteCoupon(id);
+    await logAction("coupon.delete", { entity: "coupon", entityId: id });
+  }
   revalidatePath("/admin/promociones");
 }
 

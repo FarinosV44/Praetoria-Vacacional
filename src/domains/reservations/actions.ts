@@ -7,6 +7,8 @@ import { isAdminAuthenticated } from "@/domains/admin/auth";
 import { getRepository, PropertyUnavailableError } from "@/lib/repository";
 import { getPropertyBySlug } from "@/domains/properties/registry";
 import { isIsoDate } from "@/lib/dates";
+import { assertCapability } from "@/domains/admin/roles";
+import { logAction } from "@/domains/admin/audit";
 import type { ReservationPatch } from "@/lib/repository/types";
 
 type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -54,6 +56,7 @@ export async function createReservationAndRedirect(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
+  assertCapability("reservations.write");
   const parsed = createSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -96,6 +99,11 @@ export async function createReservationAndRedirect(
       paymentMethod: d.paymentMethod ?? null,
       paymentState: d.paymentState,
       notes: d.notes ?? null,
+    });
+    await logAction("reservation.create", {
+      entity: "reservation",
+      entityId: reservation.id,
+      meta: { source: d.source, status },
     });
     revalidatePath("/admin/reservas");
     revalidatePath("/admin");
@@ -141,6 +149,7 @@ export async function updateReservationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
+  assertCapability("reservations.write");
   const parsed = patchSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };

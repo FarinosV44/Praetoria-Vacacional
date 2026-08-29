@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isAdminAuthenticated } from "@/domains/admin/auth";
 import { getRepository } from "@/lib/repository";
+import { assertCapability } from "@/domains/admin/roles";
+import { logAction } from "@/domains/admin/audit";
 import type { CustomerInput } from "./types";
 
 type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -41,6 +43,7 @@ export async function saveCustomerAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
+  assertCapability("customers.write");
   const parsed = customerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -90,10 +93,16 @@ export async function createCustomerAndRedirect(_prev: unknown, formData: FormDa
 
 export async function mergeCustomersAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("customers.write");
   const primaryId = String(formData.get("primaryId") ?? "");
   const duplicateId = String(formData.get("duplicateId") ?? "");
   if (primaryId && duplicateId && primaryId !== duplicateId) {
     await getRepository().mergeCustomers(primaryId, duplicateId);
+    await logAction("customer.merge", {
+      entity: "customer",
+      entityId: primaryId,
+      meta: { merged: duplicateId },
+    });
   }
   revalidatePath("/admin/clientes");
   revalidatePath(`/admin/clientes/${primaryId}`);

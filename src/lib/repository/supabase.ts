@@ -968,6 +968,37 @@ export const supabaseRepository: Repository = {
     if (error) console.error("email_log insert failed", error);
   },
 
+  async auditLog(entry) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("admin_audit_log").insert({
+      actor_email: entry.actorEmail ?? null,
+      action: entry.action,
+      entity: entry.entity ?? null,
+      entity_id: entry.entityId ?? null,
+      meta: entry.meta ?? {},
+    });
+    if (error) console.error("admin_audit_log insert failed", error);
+  },
+
+  async listAuditLog(limit = 200) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_audit_log")
+      .select()
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      id: r.id,
+      actorEmail: r.actor_email ?? null,
+      action: r.action,
+      entity: r.entity ?? null,
+      entityId: r.entity_id ?? null,
+      meta: r.meta ?? {},
+      createdAt: r.created_at,
+    }));
+  },
+
   async listEmailLog(limit = 100) {
     const db = supabaseAdmin();
     const { data, error } = await db

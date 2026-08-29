@@ -7,6 +7,8 @@ import { isAdminAuthenticated } from "@/domains/admin/auth";
 import { getRepository } from "@/lib/repository";
 import { getAllProperties } from "@/domains/properties/registry";
 import { isIsoDate } from "@/lib/dates";
+import { assertCapability } from "@/domains/admin/roles";
+import { logAction } from "@/domains/admin/audit";
 import type { SegmentCriteria } from "./segments";
 import type { CampaignChannel } from "./types";
 
@@ -153,10 +155,14 @@ export async function prepareCampaignAction(formData: FormData): Promise<void> {
 
 export async function sendCampaignAction(formData: FormData): Promise<void> {
   await assertAdmin();
+  assertCapability("marketing.write");
   const id = String(formData.get("id") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
   // Double confirmation: the form asks the admin to type ENVIAR.
-  if (id && confirm === "ENVIAR") await getRepository().markCampaignSent(id);
+  if (id && confirm === "ENVIAR") {
+    await getRepository().markCampaignSent(id);
+    await logAction("campaign.send", { entity: "campaign", entityId: id });
+  }
   revalidatePath(`/admin/marketing/campanas/${id}`);
 }
 

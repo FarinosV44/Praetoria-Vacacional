@@ -196,6 +196,24 @@ export interface ContentOverrideRow {
   updatedAt: string;
 }
 
+export interface AuditEntry {
+  actorEmail?: string | null;
+  action: string;
+  entity?: string | null;
+  entityId?: string | null;
+  meta?: unknown;
+}
+
+export interface AuditRow {
+  id: string;
+  actorEmail: string | null;
+  action: string;
+  entity: string | null;
+  entityId: string | null;
+  meta: unknown;
+  createdAt: string;
+}
+
 /** Thrown when a hold/block cannot be created because the dates are taken. */
 export class PropertyUnavailableError extends Error {
   constructor(message = "PROPERTY_UNAVAILABLE") {
@@ -271,6 +289,10 @@ export interface Repository {
   // --- Email log (issue #42) ---------------------------------------
   logEmail(entry: EmailLogEntry): Promise<void>;
   listEmailLog(limit?: number): Promise<EmailLogRow[]>;
+
+  // --- Admin action audit log (issue #56 §10) ---------------------
+  auditLog(entry: AuditEntry): Promise<void>;
+  listAuditLog(limit?: number): Promise<AuditRow[]>;
 
   // --- Coupons (issue #45) ----------------------------------------
   getCouponByCode(code: string): Promise<Coupon | null>;
