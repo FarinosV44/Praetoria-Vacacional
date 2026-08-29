@@ -96,6 +96,7 @@ interface Store {
   invoices: Invoice[];
   invoiceItems: InvoiceItem[];
   invoiceSettings: Record<string, InvoiceSettings>;
+  dailyRates: { propertyId: string; date: string; nightlyCents: number | null; minNights: number | null }[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -182,6 +183,7 @@ function seed(): Store {
     invoices: [],
     invoiceItems: [],
     invoiceSettings: {},
+    dailyRates: [],
   };
 }
 
@@ -231,6 +233,7 @@ store.customers ??= [];
 store.invoices ??= [];
 store.invoiceItems ??= [];
 store.invoiceSettings ??= {};
+store.dailyRates ??= [];
 
 function save() {
   persist(store);
@@ -539,6 +542,43 @@ export const memoryRepository: Repository = {
 
   async setRateOverride(propertyId: string, rateConfig: unknown) {
     store.rateOverrides[propertyId] = rateConfig;
+    save();
+  },
+
+  async listDailyRates(propertyId: string, from?: IsoDate, to?: IsoDate) {
+    return store.dailyRates
+      .filter((d) => d.propertyId === propertyId)
+      .filter((d) => (from ? d.date >= from : true))
+      .filter((d) => (to ? d.date <= to : true))
+      .map((d) => ({
+        date: d.date,
+        ...(d.nightlyCents != null ? { nightlyCents: d.nightlyCents } : {}),
+        ...(d.minNights != null ? { minNights: d.minNights } : {}),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  async setDailyRates(propertyId, dates, patch) {
+    for (const date of dates) {
+      let row = store.dailyRates.find((d) => d.propertyId === propertyId && d.date === date);
+      if (!row) {
+        row = { propertyId, date, nightlyCents: null, minNights: null };
+        store.dailyRates.push(row);
+      }
+      if (patch.nightlyCents !== undefined) row.nightlyCents = patch.nightlyCents;
+      if (patch.minNights !== undefined) row.minNights = patch.minNights;
+      if (row.nightlyCents == null && row.minNights == null) {
+        store.dailyRates = store.dailyRates.filter((d) => d !== row);
+      }
+    }
+    save();
+  },
+
+  async clearDailyRates(propertyId, dates) {
+    const set = new Set(dates);
+    store.dailyRates = store.dailyRates.filter(
+      (d) => !(d.propertyId === propertyId && set.has(d.date)),
+    );
     save();
   },
 

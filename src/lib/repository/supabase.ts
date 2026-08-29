@@ -589,6 +589,67 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 
+  async listDailyRates(propertyId: string, from?: string, to?: string) {
+    const db = supabaseAdmin();
+    let q = db
+      .from("daily_rates")
+      .select("date, nightly_cents, min_nights")
+      .eq("property_id", propertyId)
+      .order("date", { ascending: true });
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      date: r.date as string,
+      ...(r.nightly_cents != null ? { nightlyCents: Number(r.nightly_cents) } : {}),
+      ...(r.min_nights != null ? { minNights: Number(r.min_nights) } : {}),
+    }));
+  },
+
+  async setDailyRates(propertyId, dates, patch) {
+    const db = supabaseAdmin();
+    const { data: current } = await db
+      .from("daily_rates")
+      .select("date, nightly_cents, min_nights")
+      .eq("property_id", propertyId)
+      .in("date", dates);
+    const byDate = new Map((current ?? []).map((r: any) => [r.date, r]));
+    const toUpsert: Record<string, unknown>[] = [];
+    const toDelete: string[] = [];
+    for (const date of dates) {
+      const existing = byDate.get(date) as any;
+      const nightly =
+        patch.nightlyCents !== undefined ? patch.nightlyCents : (existing?.nightly_cents ?? null);
+      const min =
+        patch.minNights !== undefined ? patch.minNights : (existing?.min_nights ?? null);
+      if (nightly == null && min == null) {
+        toDelete.push(date);
+      } else {
+        toUpsert.push({ property_id: propertyId, date, nightly_cents: nightly, min_nights: min });
+      }
+    }
+    if (toUpsert.length) {
+      const { error } = await db
+        .from("daily_rates")
+        .upsert(toUpsert, { onConflict: "property_id,date" });
+      if (error) throw error;
+    }
+    if (toDelete.length) {
+      await db.from("daily_rates").delete().eq("property_id", propertyId).in("date", toDelete);
+    }
+  },
+
+  async clearDailyRates(propertyId, dates) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("daily_rates")
+      .delete()
+      .eq("property_id", propertyId)
+      .in("date", dates);
+    if (error) throw error;
+  },
+
   async getContentOverride(key: string) {
     const db = supabaseAdmin();
     const { data } = await db

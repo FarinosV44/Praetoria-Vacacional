@@ -239,6 +239,20 @@ export interface Repository {
   getRateOverride(propertyId: string): Promise<unknown | null>;
   setRateOverride(propertyId: string, rateConfig: unknown): Promise<void>;
 
+  // --- Per-date price / min-stay overrides (issue #56 §5) ----------
+  listDailyRates(
+    propertyId: string,
+    from?: IsoDate,
+    to?: IsoDate,
+  ): Promise<import("@/domains/pricing/types").DayRate[]>;
+  /** Upsert one patch across many dates. null clears that field. */
+  setDailyRates(
+    propertyId: string,
+    dates: IsoDate[],
+    patch: { nightlyCents?: number | null; minNights?: number | null },
+  ): Promise<void>;
+  clearDailyRates(propertyId: string, dates: IsoDate[]): Promise<void>;
+
   // --- Content overrides — light CMS (issue #50) -------------------
   /** One override document by key (e.g. "property:javalambre", "guide:valencia:...") */
   getContentOverride(key: string): Promise<ContentOverrideRow | null>;
