@@ -6,6 +6,7 @@ import type { Reservation } from "@/domains/booking/types";
 import { getPropertyById } from "@/domains/properties/registry";
 import { getRepository } from "@/lib/repository";
 import type { EmailLogEntry } from "@/lib/repository/types";
+import { company, companyAddressOneLine } from "@/content/company";
 
 let resend: Resend | null = null;
 function client() {
@@ -199,6 +200,10 @@ function brandedEmail(o: {
             .join("")}
         </table>
         <p style="color:#888;font-size:13px;margin-top:16px">${o.footer}</p>
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid #eef1f6;color:#9aa1ac;font-size:11px;line-height:1.5">
+        ${company.legalName} (${company.legalForm}) · NIF ${company.taxId}<br />
+        ${companyAddressOneLine()}
       </div>
     </div>
   </div>`;

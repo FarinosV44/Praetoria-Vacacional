@@ -85,14 +85,42 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V3 · Cupón 10PRAETORIA10 | #54 | ✅ | Activates the promo code `10PRAETORIA10` (10% off, both properties, no expiry/limit, `active`). Production DB via migration `20260828120000_coupon_10praetoria10.sql` (upsert by `code`, re-activates on re-run); DEMO mode seeds the same object from the new `PRAETORIA10_COUPON` domain constant (+ forward-compat upsert for existing stores). Discount is server-computed only (client never sends price/percentage) — infra from #45. 13 coupon unit tests + e2e `10PRAETORIA10` on both properties (incl. lower-case normalization). Shows in `/admin/promociones` via existing `listCoupons`. `tsc`+`lint`+`build`+61 unit+65 chromium e2e green |
 | V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
 
+### V4 batch (issue #56) — legal data + management intranet (epic, decisions D-009, D-010) — ✅ MERGED TO `main`
+
+The full `reserva → cliente → factura → PDF → calendario → historial → segmento`
+chain works end to end and persists (`src/domains/invoicing/chain.test.ts`).
+Merged to `main` 2026-08-29 at the user's explicit request. Overview:
+`docs/intranet.md`. Sprint detail in `docs/issues.md`.
+
+| Sprint | Scope | Status |
+|--------|-------|--------|
+| 56-A · Legal data (Part A) | PRAETORIA, S.L. data centralised in `src/content/company.ts`; aviso legal gets full Registro Mercantil / IRUS / administrador / fecha de operaciones; footer + contact page + Organization JSON-LD + transactional-email footer all read from it; 4 legal docs stay separate. Tourist-registry + property geo unchanged (D-008). 8 unit tests | ✅ code |
+| 56-B · CRM foundation | `customers` + `customer_merges` migration; `reservation_source` widened (airbnb/other); reservations enriched (customer link, channel detail, guest fiscal data, external locator, manual invoice number, `payment_state`). Pure dedup (email/phone/doc/name+contact) + field-merge + profile stats — 20 unit tests. Repository CRM methods on memory + supabase. `/admin/clientes`: list + filters (canal, alojamiento, consentimiento, repetidores, búsqueda), detail (KPIs, reservation history, duplicate detection + one-click merge), manual create/edit incl. marketing consent w/ date+source. Nav updated | ✅ code |
+| 56-C · Reservations intranet | New `external` reservation status (informational, does not hold availability — its iCal block does). `createManualReservation` on memory + supabase. `/admin/reservas/nuevo` (property, channel, dates, guests, amount, "bloquear disponibilidad" toggle, full guest + fiscal block, external locator, invoice number, payment method/state, notes) + `/admin/reservas/[id]` (edit metadata, cancel, customer link). List: channel + payment-state + free-text search filters, customer link, invoice column, rows link to detail. Auto-links/creates the customer from guest data on manual create | ✅ code |
+| 56-D · Customers / CRM | Folded into 56-B | ✅ |
+| 56-E · Invoicing | `invoices` + `invoice_items` + `invoice_settings` (migration `20260829120000`) with DB immutability triggers (issued invoices frozen; correction = anular + re-emitir). Pure `numbering.ts` (JAV-YY#### / PALM-YY####: parse, format, suggest-next, duplicate + gap detection) + `totals.ts` (configurable exempt-IVA, art. 20.Uno.23º LIVA default) — 18 tests + a flow test. Repo methods memory + supabase. `/admin/facturas` (list + per-series numbering insight incl. gaps), `/admin/facturas/[id]` (draft editor w/ dynamic line rows + live totals, or read-only issued view + issue/cobrada/anular), `/admin/facturas/[id]/documento` (branded print-to-PDF, per-property colour, PRAETORIA S.L. emisor, `requireAdmin`), `/admin/facturas/ajustes` (per-property serie + fiscalidad). "Emitir factura" on the reservation detail precarga cliente/fechas/importe/serie/nº sugerido. D-010 | ✅ code |
+| 56-F · Calendar + pricing | `daily_rates` per-date price/min-stay overrides (migration `20260829130000`), wired into the pricing engine + `resolveRateConfig` so the public site, checkout and the Stripe webhook all honour them (schema field optional → old configs still valid). Pure `buildMonthGrid` (Monday-first 6×7, price per cell, reservation coloured by channel, manual block, override badge) + `monthNav`. `/admin/calendario` rebuilt as a visual month grid per property with month nav, legend, multi-day selection and a bulk panel: aplicar precio / estancia mínima / quitar ajustes / cerrar fechas (→ manual block, grouped into contiguous ranges) / abrir fechas. 12 new tests | ✅ code |
+| 56-G · Marketing | `segments` + `campaigns` + `campaign_recipients` + `marketing_unsubscribes` (migration `20260829140000`). Pure segment engine (`matchSegment`/`evaluateSegment`/`describeCriteria` — property, channel, language, national/foreign, repeaters, spend, win-back, consent, coupon; all AND-ed; 8 tests). Repo (memory + supabase): customer profiles, segment CRUD w/ live member evaluation, campaign CRUD, `prepareCampaign` (materialises recipients honouring consent + unsubscribes), `markCampaignSent` (records the send intent; recipients marked skipped — real bulk send is **Aún no configurado**, config-status `campaigns`), unsubscribe list (auto-retires consent). `/admin/marketing`: segments + campaigns lists; segment editor with live counts + CSV export (`/admin/marketing/export` route, `requireAdmin`); campaign editor → preparar destinatarios → double-confirm send (type ENVIAR); `/admin/marketing/bajas`. | ✅ code |
+| 56-H · Promotions integration | The coupon engine (code, %/fixed, per-property, use/expiry limits, per-reservation redemption tracking, 10PRAETORIA10) was already built in #45/#54. Added: pure `quickCode` (readable code from a label, unambiguous alphabet — 3 tests), `createQuickCouponAction`, "Crear cupón para este cliente" (fiche) / "para este segmento" (segment page) quick forms, and the campaign detail now shows its linked coupon + redemption count. | ✅ code |
+| 56-I · Booking/Airbnb → internal records | Pure `planExternalReservations` (imported availability block → create an `external` reservation; drifted dates → update; block left the feed → cancel; a `confirmed` booking that shares a uid is never touched; idempotent — 5 tests). Repo `reconcileExternalReservations` (memory + supabase) + `listImportFeeds`. `sync.ts` runs the reconcile after every iCal import and now iterates Booking ∪ Airbnb ∪ any admin-added channel. `/admin/sincronizacion` gains an Airbnb feed URL field. Imported reservations show in Reservas + the calendar; completing the guest data auto-creates the customer (56-C). | ✅ code |
+| 56-J · Search + exports | Per-entity search was already built into the list pages (reservas: localizador/nombre/email/doc/factura/localizador; clientes: nombre/email/tel/doc; facturas: nº/nombre/NIF/email). Added `lib/csv.ts` (RFC-4180 quoting + UTF-8 BOM + CRLF, 2 tests) and `requireAdmin` CSV export routes for clientes, reservas and facturas that honour the page's current filters, plus "Exportar CSV" buttons. Segment CSV export was delivered in 56-G. | ✅ code |
+| 56-K · Security / roles / dashboard | `domains/admin/roles.ts` — a capability matrix for `admin` / `gestion` / `lectura` (env `ADMIN_ROLE`, default admin; architecture-ready, one login today) with `assertCapability` wired into every critical mutating server action. `admin_audit_log` repo methods + a non-throwing `logAction` helper wired into reservation cancel/create, invoice issue/void/paid/delete, customer merge, campaign send and calendar close; new `/admin/actividad` page. Dashboard rebuilt against §1: month + property filter, KPI row (ingresos, pagos recibidos, reservas, noches, ocupación), reservas por canal, próximas (30d) + recientes, facturas pendientes de emitir, estado de sincronización, accesos rápidos. Role shown in the admin header. 3 role tests. (noindex + private-PDF protection were already in place.) | ✅ code |
+| 56-L · Final E2E + docs | `src/domains/invoicing/chain.test.ts` drives the whole `reserva → cliente → factura → documento → calendario → historial → segmento` chain against the repository and asserts persistence. `e2e/intranet.spec.ts` asserts every intranet route + export endpoint is private/redirects. `docs/intranet.md` (module map, roles, fiscalidad, data model), `docs/api/INDEX.md` (intranet functions + HTTP routes + migrations), `docs/SETUP.md` + `.env.example` (`ADMIN_ROLE`, Airbnb feeds, campaign-send "Aún no configurado"). Merged `develop → main`. | ✅ |
+
+**Issue #56 complete.** `tsc` + `next lint` + `next build` + **134 unit** + **77 chromium e2e** green. Merged to `main` at the user's explicit request. Overview: `docs/intranet.md`.
+
 ## Exact position
 
-Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34
-unit + 4 booking E2E + 7 axe a11y tests all green. Full booking flow verified
-end-to-end in DEMO for both properties **and in English**. ES site content-complete
-(2 property pages, 6 landings, 12 guides, 4 legal, home). EN home + property +
-full checkout live with correct hreflang/canonical. Admin: auth, dashboard,
-reservations, manual blocks, **price editor (live on site)**, sync health.
+**Issue #56 (management intranet) merged to `main`** (2026-08-29). `develop` and
+`main` level. The public site + booking funnel are unchanged from the V3 batch;
+the intranet under `/admin` is new: reservas (manual + all channels), CRM with
+dedup/merge, invoicing with per-property series + immutable issued invoices +
+print-to-PDF document, operational calendar with per-date pricing, marketing
+(segments + campaigns + CSV export, real send "Aún no configurado"), roles
+(admin/gestion/lectura), audit log. Runs in DEMO/in-memory now; production needs
+the `20260829*` migrations. See `docs/intranet.md`.
+
+`tsc` + `next lint` + `next build` + 134 unit + 77 chromium e2e green.
 
 Remaining before V1 "done" (issue #22):
 1. **User adds real Supabase + Stripe(test) + Resend keys + Booking iCal URLs**
@@ -109,10 +137,11 @@ Remaining before V1 "done" (issue #22):
 
 ## Branches
 
-Both `develop` and `main` are on origin. `main` was merged from `develop` at the
-user's explicit request (release commit `b5ee968`, "Praetoria Vacacional V1 + V2").
-Ongoing work continues on `develop`; merge to `main` again for the next release.
-The Vercel deploy itself is still the user's to trigger.
+Both `develop` and `main` are on origin and level. `main` history: `b5ee968`
+(V1+V2) → issue #53 → #54 → #55 → FAQ-spacing polish → **issue #56 (intranet)**,
+each merged from `develop` at the user's explicit request. Ongoing work continues
+on `develop`. The Vercel deploy itself is still the user's to trigger; production
+also needs `supabase/migrations/20260829*.sql` applied for the intranet.
 
 ## Open items / blocks
 

@@ -43,6 +43,9 @@ const schema = z.object({
   ADMIN_PASSWORD: z.string().optional(),
   /** Secret used to sign the admin session cookie. */
   ADMIN_SESSION_SECRET: z.string().optional(),
+  /** Role of the single admin login (issue #56 §10). Architecture is
+   *  ready for admin / gestion / lectura; today there is one login. */
+  ADMIN_ROLE: z.enum(["admin", "gestion", "lectura"]).default("admin"),
 
   // iCal sync — token that authenticates our public export feeds
   ICAL_EXPORT_TOKEN: z.string().optional(),
@@ -78,6 +81,7 @@ export const env = {
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
   analyticsConfigured: isReal(raw.NEXT_PUBLIC_GA4_ID),
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
+  adminRole: raw.ADMIN_ROLE,
 } as const;
 
 /** DEMO mode: no database — the in-memory repository backs every read/write. */

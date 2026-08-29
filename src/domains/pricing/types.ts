@@ -15,6 +15,13 @@ export interface Season {
   minNights?: number;
 }
 
+/** Per-date override of the nightly price and/or minimum stay (issue #56 §5). */
+export interface DayRate {
+  date: IsoDate;
+  nightlyCents?: number;
+  minNights?: number;
+}
+
 /** Length-of-stay discount: stays of >= minNights get `percent` off the nightly subtotal. */
 export interface LengthOfStayDiscount {
   minNights: number;
@@ -42,6 +49,13 @@ export interface RateConfig {
   maxGuests: number;
   seasons: Season[];
   discounts: LengthOfStayDiscount[];
+  /**
+   * Admin per-date overrides (issue #56 §5). Highest priority: a matching
+   * `nightlyCents` wins over season/weekend/base; `minNights` raises the
+   * effective minimum stay for that night. Not persisted in the file default —
+   * merged in by `resolveRateConfig` from the `daily_rates` table.
+   */
+  dayRates?: DayRate[];
   /** Tourist tax etc., applied to the nightly subtotal after discounts. 0 = none. */
   taxPercent: number;
   /** How far ahead bookings are accepted, in days (0 = unlimited). */

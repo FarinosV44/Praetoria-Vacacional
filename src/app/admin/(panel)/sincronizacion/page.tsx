@@ -14,7 +14,13 @@ export default async function AdminSyncPage() {
   const properties = getAllProperties();
   const feeds = Object.fromEntries(
     await Promise.all(
-      properties.map(async (p) => [p.slug, await repo.getImportFeedUrl(p.id, "booking").catch(() => null)]),
+      properties.map(async (p) => [
+        p.slug,
+        {
+          booking: await repo.getImportFeedUrl(p.id, "booking").catch(() => null),
+          airbnb: await repo.getImportFeedUrl(p.id, "airbnb").catch(() => null),
+        },
+      ]),
     ),
   );
 
@@ -34,14 +40,31 @@ export default async function AdminSyncPage() {
             <h2 className="font-display text-lg">{p.name}</h2>
             <RunSyncButton propertySlug={p.slug} />
           </div>
-          {!feeds[p.slug] && !p.icalImportUrls[0]?.url && (
-            <p className="mt-1 text-sm text-amber-700">Aún no configurado — pega la URL de Booking.</p>
+          {!feeds[p.slug]?.booking && !feeds[p.slug]?.airbnb && !p.icalImportUrls[0]?.url && (
+            <p className="mt-1 text-sm text-amber-700">
+              Aún no configurado — pega la URL iCal de Booking y/o Airbnb.
+            </p>
           )}
           <ImportFeedForm
             propertySlug={p.slug}
-            current={feeds[p.slug] ?? p.icalImportUrls[0]?.url ?? null}
+            channel="booking"
+            channelLabel="Booking.com"
+            placeholder="https://ical.booking.com/v1/export?t=…"
+            current={feeds[p.slug]?.booking ?? p.icalImportUrls[0]?.url ?? null}
             action={setImportFeedUrlAction}
           />
+          <ImportFeedForm
+            propertySlug={p.slug}
+            channel="airbnb"
+            channelLabel="Airbnb"
+            placeholder="https://www.airbnb.com/calendar/ical/…"
+            current={feeds[p.slug]?.airbnb ?? null}
+            action={setImportFeedUrlAction}
+          />
+          <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
+            Cada reserva importada crea también un registro interno (cliente por completar y reserva
+            «externa») visible en Reservas y en el calendario.
+          </p>
           <p className="mt-3 break-all font-mono text-xs text-[var(--color-ink-soft)]">
             Feed de exportación para Booking:{" "}
             {absoluteUrl(`/api/ical/${p.slug}.ics?token=${env.icalExportConfigured ? "•••" : "PENDIENTE"}`)}

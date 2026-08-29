@@ -1,19 +1,32 @@
 /**
- * Centralised legal + booking-conditions content (issue #20).
+ * Centralised legal + booking-conditions content (issue #20, issue #56 Part A).
  *
- * IMPORTANT: no company registration data, licence numbers or binding legal
- * clauses are invented. Fields the owner must supply are marked `[[PENDIENTE: …]]`
- * and rendered visibly so they cannot ship unnoticed. Fill `operator` and the
- * pending blocks, then this content is production-ready.
+ * The company identification (razón social, NIF, domicilio social, datos
+ * registrales, contacto) lives in `src/content/company.ts` and is imported
+ * here — never duplicated. Binding legal clauses and the tourist-registry
+ * licence numbers are owner-supplied facts and are not invented.
  */
 
+import {
+  company,
+  companyAddressOneLine,
+  companyLegalParagraph,
+} from "@/content/company";
+
+const r = company.mercantileRegistry;
+
+/**
+ * Back-compat contact/identification view over `company`. Existing consumers
+ * (contact page, error page, SEO inventory) read `operator.*`.
+ */
 export const operator = {
-  legalName: "[[PENDIENTE: razón social del titular]]",
-  tradeName: "Praetoria Vacacional",
-  taxId: "[[PENDIENTE: NIF/CIF]]",
-  address: "[[PENDIENTE: domicilio fiscal]]",
-  email: "[[PENDIENTE: email de contacto legal]]",
-  phone: "[[PENDIENTE: teléfono de contacto]]",
+  legalName: company.legalName,
+  tradeName: company.tradeName,
+  taxId: company.taxId,
+  address: companyAddressOneLine(),
+  email: company.email,
+  phone: company.phone,
+  whatsapp: company.whatsapp,
   touristRegistry:
     "Javalambre Mountain SuperSki (Camarena de la Sierra, Teruel): VUTE-23-0450 / VUTE-23-045. " +
     "Valencia Frente al Mar (Mareny de Barraquetes, Sueca): VT-56539-V2 / VT-56539-V.",
@@ -38,13 +51,24 @@ export const legalDocs: Record<string, LegalDoc> = {
       "Información general sobre el titular de este sitio web y las condiciones de uso, conforme a la normativa española y europea aplicable.",
     sections: [
       {
-        heading: "Titular",
+        heading: "Titular del sitio web",
         body: [
-          `Titular: ${operator.legalName} (nombre comercial ${operator.tradeName}).`,
-          `NIF/CIF: ${operator.taxId}. Domicilio: ${operator.address}.`,
-          `Contacto: ${operator.email} · ${operator.phone}.`,
-          `Registro turístico de los alojamientos: ${operator.touristRegistry}.`,
+          companyLegalParagraph(),
+          `Forma jurídica: ${company.legalForm}. Nombre comercial: «${company.tradeName}».`,
         ],
+      },
+      {
+        heading: "Datos registrales",
+        body: [
+          `Registro Mercantil: ${r.office}.`,
+          `Sección ${r.section}, hoja ${r.sheet}, inscripción ${r.entry}. IRUS ${r.irus}.`,
+          `Año de inscripción: ${r.registrationYear}. Fecha de comienzo de operaciones: ${company.operationsStartDateLabel}.`,
+          `Administrador único: ${company.soleDirector}.`,
+        ],
+      },
+      {
+        heading: "Registro turístico de los alojamientos",
+        body: [operator.touristRegistry],
       },
       {
         heading: "Objeto",
@@ -69,7 +93,10 @@ export const legalDocs: Record<string, LegalDoc> = {
     sections: [
       {
         heading: "Responsable del tratamiento",
-        body: [`${operator.legalName}. Contacto: ${operator.email}.`],
+        body: [
+          `${company.legalName} (NIF ${company.taxId}), con domicilio social en ${companyAddressOneLine()}.`,
+          `Contacto: ${company.email} · ${company.phone}.`,
+        ],
       },
       {
         heading: "Finalidad",

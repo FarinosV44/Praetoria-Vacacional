@@ -40,8 +40,16 @@ function seasonForNight(config: RateConfig, iso: IsoDate): Season | null {
   return config.seasons.find((s) => seasonCovers(s, iso)) ?? null;
 }
 
+function dayRateFor(config: RateConfig, iso: IsoDate) {
+  return config.dayRates?.find((d) => d.date === iso);
+}
+
 function nightlyRate(config: RateConfig, iso: IsoDate): NightBreakdown {
   const weekend = isWeekendNight(iso);
+  const override = dayRateFor(config, iso);
+  if (override?.nightlyCents != null) {
+    return { date: iso, cents: override.nightlyCents, seasonKey: "override", weekend };
+  }
   const season = seasonForNight(config, iso);
   let cents: number;
   if (season) {
@@ -52,12 +60,19 @@ function nightlyRate(config: RateConfig, iso: IsoDate): NightBreakdown {
   return { date: iso, cents, seasonKey: season?.key ?? null, weekend };
 }
 
+/** The nightly price for a single date, overrides included. Used by the admin calendar. */
+export function nightlyRateCents(config: RateConfig, iso: IsoDate): number {
+  return nightlyRate(config, iso).cents;
+}
+
 /** Minimum nights that applies to a stay: the max minNights across its nights. */
 export function effectiveMinNights(config: RateConfig, checkIn: IsoDate, checkOut: IsoDate): number {
   let min = config.minNights;
   for (const night of nightsOf(checkIn, checkOut)) {
     const season = seasonForNight(config, night);
     if (season?.minNights && season.minNights > min) min = season.minNights;
+    const override = dayRateFor(config, night);
+    if (override?.minNights && override.minNights > min) min = override.minNights;
   }
   return min;
 }

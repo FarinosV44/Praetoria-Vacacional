@@ -75,3 +75,46 @@ address we do not invent structured location data (cf. D-004).
 define occupancy per property. Overlap prevention enforced in Postgres with an exclusion
 constraint on a `daterange` (GiST), not only in application code. iCal imports land as
 `availability_blocks` with `source='booking'`.
+
+## D-009 — Issue #56: legal data + management intranet (epic)
+**Date:** 2026-08-29 · user choice (batched questions on issue #56)
+Issue #56 is worked as an epic split into sprints on `develop`; `develop → main`
+merge happens only when the full `reserva → cliente → factura → PDF → calendario →
+historial → segmento marketing` chain works end to end and persists correctly
+(DEMO/in-memory + production migrations ready).
+- **Part A (legal):** PRAETORIA, S.L. corporate data centralised in
+  `src/content/company.ts` (single source). `legal.ts`, footer, contact page,
+  Organization JSON-LD and transactional-email footer all read from it. The four
+  legal docs stay separate (aviso-legal / privacidad / cookies / condiciones-reserva).
+  Tourist-registry licence lines and property geo/address are unchanged (cf. D-008).
+- **Invoice PDF model:** no owner PDF was provided → we build a clean, professional
+  per-property invoice layout following the structure described in the issue
+  (Javalambre / Valencia branding, emisor PRAETORIA S.L., descripción/cantidad/
+  precio/coste table, total, configurable IVA-exemption text art. 20.Uno.23º LIVA).
+  Owner refines visuals later.
+- **Email campaigns:** the marketing module (segments, saved lists, CSV export of
+  emails/phones/WhatsApp, campaign + promo-code scaffolding, consent + unsubscribe)
+  is fully implemented; real bulk sending stays in `Aún no configurado` state with
+  a double-confirmation step, to prevent accidental mass sends.
+
+## D-010 — Issue #56: invoice document = branded HTML + print-to-PDF
+**Date:** 2026-08-29
+The invoice "PDF" is a deterministic, per-property-branded HTML document rendered
+server-side at `/admin/facturas/[id]/documento` (behind `requireAdmin`, so it also
+satisfies §10 "protección contra acceso directo a PDFs privados"). It has full
+`@media print` styling and a "Descargar / Imprimir" button that calls
+`window.print()` — every browser's "Save as PDF" produces the file.
+- **Immutability / "no regenerar silenciosamente":** once issued, the invoice
+  row and its line items are frozen by DB triggers (`invoices_immutability_guard`,
+  `invoice_items_immutability_guard`); the document renderer is pure, so it always
+  produces the identical output from the frozen data. An error is corrected by
+  **anular + emitir una nueva**, never by editing.
+- Binary PDF archival to object storage (a stored `.pdf` file per invoice) needs
+  a storage bucket — recorded as a future option, not built now. The frozen row +
+  deterministic renderer are the "copia/registro de cada factura emitida".
+- Tax logic is configurable per property in `invoice_settings` (rate, exempt
+  flag, note) — default is exempt with the art. 20.Uno.23º LIVA text; nothing is
+  hardcoded irreversibly.
+**Why:** no owner PDF was provided (D-009); a headless-browser or `@react-pdf`
+dependency is heavier and more fragile than print-CSS for a document the owner
+will restyle anyway.

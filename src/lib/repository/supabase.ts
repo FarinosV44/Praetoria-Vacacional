@@ -13,6 +13,7 @@ import {
   type CouponInput,
   type CreateBlockInput,
   type CreateHoldInput,
+  type CreateManualReservationInput,
   type EmailLogEntry,
   type EmailLogRow,
   type ExternalEvent,
@@ -21,6 +22,31 @@ import {
   type UpsertPaymentInput,
 } from "./types";
 import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
+import type { Customer, CustomerInput } from "@/domains/crm/types";
+import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
+import { buildCustomerProfile } from "@/domains/crm/profile";
+import { InvoiceLockedError, InvoiceNumberTakenError } from "./types";
+import {
+  DEFAULT_TAX_NOTE,
+  defaultSeriesFor,
+  type CreateInvoiceInput,
+  type Invoice,
+  type InvoiceItem,
+  type InvoiceSettings,
+  type InvoiceStatus,
+  type InvoiceWithItems,
+} from "@/domains/invoicing/types";
+import { computeInvoiceTotals, lineAmountCents } from "@/domains/invoicing/totals";
+import { getPropertyById } from "@/domains/properties/registry";
+import type {
+  Campaign,
+  CampaignInput,
+  CampaignRecipient,
+  Segment,
+  SegmentInput,
+} from "@/domains/marketing/types";
+import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
+import { planExternalReservations } from "@/domains/integrations/reconcile";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -51,7 +77,75 @@ function mapReservation(row: any): Reservation {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    customerId: row.customer_id ?? null,
+    channelDetail: row.channel_detail ?? null,
+    guestDocType: row.guest_doc_type ?? null,
+    guestDocNumber: row.guest_doc_number ?? null,
+    guestAddress: row.guest_address ?? null,
+    guestPostalCode: row.guest_postal_code ?? null,
+    guestCity: row.guest_city ?? null,
+    guestProvince: row.guest_province ?? null,
+    guestCountry: row.guest_country ?? null,
+    externalLocator: row.external_locator ?? null,
+    invoiceNumber: row.invoice_number ?? null,
+    paymentMethod: row.payment_method ?? null,
+    paymentState: row.payment_state ?? "pending",
   };
+}
+
+function mapCustomer(row: any): Customer {
+  return {
+    id: row.id,
+    firstName: row.first_name ?? "",
+    lastName: row.last_name ?? "",
+    email: row.email,
+    phone: row.phone,
+    whatsapp: row.whatsapp,
+    docType: row.doc_type,
+    docNumber: row.doc_number,
+    address: row.address,
+    postalCode: row.postal_code,
+    city: row.city,
+    province: row.province,
+    country: row.country,
+    language: row.language,
+    channelOrigin: row.channel_origin,
+    marketingConsent: !!row.marketing_consent,
+    marketingConsentAt: row.marketing_consent_at,
+    marketingConsentSource: row.marketing_consent_source,
+    notes: row.notes,
+    mergedInto: row.merged_into ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function customerToRow(input: Partial<CustomerInput>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  const set = (k: string, v: unknown) => {
+    if (v !== undefined) row[k] = v;
+  };
+  set("first_name", input.firstName);
+  set("last_name", input.lastName);
+  set("email", input.email);
+  set("phone", input.phone);
+  set("whatsapp", input.whatsapp);
+  set("doc_type", input.docType);
+  set("doc_number", input.docNumber);
+  set("address", input.address);
+  set("postal_code", input.postalCode);
+  set("city", input.city);
+  set("province", input.province);
+  set("country", input.country);
+  set("language", input.language);
+  set("channel_origin", input.channelOrigin);
+  set("notes", input.notes);
+  if (input.marketingConsent !== undefined) {
+    row.marketing_consent = input.marketingConsent;
+    row.marketing_consent_at = input.marketingConsent ? new Date().toISOString() : null;
+    if (input.marketingConsent) row.marketing_consent_source = input.marketingConsentSource ?? "admin";
+  }
+  return row;
 }
 
 function mapBlock(row: any): AvailabilityBlock {
@@ -81,6 +175,125 @@ function mapPayment(row: any): Payment {
     raw: row.raw,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function mapInvoice(row: any): Invoice {
+  return {
+    id: row.id,
+    propertyId: row.property_id,
+    reservationId: row.reservation_id ?? null,
+    customerId: row.customer_id ?? null,
+    series: row.series,
+    number: row.number,
+    status: row.status,
+    issueDate: row.issue_date,
+    billTo: {
+      name: row.bill_to_name ?? "",
+      taxId: row.bill_to_tax_id ?? null,
+      address: row.bill_to_address ?? null,
+      postalCode: row.bill_to_postal ?? null,
+      city: row.bill_to_city ?? null,
+      province: row.bill_to_province ?? null,
+      country: row.bill_to_country ?? null,
+      email: row.bill_to_email ?? null,
+    },
+    subtotalCents: Number(row.subtotal_cents ?? 0),
+    taxRate: Number(row.tax_rate ?? 0),
+    taxCents: Number(row.tax_cents ?? 0),
+    totalCents: Number(row.total_cents ?? 0),
+    taxExempt: !!row.tax_exempt,
+    taxNote: row.tax_note ?? null,
+    currency: row.currency ?? "EUR",
+    notes: row.notes ?? null,
+    issuedAt: row.issued_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapInvoiceItem(row: any): InvoiceItem {
+  return {
+    id: row.id,
+    invoiceId: row.invoice_id,
+    position: row.position,
+    description: row.description,
+    quantity: Number(row.quantity),
+    unitCents: Number(row.unit_cents),
+    amountCents: Number(row.amount_cents),
+  };
+}
+
+function invoiceRowFrom(input: CreateInvoiceInput, totals: {
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+}): Record<string, unknown> {
+  return {
+    property_id: input.propertyId,
+    reservation_id: input.reservationId ?? null,
+    customer_id: input.customerId ?? null,
+    series: input.series.toUpperCase(),
+    number: input.number.trim().toUpperCase(),
+    issue_date: input.issueDate,
+    bill_to_name: input.billTo.name,
+    bill_to_tax_id: input.billTo.taxId,
+    bill_to_address: input.billTo.address,
+    bill_to_postal: input.billTo.postalCode,
+    bill_to_city: input.billTo.city,
+    bill_to_province: input.billTo.province,
+    bill_to_country: input.billTo.country,
+    bill_to_email: input.billTo.email,
+    subtotal_cents: totals.subtotalCents,
+    tax_rate: input.taxRate,
+    tax_cents: totals.taxCents,
+    total_cents: totals.totalCents,
+    tax_exempt: input.taxExempt,
+    tax_note: input.taxNote,
+    notes: input.notes ?? null,
+  };
+}
+
+function mapSegment(row: any): Segment {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? null,
+    criteria: (row.criteria ?? {}) as SegmentCriteria,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapCampaign(row: any): Campaign {
+  return {
+    id: row.id,
+    name: row.name,
+    channel: row.channel,
+    status: row.status,
+    segmentId: row.segment_id ?? null,
+    subject: row.subject ?? null,
+    body: row.body ?? null,
+    couponCode: row.coupon_code ?? null,
+    consentRequired: !!row.consent_required,
+    preparedAt: row.prepared_at ?? null,
+    sentAt: row.sent_at ?? null,
+    recipientCount: row.recipient_count ?? 0,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapCampaignRecipient(row: any): CampaignRecipient {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    customerId: row.customer_id ?? null,
+    email: row.email ?? null,
+    phone: row.phone ?? null,
+    status: row.status,
+    error: row.error ?? null,
+    createdAt: row.created_at,
   };
 }
 
@@ -217,8 +430,17 @@ export const supabaseRepository: Repository = {
     let q = db.from("reservations").select().order("check_in", { ascending: true });
     if (filter.propertyId) q = q.eq("property_id", filter.propertyId);
     if (filter.status) q = q.in("status", filter.status);
+    if (filter.source) q = q.eq("source", filter.source);
+    if (filter.paymentState) q = q.eq("payment_state", filter.paymentState);
+    if (filter.customerId) q = q.eq("customer_id", filter.customerId);
     if (filter.from) q = q.gte("check_out", filter.from);
     if (filter.to) q = q.lte("check_in", filter.to);
+    if (filter.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(
+        `code.ilike.${t},guest_name.ilike.${t},guest_email.ilike.${t},guest_phone.ilike.${t},guest_doc_number.ilike.${t},invoice_number.ilike.${t},external_locator.ilike.${t}`,
+      );
+    }
     const { data, error } = await q;
     if (error) throw error;
     return (data ?? []).map(mapReservation);
@@ -419,6 +641,289 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 
+  // --- Marketing (issue #56 §6) -------------------------------------
+  async listCustomerProfiles() {
+    const db = supabaseAdmin();
+    const [{ data: customers }, { data: reservations }] = await Promise.all([
+      db.from("customers").select().is("merged_into", null),
+      db.from("reservations").select(),
+    ]);
+    const res = (reservations ?? []).map(mapReservation);
+    return (customers ?? []).map((c: any) => buildCustomerProfile(mapCustomer(c), res));
+  },
+
+  async segmentMembers(criteria: SegmentCriteria) {
+    return evaluateSegment(criteria, await this.listCustomerProfiles());
+  },
+
+  async listSegments() {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("segments").select().order("name");
+    if (error) throw error;
+    return (data ?? []).map(mapSegment);
+  },
+  async getSegment(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("segments").select().eq("id", id).maybeSingle();
+    return data ? mapSegment(data) : null;
+  },
+  async createSegment(input: SegmentInput) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("segments")
+      .insert({ name: input.name, description: input.description ?? null, criteria: input.criteria })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapSegment(data);
+  },
+  async updateSegment(id, patch) {
+    const db = supabaseAdmin();
+    const row: Record<string, unknown> = {};
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.description !== undefined) row.description = patch.description ?? null;
+    if (patch.criteria !== undefined) row.criteria = patch.criteria;
+    const { data, error } = await db.from("segments").update(row).eq("id", id).select().single();
+    if (error) throw error;
+    return mapSegment(data);
+  },
+  async deleteSegment(id) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("segments").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async listCampaigns() {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .select()
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapCampaign);
+  },
+  async getCampaign(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("campaigns").select().eq("id", id).maybeSingle();
+    return data ? mapCampaign(data) : null;
+  },
+  async createCampaign(input: CampaignInput) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .insert({
+        name: input.name,
+        channel: input.channel,
+        segment_id: input.segmentId ?? null,
+        subject: input.subject ?? null,
+        body: input.body ?? null,
+        coupon_code: input.couponCode ?? null,
+        consent_required: input.consentRequired,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+  async updateCampaign(id, patch) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("campaigns").select("status").eq("id", id).maybeSingle();
+    if (cur?.status === "sent") throw new Error("CAMPAIGN_SENT");
+    const row: Record<string, unknown> = { status: "draft" };
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.channel !== undefined) row.channel = patch.channel;
+    if (patch.segmentId !== undefined) row.segment_id = patch.segmentId;
+    if (patch.subject !== undefined) row.subject = patch.subject;
+    if (patch.body !== undefined) row.body = patch.body;
+    if (patch.couponCode !== undefined) row.coupon_code = patch.couponCode;
+    if (patch.consentRequired !== undefined) row.consent_required = patch.consentRequired;
+    const { data, error } = await db.from("campaigns").update(row).eq("id", id).select().single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+  async deleteCampaign(id) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("campaigns").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async prepareCampaign(id) {
+    const db = supabaseAdmin();
+    const campaign = await this.getCampaign(id);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (campaign.status === "sent") throw new Error("CAMPAIGN_SENT");
+
+    const criteria = campaign.segmentId
+      ? ((await this.getSegment(campaign.segmentId))?.criteria ?? {})
+      : {};
+    const members = await this.segmentMembers(criteria);
+    const { data: unsubRows } = await db.from("marketing_unsubscribes").select("email");
+    const unsub = new Set((unsubRows ?? []).map((u: any) => (u.email as string).toLowerCase()));
+
+    await db.from("campaign_recipients").delete().eq("campaign_id", id);
+    let ok = 0;
+    let skipped = 0;
+    const rows = members.map((m) => {
+      const email = m.email?.toLowerCase() ?? null;
+      const phone = m.phone ?? m.whatsapp ?? null;
+      let status: CampaignRecipient["status"] = "pending";
+      let error: string | null = null;
+      if (campaign.consentRequired && !m.marketingConsent) {
+        status = "skipped";
+        error = "sin consentimiento";
+      } else if (campaign.channel === "email" && (!email || unsub.has(email))) {
+        status = email ? "unsubscribed" : "skipped";
+        error = email ? "baja de marketing" : "sin email";
+      } else if (campaign.channel === "whatsapp" && !phone) {
+        status = "skipped";
+        error = "sin teléfono";
+      }
+      if (status === "pending") ok++;
+      else skipped++;
+      return {
+        campaign_id: id,
+        customer_id: m.id,
+        email: m.email,
+        phone,
+        status,
+        error,
+      };
+    });
+    if (rows.length) await db.from("campaign_recipients").insert(rows);
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "prepared", prepared_at: new Date().toISOString(), recipient_count: ok })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return { campaign: mapCampaign(data), recipients: ok, skipped };
+  },
+
+  async listCampaignRecipients(id) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaign_recipients")
+      .select()
+      .eq("campaign_id", id)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapCampaignRecipient);
+  },
+
+  async markCampaignSent(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("campaigns").select("status").eq("id", id).maybeSingle();
+    if (!cur) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (cur.status !== "prepared") throw new Error("CAMPAIGN_NOT_PREPARED");
+    await db
+      .from("campaign_recipients")
+      .update({ status: "skipped", error: "Envío masivo no configurado (Aún no configurado)" })
+      .eq("campaign_id", id)
+      .eq("status", "pending");
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "sent", sent_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+
+  async addUnsubscribe(email, source) {
+    const db = supabaseAdmin();
+    const e = email.trim().toLowerCase();
+    await db.from("marketing_unsubscribes").upsert({ email: e, source: source ?? null }, { onConflict: "email" });
+    await db
+      .from("customers")
+      .update({ marketing_consent: false, marketing_consent_at: null })
+      .ilike("email", e);
+  },
+  async isUnsubscribed(email) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("marketing_unsubscribes")
+      .select("email")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+    return !!data;
+  },
+  async listUnsubscribes() {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("marketing_unsubscribes")
+      .select()
+      .order("unsubscribed_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      email: r.email,
+      unsubscribedAt: r.unsubscribed_at,
+      source: r.source ?? null,
+    }));
+  },
+
+  async listDailyRates(propertyId: string, from?: string, to?: string) {
+    const db = supabaseAdmin();
+    let q = db
+      .from("daily_rates")
+      .select("date, nightly_cents, min_nights")
+      .eq("property_id", propertyId)
+      .order("date", { ascending: true });
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      date: r.date as string,
+      ...(r.nightly_cents != null ? { nightlyCents: Number(r.nightly_cents) } : {}),
+      ...(r.min_nights != null ? { minNights: Number(r.min_nights) } : {}),
+    }));
+  },
+
+  async setDailyRates(propertyId, dates, patch) {
+    const db = supabaseAdmin();
+    const { data: current } = await db
+      .from("daily_rates")
+      .select("date, nightly_cents, min_nights")
+      .eq("property_id", propertyId)
+      .in("date", dates);
+    const byDate = new Map((current ?? []).map((r: any) => [r.date, r]));
+    const toUpsert: Record<string, unknown>[] = [];
+    const toDelete: string[] = [];
+    for (const date of dates) {
+      const existing = byDate.get(date) as any;
+      const nightly =
+        patch.nightlyCents !== undefined ? patch.nightlyCents : (existing?.nightly_cents ?? null);
+      const min =
+        patch.minNights !== undefined ? patch.minNights : (existing?.min_nights ?? null);
+      if (nightly == null && min == null) {
+        toDelete.push(date);
+      } else {
+        toUpsert.push({ property_id: propertyId, date, nightly_cents: nightly, min_nights: min });
+      }
+    }
+    if (toUpsert.length) {
+      const { error } = await db
+        .from("daily_rates")
+        .upsert(toUpsert, { onConflict: "property_id,date" });
+      if (error) throw error;
+    }
+    if (toDelete.length) {
+      await db.from("daily_rates").delete().eq("property_id", propertyId).in("date", toDelete);
+    }
+  },
+
+  async clearDailyRates(propertyId, dates) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("daily_rates")
+      .delete()
+      .eq("property_id", propertyId)
+      .in("date", dates);
+    if (error) throw error;
+  },
+
   async getContentOverride(key: string) {
     const db = supabaseAdmin();
     const { data } = await db
@@ -463,6 +968,37 @@ export const supabaseRepository: Repository = {
     if (error) console.error("email_log insert failed", error);
   },
 
+  async auditLog(entry) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("admin_audit_log").insert({
+      actor_email: entry.actorEmail ?? null,
+      action: entry.action,
+      entity: entry.entity ?? null,
+      entity_id: entry.entityId ?? null,
+      meta: entry.meta ?? {},
+    });
+    if (error) console.error("admin_audit_log insert failed", error);
+  },
+
+  async listAuditLog(limit = 200) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_audit_log")
+      .select()
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      id: r.id,
+      actorEmail: r.actor_email ?? null,
+      action: r.action,
+      entity: r.entity ?? null,
+      entityId: r.entity_id ?? null,
+      meta: r.meta ?? {},
+      createdAt: r.created_at,
+    }));
+  },
+
   async listEmailLog(limit = 100) {
     const db = supabaseAdmin();
     const { data, error } = await db
@@ -483,6 +1019,509 @@ export const supabaseRepository: Repository = {
         createdAt: r.created_at,
       }),
     );
+  },
+
+  // --- Customers / CRM (issue #56) -------------------------------------
+  async listCustomers(filter) {
+    const db = supabaseAdmin();
+    let q = db
+      .from("customers")
+      .select()
+      .is("merged_into", null)
+      .order("last_name", { ascending: true });
+    if (filter?.channel) q = q.eq("channel_origin", filter.channel);
+    if (filter?.consentOnly) q = q.eq("marketing_consent", true);
+    if (filter?.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(
+        `first_name.ilike.${t},last_name.ilike.${t},email.ilike.${t},phone.ilike.${t},doc_number.ilike.${t}`,
+      );
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    let rows = (data ?? []).map(mapCustomer);
+    if (filter?.repeatersOnly || filter?.property) {
+      const { data: res } = await db.from("reservations").select("customer_id, property_id, status");
+      const byCustomer = new Map<string, { props: Set<string>; confirmed: number }>();
+      for (const r of res ?? []) {
+        if (!r.customer_id) continue;
+        const e = byCustomer.get(r.customer_id) ?? { props: new Set(), confirmed: 0 };
+        if (r.status === "confirmed") {
+          e.props.add(r.property_id);
+          e.confirmed++;
+        }
+        byCustomer.set(r.customer_id, e);
+      }
+      rows = rows.filter((c) => {
+        const e = byCustomer.get(c.id);
+        if (filter.repeatersOnly && (!e || e.confirmed < 2)) return false;
+        if (filter.property && (!e || !e.props.has(filter.property))) return false;
+        return true;
+      });
+    }
+    return rows;
+  },
+
+  async getCustomer(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("customers").select().eq("id", id).maybeSingle();
+    return data ? mapCustomer(data) : null;
+  },
+
+  async createCustomer(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("customers")
+      .insert(customerToRow({ ...input, firstName: input.firstName, lastName: input.lastName }))
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCustomer(data);
+  },
+
+  async updateCustomer(id, patch) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("customers")
+      .update(customerToRow(patch))
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCustomer(data);
+  },
+
+  async customerProfile(id) {
+    const db = supabaseAdmin();
+    const customer = await this.getCustomer(id);
+    if (!customer) return null;
+    const { data } = await db.from("reservations").select().eq("customer_id", id);
+    return buildCustomerProfile(customer, (data ?? []).map(mapReservation));
+  },
+
+  async findCustomerDuplicates(id) {
+    const target = await this.getCustomer(id);
+    if (!target) return [];
+    const all = await this.listCustomers();
+    return findDuplicates(target, all);
+  },
+
+  async mergeCustomers(primaryId, duplicateId, actorEmail) {
+    const db = supabaseAdmin();
+    const primary = await this.getCustomer(primaryId);
+    const dup = await this.getCustomer(duplicateId);
+    if (!primary || !dup) throw new Error("CUSTOMER_NOT_FOUND");
+    if (primaryId === duplicateId) return primary;
+
+    const merged = mergedFields(primary, dup);
+    await db.from("reservations").update({ customer_id: primaryId }).eq("customer_id", duplicateId);
+    const { data, error } = await db
+      .from("customers")
+      .update(
+        customerToRow({
+          firstName: merged.firstName,
+          lastName: merged.lastName,
+          email: merged.email,
+          phone: merged.phone,
+          whatsapp: merged.whatsapp,
+          docType: merged.docType,
+          docNumber: merged.docNumber,
+          address: merged.address,
+          postalCode: merged.postalCode,
+          city: merged.city,
+          province: merged.province,
+          country: merged.country,
+          language: merged.language,
+          channelOrigin: merged.channelOrigin,
+          notes: merged.notes,
+        }),
+      )
+      .eq("id", primaryId)
+      .select()
+      .single();
+    if (error) throw error;
+    if (merged.marketingConsent && !primary.marketingConsent) {
+      await db
+        .from("customers")
+        .update({
+          marketing_consent: true,
+          marketing_consent_at: merged.marketingConsentAt,
+          marketing_consent_source: merged.marketingConsentSource,
+        })
+        .eq("id", primaryId);
+    }
+    await db.from("customers").update({ merged_into: primaryId }).eq("id", duplicateId);
+    await db
+      .from("customer_merges")
+      .insert({ primary_id: primaryId, merged_id: duplicateId, actor_email: actorEmail ?? null, snapshot: dup });
+    await db.from("admin_audit_log").insert({
+      actor_email: actorEmail ?? null,
+      action: "customer.merge",
+      entity: "customer",
+      entity_id: primaryId,
+      meta: { merged: duplicateId },
+    });
+    return mapCustomer(data);
+  },
+
+  async createManualReservation(input: CreateManualReservationInput) {
+    const db = supabaseAdmin();
+    const genCode = `PV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const { data, error } = await db
+      .from("reservations")
+      .insert({
+        property_id: input.propertyId,
+        code: genCode,
+        status: input.status,
+        source: input.source,
+        channel_detail: input.channelDetail ?? null,
+        check_in: input.checkIn,
+        check_out: input.checkOut,
+        guests: input.guests,
+        currency: input.currency ?? "EUR",
+        total_cents: input.totalCents,
+        price_breakdown: { manual: true },
+        customer_id: input.customerId ?? null,
+        guest_name: input.guestName ?? null,
+        guest_email: input.guestEmail ?? null,
+        guest_phone: input.guestPhone ?? null,
+        guest_doc_type: input.guestDocType ?? null,
+        guest_doc_number: input.guestDocNumber ?? null,
+        guest_address: input.guestAddress ?? null,
+        guest_postal_code: input.guestPostalCode ?? null,
+        guest_city: input.guestCity ?? null,
+        guest_province: input.guestProvince ?? null,
+        guest_country: input.guestCountry ?? null,
+        external_locator: input.externalLocator ?? null,
+        invoice_number: input.invoiceNumber ?? null,
+        payment_method: input.paymentMethod ?? null,
+        payment_state: input.paymentState ?? "pending",
+        coupon_code: input.couponCode ?? null,
+        notes: input.notes ?? null,
+      })
+      .select()
+      .single();
+    if (isUnavailable(error)) throw new PropertyUnavailableError();
+    if (error) throw error;
+    const reservation = mapReservation(data);
+    if (
+      !reservation.customerId &&
+      (reservation.guestEmail || reservation.guestPhone || reservation.guestName)
+    ) {
+      await this.linkOrCreateCustomerFromReservation(reservation.id);
+      return (await this.getReservation(reservation.id)) ?? reservation;
+    }
+    return reservation;
+  },
+
+  async updateReservation(id, patch) {
+    const db = supabaseAdmin();
+    const row: Record<string, unknown> = {};
+    const set = (k: string, v: unknown) => {
+      if (v !== undefined) row[k] = v;
+    };
+    set("source", patch.source);
+    set("channel_detail", patch.channelDetail);
+    set("customer_id", patch.customerId);
+    set("guest_name", patch.guestName);
+    set("guest_email", patch.guestEmail);
+    set("guest_phone", patch.guestPhone);
+    set("guest_doc_type", patch.guestDocType);
+    set("guest_doc_number", patch.guestDocNumber);
+    set("guest_address", patch.guestAddress);
+    set("guest_postal_code", patch.guestPostalCode);
+    set("guest_city", patch.guestCity);
+    set("guest_province", patch.guestProvince);
+    set("guest_country", patch.guestCountry);
+    set("external_locator", patch.externalLocator);
+    set("invoice_number", patch.invoiceNumber);
+    set("payment_method", patch.paymentMethod);
+    set("payment_state", patch.paymentState);
+    set("notes", patch.notes);
+    const { data, error } = await db
+      .from("reservations")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapReservation(data);
+  },
+
+  async linkOrCreateCustomerFromReservation(reservationId) {
+    const r = await this.getReservation(reservationId);
+    if (!r) return null;
+    if (r.customerId) return this.getCustomer(r.customerId);
+    if (!r.guestEmail && !r.guestPhone && !r.guestName) return null;
+    const all = await this.listCustomers();
+    const synthetic: Customer = {
+      id: "__new__",
+      firstName: (r.guestName ?? "").split(" ")[0] ?? "",
+      lastName: (r.guestName ?? "").split(" ").slice(1).join(" "),
+      email: r.guestEmail,
+      phone: r.guestPhone,
+      whatsapp: null,
+      docType: (r.guestDocType as Customer["docType"]) ?? null,
+      docNumber: r.guestDocNumber,
+      address: r.guestAddress,
+      postalCode: r.guestPostalCode,
+      city: r.guestCity,
+      province: r.guestProvince,
+      country: r.guestCountry,
+      language: null,
+      channelOrigin: r.source,
+      marketingConsent: false,
+      marketingConsentAt: null,
+      marketingConsentSource: null,
+      notes: null,
+      mergedInto: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    const dup = findDuplicates(synthetic, all)[0];
+    let customer: Customer;
+    if (dup) {
+      customer = dup.customer;
+    } else {
+      customer = await this.createCustomer({
+        firstName: synthetic.firstName,
+        lastName: synthetic.lastName,
+        email: synthetic.email,
+        phone: synthetic.phone,
+        docType: synthetic.docType,
+        docNumber: synthetic.docNumber,
+        address: synthetic.address,
+        postalCode: synthetic.postalCode,
+        city: synthetic.city,
+        province: synthetic.province,
+        country: synthetic.country,
+        channelOrigin: synthetic.channelOrigin,
+      });
+    }
+    await this.updateReservation(reservationId, { customerId: customer.id });
+    return customer;
+  },
+
+  // --- Invoicing (issue #56 §3) --------------------------------------
+  async listInvoices(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("invoices").select().order("number", { ascending: false });
+    if (filter?.propertyId) q = q.eq("property_id", filter.propertyId);
+    if (filter?.series) q = q.eq("series", filter.series);
+    if (filter?.status) q = q.in("status", filter.status);
+    if (filter?.customerId) q = q.eq("customer_id", filter.customerId);
+    if (filter?.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(`number.ilike.${t},bill_to_name.ilike.${t},bill_to_tax_id.ilike.${t},bill_to_email.ilike.${t}`);
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapInvoice);
+  },
+
+  async getInvoice(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("invoices").select().eq("id", id).maybeSingle();
+    if (!data) return null;
+    const { data: items } = await db
+      .from("invoice_items")
+      .select()
+      .eq("invoice_id", id)
+      .order("position", { ascending: true });
+    return { ...mapInvoice(data), items: (items ?? []).map(mapInvoiceItem) };
+  },
+
+  async getInvoiceByNumber(number) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("invoices")
+      .select()
+      .ilike("number", number.trim())
+      .maybeSingle();
+    return data ? mapInvoice(data) : null;
+  },
+
+  async invoicesForReservation(reservationId) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("invoices")
+      .select()
+      .eq("reservation_id", reservationId)
+      .order("number", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapInvoice);
+  },
+
+  async allInvoiceNumbers(propertyId) {
+    const db = supabaseAdmin();
+    let q = db.from("invoices").select("number");
+    if (propertyId) q = q.eq("property_id", propertyId);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map((r: any) => r.number as string);
+  },
+
+  async invoiceSettings(propertyId) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("invoice_settings")
+      .select()
+      .eq("property_id", propertyId)
+      .maybeSingle();
+    if (data) {
+      return {
+        propertyId,
+        series: data.series,
+        taxRate: Number(data.tax_rate),
+        taxExempt: !!data.tax_exempt,
+        taxNote: data.tax_note,
+      };
+    }
+    const slug = getPropertyById(propertyId)?.slug ?? propertyId;
+    return {
+      propertyId,
+      series: defaultSeriesFor(slug),
+      taxRate: 0,
+      taxExempt: true,
+      taxNote: DEFAULT_TAX_NOTE,
+    } satisfies InvoiceSettings;
+  },
+
+  async setInvoiceSettings(propertyId, patch) {
+    const db = supabaseAdmin();
+    const current = await this.invoiceSettings(propertyId);
+    const next: InvoiceSettings = { ...current, ...patch, propertyId };
+    const { error } = await db.from("invoice_settings").upsert(
+      {
+        property_id: propertyId,
+        series: next.series,
+        tax_rate: next.taxRate,
+        tax_exempt: next.taxExempt,
+        tax_note: next.taxNote,
+      },
+      { onConflict: "property_id" },
+    );
+    if (error) throw error;
+    return next;
+  },
+
+  async createInvoice(input: CreateInvoiceInput) {
+    const db = supabaseAdmin();
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    const { data, error } = await db
+      .from("invoices")
+      .insert({ ...invoiceRowFrom(input, totals), status: "draft" })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new InvoiceNumberTakenError();
+      throw error;
+    }
+    if (cleanItems.length) {
+      const { error: itemErr } = await db.from("invoice_items").insert(
+        cleanItems.map((it, position) => ({
+          invoice_id: data.id,
+          position,
+          description: it.description.trim(),
+          quantity: it.quantity,
+          unit_cents: it.unitCents,
+          amount_cents: lineAmountCents(it.quantity, it.unitCents),
+        })),
+      );
+      if (itemErr) throw itemErr;
+    }
+    return (await this.getInvoice(data.id)) as InvoiceWithItems;
+  },
+
+  async updateInvoiceDraft(id, input: CreateInvoiceInput) {
+    const db = supabaseAdmin();
+    const existing = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!existing.data) throw new Error("INVOICE_NOT_FOUND");
+    if (existing.data.status !== "draft") throw new InvoiceLockedError();
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    const { error } = await db
+      .from("invoices")
+      .update(invoiceRowFrom(input, totals))
+      .eq("id", id);
+    if (error) {
+      if (error.code === "23505") throw new InvoiceNumberTakenError();
+      throw error;
+    }
+    await db.from("invoice_items").delete().eq("invoice_id", id);
+    if (cleanItems.length) {
+      await db.from("invoice_items").insert(
+        cleanItems.map((it, position) => ({
+          invoice_id: id,
+          position,
+          description: it.description.trim(),
+          quantity: it.quantity,
+          unit_cents: it.unitCents,
+          amount_cents: lineAmountCents(it.quantity, it.unitCents),
+        })),
+      );
+    }
+    return (await this.getInvoice(id)) as InvoiceWithItems;
+  },
+
+  async issueInvoice(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select().eq("id", id).maybeSingle();
+    if (!cur) throw new Error("INVOICE_NOT_FOUND");
+    if (cur.status === "issued" || cur.status === "paid") return mapInvoice(cur);
+    if (cur.status !== "draft") throw new InvoiceLockedError();
+    const { data, error } = await db
+      .from("invoices")
+      .update({ status: "issued", issued_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapInvoice(data);
+  },
+
+  async setInvoiceStatus(id, status: InvoiceStatus) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!cur) throw new Error("INVOICE_NOT_FOUND");
+    const allowed: Record<InvoiceStatus, InvoiceStatus[]> = {
+      draft: ["issued"],
+      issued: ["paid", "void", "rectified"],
+      paid: ["void", "rectified"],
+      void: [],
+      rectified: [],
+    };
+    if (cur.status === status) {
+      const { data } = await db.from("invoices").select().eq("id", id).single();
+      return mapInvoice(data);
+    }
+    if (!allowed[cur.status as InvoiceStatus].includes(status)) {
+      throw new InvoiceLockedError(`INVOICE_TRANSITION_INVALID: ${cur.status} → ${status}`);
+    }
+    const { data, error } = await db
+      .from("invoices")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapInvoice(data);
+  },
+
+  async deleteInvoiceDraft(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!cur) return;
+    if (cur.status !== "draft") throw new InvoiceLockedError();
+    const { error } = await db.from("invoices").delete().eq("id", id);
+    if (error) throw error;
   },
 
   async getImportFeedUrl(propertyId: string, channel: string) {
@@ -592,6 +1631,72 @@ export const supabaseRepository: Repository = {
       { onConflict: "property_id,channel,direction" },
     );
     if (error) throw error;
+  },
+
+  async listImportFeeds(propertyId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("calendar_syncs")
+      .select("channel, feed_url")
+      .eq("property_id", propertyId)
+      .eq("direction", "import")
+      .not("feed_url", "is", null);
+    if (error) throw error;
+    return (data ?? [])
+      .filter((r: any) => r.feed_url)
+      .map((r: any) => ({ channel: r.channel as string, url: r.feed_url as string }));
+  },
+
+  async reconcileExternalReservations(propertyId, source) {
+    const db = supabaseAdmin();
+    const [{ data: blocks }, { data: reservations }] = await Promise.all([
+      db.from("availability_blocks").select().eq("property_id", propertyId).eq("source", source),
+      db.from("reservations").select().eq("property_id", propertyId).eq("source", source),
+    ]);
+    const plan = planExternalReservations(
+      (blocks ?? []).map(mapBlock),
+      (reservations ?? []).map(mapReservation),
+    );
+    const channelDetail =
+      source === "booking" ? "Booking.com" : source === "airbnb" ? "Airbnb" : String(source);
+
+    for (const c of plan.toCreate) {
+      const genCode = `PV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      await db.from("reservations").insert({
+        property_id: propertyId,
+        code: genCode,
+        status: "external",
+        source,
+        channel_detail: channelDetail,
+        check_in: c.startDate,
+        check_out: c.endDate,
+        guests: 1,
+        currency: "EUR",
+        total_cents: 0,
+        price_breakdown: { imported: true },
+        external_uid: c.externalUid,
+        external_locator: c.externalUid,
+        notes: c.summary,
+        payment_state: "pending",
+      });
+    }
+    for (const u of plan.toUpdate) {
+      await db
+        .from("reservations")
+        .update({ check_in: u.startDate, check_out: u.endDate })
+        .eq("id", u.id);
+    }
+    for (const c of plan.toCancel) {
+      await db
+        .from("reservations")
+        .update({ status: "cancelled", notes: `Bloqueo retirado del feed ${source}` })
+        .eq("id", c.id);
+    }
+    return {
+      created: plan.toCreate.length,
+      updated: plan.toUpdate.length,
+      cancelled: plan.toCancel.length,
+    };
   },
 
   async getSyncRows(propertyId?: string) {

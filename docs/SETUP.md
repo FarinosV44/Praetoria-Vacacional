@@ -54,18 +54,36 @@ them in any order; each is independent.
 
 - `ADMIN_PASSWORD` — required to sign in at `/admin`.
 - `ADMIN_SESSION_SECRET` — long random string signing the session cookie.
-- `ADMIN_EMAILS` — reserved for the optional Supabase-Auth-backed admin.
+- `ADMIN_EMAILS` — reserved for the optional Supabase-Auth-backed admin; also
+  used as the actor on the audit log (`/admin/actividad`).
+- `ADMIN_ROLE` — `admin` (default) / `gestion` / `lectura`. The single login's
+  role; `gestion` cannot change configuration, `lectura` cannot write. The
+  capability matrix is ready for a future multi-user system (issue #56 §10).
 
-## 5. iCal channel sync (Booking.com)
+The full management intranet (reservations, CRM, invoicing + PDF, operational
+calendar + pricing, marketing, roles, audit log) lives under `/admin` — see
+`docs/intranet.md`. Its migrations are `supabase/migrations/20260829*.sql`.
+
+## 5. iCal channel sync (Booking.com + Airbnb)
 
 1. `ICAL_EXPORT_TOKEN` — long random string. Guards the export feeds and the
    import/cron endpoints.
-2. In each `src/content/properties/<slug>.ts`, set `icalImportUrls[].url` to the
-   property's Booking.com calendar-export URL.
-3. In Booking.com → Calendar → Sync calendars, subscribe to
-   `https://<domain>/api/ical/<slug>.ics?token=<ICAL_EXPORT_TOKEN>`.
+2. In `/admin/sincronizacion`, paste each property's Booking.com **and/or**
+   Airbnb calendar-export URL (or set `icalImportUrls[].url` in
+   `src/content/properties/<slug>.ts`).
+3. In Booking.com → Calendar → Sync calendars (and Airbnb → Calendar → Import),
+   subscribe to `https://<domain>/api/ical/<slug>.ics?token=<ICAL_EXPORT_TOKEN>`.
 4. Schedule the import: `vercel.json` runs `GET /api/ical/import` on a cron;
    or call it manually with `Authorization: Bearer <ICAL_EXPORT_TOKEN>`.
+   Each import also mirrors the imported bookings as internal `external`
+   reservation records (visible in Reservas + calendar).
+
+### Campaign sending
+
+The marketing module (segments, CSV export, campaign preparation, consent +
+unsubscribe) is fully built; **bulk email/WhatsApp sending is not wired** — it
+stays "Aún no configurado" (`/admin/configuracion` → `campaigns`). Choose a
+provider (e.g. Resend Broadcasts) and wire `markCampaignSent` when ready.
 
 ## 6. Analytics (optional)
 
