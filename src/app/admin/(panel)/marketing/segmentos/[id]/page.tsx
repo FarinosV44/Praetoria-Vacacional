@@ -6,6 +6,7 @@ import { displayName } from "@/domains/crm/types";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { SegmentForm } from "../../SegmentForm";
 import { saveSegmentAction, deleteSegmentAction } from "@/domains/marketing/actions";
+import { createQuickCouponAction } from "@/domains/promotions/actions";
 
 export const metadata = { title: "Segmento" };
 
@@ -71,6 +72,34 @@ export default async function SegmentoDetailPage({
           Exportar todo (CSV)
         </a>
       </div>
+
+      <details className="rounded-xl border border-[var(--color-line)] bg-white p-4 text-sm">
+        <summary className="cursor-pointer font-medium">Crear cupón para este segmento</summary>
+        <form action={createQuickCouponAction} className="mt-3 flex flex-wrap items-end gap-2">
+          <input type="hidden" name="label" value={segment.name} />
+          <input type="hidden" name="redirectTo" value={`/admin/marketing/segmentos/${segment.id}`} />
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Tipo</span>
+            <select name="kind" defaultValue="percent" className="h-9 rounded-lg border border-[var(--color-line)] px-2">
+              <option value="percent">Porcentaje</option>
+              <option value="fixed">Importe fijo</option>
+            </select>
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Valor</span>
+            <input name="value" defaultValue={10} inputMode="decimal" className="h-9 w-20 rounded-lg border border-[var(--color-line)] px-2" />
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Caduca en (días)</span>
+            <input name="days" defaultValue={90} type="number" className="h-9 w-20 rounded-lg border border-[var(--color-line)] px-2" />
+          </label>
+          <input type="hidden" name="perEmail" value="0" />
+          <button className="h-9 rounded-lg bg-[var(--accent-600)] px-3 text-white">Crear cupón</button>
+        </form>
+        <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
+          Úsalo luego en una campaña (campo «Código promocional»). Ajustable en Promociones.
+        </p>
+      </details>
 
       <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-white">
         <table className="w-full text-sm">

@@ -7,7 +7,9 @@ import { displayName } from "@/domains/crm/types";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { CustomerForm } from "../CustomerForm";
 import { saveCustomerAction, mergeCustomersAction } from "@/domains/crm/actions";
+import { createQuickCouponAction } from "@/domains/promotions/actions";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
+import { getAllProperties } from "@/domains/properties/registry";
 
 export const metadata = { title: "Cliente" };
 
@@ -67,6 +69,58 @@ export default async function ClienteDetailPage({
           {profile.couponsUsed.join(", ")}
         </p>
       )}
+
+      <details className="rounded-xl border border-[var(--color-line)] bg-white p-4 text-sm">
+        <summary className="cursor-pointer font-medium">Crear cupón para este cliente</summary>
+        <form action={createQuickCouponAction} className="mt-3 flex flex-wrap items-end gap-2">
+          <input type="hidden" name="label" value={displayName(profile)} />
+          <input type="hidden" name="redirectTo" value={`/admin/clientes/${profile.id}`} />
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Tipo</span>
+            <select
+              name="kind"
+              className="h-9 rounded-lg border border-[var(--color-line)] px-2"
+              defaultValue="percent"
+            >
+              <option value="percent">Porcentaje</option>
+              <option value="fixed">Importe fijo</option>
+            </select>
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Valor</span>
+            <input
+              name="value"
+              defaultValue={10}
+              inputMode="decimal"
+              className="h-9 w-20 rounded-lg border border-[var(--color-line)] px-2"
+            />
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Alojamiento</span>
+            <select name="propertySlug" className="h-9 rounded-lg border border-[var(--color-line)] px-2">
+              <option value="all">Ambos</option>
+              {getAllProperties().map((p) => (
+                <option key={p.slug} value={p.slug}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs">
+            <span className="mb-1 block text-[var(--color-ink-soft)]">Caduca en (días)</span>
+            <input
+              name="days"
+              defaultValue={90}
+              type="number"
+              className="h-9 w-20 rounded-lg border border-[var(--color-line)] px-2"
+            />
+          </label>
+          <button className="h-9 rounded-lg bg-[var(--accent-600)] px-3 text-white">Crear cupón</button>
+        </form>
+        <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
+          Se crea un código legible, activo, 1 uso por email. Podrás ajustarlo en Promociones.
+        </p>
+      </details>
 
       {duplicates.length > 0 && (
         <section className="rounded-xl border border-amber-300 bg-amber-50 p-4">

@@ -29,6 +29,9 @@ export default async function CampanaDetailPage({
   const sendable = recipients.filter((r) => r.status === "pending").length;
   const skipped = recipients.filter((r) => r.status !== "pending").length;
 
+  const coupon = campaign.couponCode ? await repo.getCouponByCode(campaign.couponCode) : null;
+  const couponUses = coupon ? await repo.couponRedemptions(coupon.id) : [];
+
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-start justify-between">
@@ -74,6 +77,22 @@ export default async function CampanaDetailPage({
 
       {campaign.status === "prepared" && (
         <SendCampaignForm campaignId={campaign.id} recipients={sendable} />
+      )}
+
+      {campaign.couponCode && (
+        <section className="rounded-xl border border-[var(--color-line)] bg-white p-4 text-sm">
+          <p>
+            Código promocional: <span className="font-mono font-semibold">{campaign.couponCode}</span>{" "}
+            {coupon ? (
+              <span className="text-[var(--color-ink-soft)]">
+                ({coupon.kind === "percent" ? `−${coupon.value}%` : `−${(coupon.value / 100).toFixed(0)} €`}
+                {coupon.active ? "" : " · inactivo"}) · {couponUses.length} usos
+              </span>
+            ) : (
+              <span className="text-red-600">— ese código no existe en Promociones</span>
+            )}
+          </p>
+        </section>
       )}
 
       {recipients.length > 0 && (
