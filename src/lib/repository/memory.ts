@@ -53,6 +53,7 @@ import type {
   SegmentInput,
 } from "@/domains/marketing/types";
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
+import { planExternalReservations } from "@/domains/integrations/reconcile";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -830,6 +831,79 @@ export const memoryRepository: Repository = {
 
   async getImportFeedUrl(propertyId: string, channel: string) {
     return store.importFeeds[`${propertyId}:${channel}`] ?? null;
+  },
+
+  async listImportFeeds(propertyId: string) {
+    return Object.entries(store.importFeeds)
+      .filter(([k]) => k.startsWith(`${propertyId}:`))
+      .map(([k, url]) => ({ channel: k.slice(propertyId.length + 1), url }));
+  },
+
+  async reconcileExternalReservations(propertyId, source) {
+    const blocks = store.blocks.filter((b) => b.propertyId === propertyId && b.source === source);
+    const reservations = store.reservations.filter(
+      (r) => r.propertyId === propertyId && r.source === (source as never),
+    );
+    const plan = planExternalReservations(blocks, reservations);
+    const now = new Date().toISOString();
+    const channelDetail =
+      source === "booking" ? "Booking.com" : source === "airbnb" ? "Airbnb" : source;
+
+    for (const c of plan.toCreate) {
+      store.reservations.push({
+        id: randomUUID(),
+        propertyId,
+        code: code(),
+        status: "external",
+        source: source as never,
+        checkIn: c.startDate,
+        checkOut: c.endDate,
+        nights: nightsBetween(c.startDate, c.endDate),
+        guests: 1,
+        guestName: null,
+        guestEmail: null,
+        guestPhone: null,
+        currency: "EUR",
+        totalCents: 0,
+        originalTotalCents: null,
+        discountCents: 0,
+        couponCode: null,
+        priceBreakdown: { imported: true },
+        termsAcceptedAt: null,
+        holdExpiresAt: null,
+        externalUid: c.externalUid,
+        idempotencyKey: null,
+        notes: c.summary,
+        createdAt: now,
+        updatedAt: now,
+        ...blankIntranetFields(),
+        channelDetail,
+        externalLocator: c.externalUid,
+      });
+    }
+    for (const u of plan.toUpdate) {
+      const r = store.reservations.find((x) => x.id === u.id);
+      if (r) {
+        r.checkIn = u.startDate;
+        r.checkOut = u.endDate;
+        r.nights = nightsBetween(u.startDate, u.endDate);
+        r.updatedAt = now;
+      }
+    }
+    for (const c of plan.toCancel) {
+      const r = store.reservations.find((x) => x.id === c.id);
+      if (r) {
+        r.status = "cancelled";
+        r.notes = `${r.notes ?? ""}\nBloqueo retirado del feed ${source}`.trim();
+        r.updatedAt = now;
+      }
+    }
+    save();
+    return {
+      created: plan.toCreate.length,
+      updated: plan.toUpdate.length,
+      cancelled: plan.toCancel.length,
+    };
   },
 
   // --- Invoicing (issue #56 §3) --------------------------------------

@@ -46,6 +46,7 @@ import type {
   SegmentInput,
 } from "@/domains/marketing/types";
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
+import { planExternalReservations } from "@/domains/integrations/reconcile";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -1599,6 +1600,72 @@ export const supabaseRepository: Repository = {
       { onConflict: "property_id,channel,direction" },
     );
     if (error) throw error;
+  },
+
+  async listImportFeeds(propertyId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("calendar_syncs")
+      .select("channel, feed_url")
+      .eq("property_id", propertyId)
+      .eq("direction", "import")
+      .not("feed_url", "is", null);
+    if (error) throw error;
+    return (data ?? [])
+      .filter((r: any) => r.feed_url)
+      .map((r: any) => ({ channel: r.channel as string, url: r.feed_url as string }));
+  },
+
+  async reconcileExternalReservations(propertyId, source) {
+    const db = supabaseAdmin();
+    const [{ data: blocks }, { data: reservations }] = await Promise.all([
+      db.from("availability_blocks").select().eq("property_id", propertyId).eq("source", source),
+      db.from("reservations").select().eq("property_id", propertyId).eq("source", source),
+    ]);
+    const plan = planExternalReservations(
+      (blocks ?? []).map(mapBlock),
+      (reservations ?? []).map(mapReservation),
+    );
+    const channelDetail =
+      source === "booking" ? "Booking.com" : source === "airbnb" ? "Airbnb" : String(source);
+
+    for (const c of plan.toCreate) {
+      const genCode = `PV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      await db.from("reservations").insert({
+        property_id: propertyId,
+        code: genCode,
+        status: "external",
+        source,
+        channel_detail: channelDetail,
+        check_in: c.startDate,
+        check_out: c.endDate,
+        guests: 1,
+        currency: "EUR",
+        total_cents: 0,
+        price_breakdown: { imported: true },
+        external_uid: c.externalUid,
+        external_locator: c.externalUid,
+        notes: c.summary,
+        payment_state: "pending",
+      });
+    }
+    for (const u of plan.toUpdate) {
+      await db
+        .from("reservations")
+        .update({ check_in: u.startDate, check_out: u.endDate })
+        .eq("id", u.id);
+    }
+    for (const c of plan.toCancel) {
+      await db
+        .from("reservations")
+        .update({ status: "cancelled", notes: `Bloqueo retirado del feed ${source}` })
+        .eq("id", c.id);
+    }
+    return {
+      created: plan.toCreate.length,
+      updated: plan.toUpdate.length,
+      cancelled: plan.toCancel.length,
+    };
   },
 
   async getSyncRows(propertyId?: string) {

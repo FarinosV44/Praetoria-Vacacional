@@ -358,6 +358,15 @@ export interface Repository {
   // --- Channel import feed URLs, admin-editable (issue #42) --------
   getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;
   setImportFeedUrl(propertyId: string, channel: string, url: string | null): Promise<void>;
+  /** All channels with an admin-set import URL for a property. */
+  listImportFeeds(propertyId: string): Promise<{ channel: string; url: string }[]>;
+
+  // --- Booking/Airbnb → internal reservation records (issue #56 §8) -
+  /** Mirror this channel's availability blocks as `external` reservations. */
+  reconcileExternalReservations(
+    propertyId: string,
+    source: BlockSource,
+  ): Promise<{ created: number; updated: number; cancelled: number }>;
 
   // --- Calendar sync bookkeeping -----------------------------------
   getSyncRows(propertyId?: string): Promise<CalendarSyncRow[]>;

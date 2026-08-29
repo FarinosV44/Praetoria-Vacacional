@@ -57,6 +57,9 @@ export interface ImportReport {
   created: number;
   removed: number;
   kept: number;
+  /** internal `external` reservation records created/cancelled from the feed */
+  linkedCreated?: number;
+  linkedCancelled?: number;
   error?: string;
 }
 
@@ -66,7 +69,15 @@ async function importOne(slug: string): Promise<ImportReport[]> {
   const repo = getRepository();
   const reports: ImportReport[] = [];
 
-  for (const feed of property.icalImportUrls) {
+  // Content-file feeds ∪ any channel with an admin-set URL (e.g. Airbnb added later).
+  const adminFeeds = await repo.listImportFeeds(property.id).catch(() => []);
+  const channels = new Map<string, string>();
+  for (const f of property.icalImportUrls) channels.set(f.channel, f.url);
+  for (const f of adminFeeds) channels.set(f.channel, f.url);
+  if (channels.size === 0) channels.set("booking", "");
+
+  for (const [channel, contentUrl] of channels) {
+    const feed = { channel, url: contentUrl };
     // Admin-entered URL (calendar_syncs.feed_url) wins over the content-file default.
     const adminUrl = await repo.getImportFeedUrl(property.id, feed.channel).catch(() => null);
     const url = adminUrl || feed.url;
@@ -85,7 +96,19 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       const text = await res.text();
       const events = parseIcs(text);
       const result = await repo.syncExternalBlocks(property.id, feed.channel as never, events);
-      reports.push({ property: slug, channel: feed.channel, status: "ok", ...result });
+      // Mirror the imported blocks as internal `external` reservation records
+      // so Booking/Airbnb bookings appear in Reservas and the calendar (§8).
+      const linked = await repo
+        .reconcileExternalReservations(property.id, feed.channel as never)
+        .catch(() => ({ created: 0, updated: 0, cancelled: 0 }));
+      reports.push({
+        property: slug,
+        channel: feed.channel,
+        status: "ok",
+        ...result,
+        linkedCreated: linked.created,
+        linkedCancelled: linked.cancelled,
+      });
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "ok",
         feedUrl: url,
