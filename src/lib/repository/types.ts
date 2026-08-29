@@ -19,6 +19,14 @@ import type {
   InvoiceStatus,
   InvoiceWithItems,
 } from "@/domains/invoicing/types";
+import type {
+  Campaign,
+  CampaignInput,
+  CampaignRecipient,
+  Segment,
+  SegmentInput,
+} from "@/domains/marketing/types";
+import type { SegmentCriteria } from "@/domains/marketing/segments";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -322,6 +330,30 @@ export interface Repository {
   setInvoiceStatus(id: string, status: InvoiceStatus): Promise<Invoice>;
   /** Only a 'draft' can be deleted. */
   deleteInvoiceDraft(id: string): Promise<void>;
+
+  // --- Marketing: segments + campaigns (issue #56 §6) -------------
+  listCustomerProfiles(): Promise<CustomerProfile[]>;
+  segmentMembers(criteria: SegmentCriteria): Promise<CustomerProfile[]>;
+  listSegments(): Promise<Segment[]>;
+  getSegment(id: string): Promise<Segment | null>;
+  createSegment(input: SegmentInput): Promise<Segment>;
+  updateSegment(id: string, patch: Partial<SegmentInput>): Promise<Segment>;
+  deleteSegment(id: string): Promise<void>;
+
+  listCampaigns(): Promise<Campaign[]>;
+  getCampaign(id: string): Promise<Campaign | null>;
+  createCampaign(input: CampaignInput): Promise<Campaign>;
+  updateCampaign(id: string, patch: Partial<CampaignInput>): Promise<Campaign>;
+  deleteCampaign(id: string): Promise<void>;
+  /** Materialise the recipient list from the segment, honouring consent + unsubscribes. */
+  prepareCampaign(id: string): Promise<{ campaign: Campaign; recipients: number; skipped: number }>;
+  listCampaignRecipients(id: string): Promise<CampaignRecipient[]>;
+  /** Records the send intent. Real bulk send is not wired (Aún no configurado). */
+  markCampaignSent(id: string): Promise<Campaign>;
+
+  addUnsubscribe(email: string, source?: string): Promise<void>;
+  isUnsubscribed(email: string): Promise<boolean>;
+  listUnsubscribes(): Promise<{ email: string; unsubscribedAt: string; source: string | null }[]>;
 
   // --- Channel import feed URLs, admin-editable (issue #42) --------
   getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;

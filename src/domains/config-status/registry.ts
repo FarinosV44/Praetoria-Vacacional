@@ -141,7 +141,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin];
+  const campaigns: ConfigFeature = {
+    key: "campaigns",
+    label: "Envío de campañas (email/WhatsApp masivo)",
+    impact:
+      "Los segmentos, las listas guardadas, la exportación CSV de contactos y la preparación de campañas (con consentimiento y bajas) están implementados. El envío masivo real necesita activar un proveedor.",
+    envVars: ["MARKETING_SENDER_PROVIDER"],
+    where: "Pendiente de decisión de proveedor (Resend Broadcasts u otro)",
+    state: "not_configured",
+    statusLine:
+      "Aún no configurado. Puedes segmentar, exportar y preparar campañas; el botón de envío registra la intención pero no envía nada.",
+    publicMessage: null,
+  };
+
+  return [database, payments, email, ical, analytics, searchConsole, admin, campaigns];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

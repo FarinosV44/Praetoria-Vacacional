@@ -45,6 +45,14 @@ import {
   type InvoiceStatus,
 } from "@/domains/invoicing/types";
 import { computeInvoiceTotals, lineAmountCents } from "@/domains/invoicing/totals";
+import type {
+  Campaign,
+  CampaignInput,
+  CampaignRecipient,
+  Segment,
+  SegmentInput,
+} from "@/domains/marketing/types";
+import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -97,6 +105,10 @@ interface Store {
   invoiceItems: InvoiceItem[];
   invoiceSettings: Record<string, InvoiceSettings>;
   dailyRates: { propertyId: string; date: string; nightlyCents: number | null; minNights: number | null }[];
+  segments: Segment[];
+  campaigns: Campaign[];
+  campaignRecipients: CampaignRecipient[];
+  unsubscribes: { email: string; unsubscribedAt: string; source: string | null }[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -184,6 +196,10 @@ function seed(): Store {
     invoiceItems: [],
     invoiceSettings: {},
     dailyRates: [],
+    segments: [],
+    campaigns: [],
+    campaignRecipients: [],
+    unsubscribes: [],
   };
 }
 
@@ -234,6 +250,10 @@ store.invoices ??= [];
 store.invoiceItems ??= [];
 store.invoiceSettings ??= {};
 store.dailyRates ??= [];
+store.segments ??= [];
+store.campaigns ??= [];
+store.campaignRecipients ??= [];
+store.unsubscribes ??= [];
 
 function save() {
   persist(store);
@@ -543,6 +563,200 @@ export const memoryRepository: Repository = {
   async setRateOverride(propertyId: string, rateConfig: unknown) {
     store.rateOverrides[propertyId] = rateConfig;
     save();
+  },
+
+  // --- Marketing (issue #56 §6) -------------------------------------
+  async listCustomerProfiles() {
+    return store.customers
+      .filter((c) => !c.mergedInto)
+      .map((c) => buildCustomerProfile(c, store.reservations));
+  },
+
+  async segmentMembers(criteria: SegmentCriteria) {
+    return evaluateSegment(criteria, await this.listCustomerProfiles());
+  },
+
+  async listSegments() {
+    return [...store.segments].sort((a, b) => a.name.localeCompare(b.name));
+  },
+  async getSegment(id) {
+    return store.segments.find((s) => s.id === id) ?? null;
+  },
+  async createSegment(input: SegmentInput) {
+    const now = new Date().toISOString();
+    const seg: Segment = {
+      id: randomUUID(),
+      name: input.name,
+      description: input.description ?? null,
+      criteria: input.criteria,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.segments.push(seg);
+    save();
+    return seg;
+  },
+  async updateSegment(id, patch) {
+    const s = store.segments.find((x) => x.id === id);
+    if (!s) throw new Error("SEGMENT_NOT_FOUND");
+    if (patch.name !== undefined) s.name = patch.name;
+    if (patch.description !== undefined) s.description = patch.description ?? null;
+    if (patch.criteria !== undefined) s.criteria = patch.criteria;
+    s.updatedAt = new Date().toISOString();
+    save();
+    return s;
+  },
+  async deleteSegment(id) {
+    store.segments = store.segments.filter((s) => s.id !== id);
+    save();
+  },
+
+  async listCampaigns() {
+    return [...store.campaigns].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async getCampaign(id) {
+    return store.campaigns.find((c) => c.id === id) ?? null;
+  },
+  async createCampaign(input: CampaignInput) {
+    const now = new Date().toISOString();
+    const campaign: Campaign = {
+      id: randomUUID(),
+      name: input.name,
+      channel: input.channel,
+      status: "draft",
+      segmentId: input.segmentId ?? null,
+      subject: input.subject ?? null,
+      body: input.body ?? null,
+      couponCode: input.couponCode ?? null,
+      consentRequired: input.consentRequired,
+      preparedAt: null,
+      sentAt: null,
+      recipientCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.campaigns.push(campaign);
+    save();
+    return campaign;
+  },
+  async updateCampaign(id, patch) {
+    const c = store.campaigns.find((x) => x.id === id);
+    if (!c) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (c.status === "sent") throw new Error("CAMPAIGN_SENT");
+    Object.assign(c, {
+      name: patch.name ?? c.name,
+      channel: patch.channel ?? c.channel,
+      segmentId: patch.segmentId !== undefined ? patch.segmentId : c.segmentId,
+      subject: patch.subject !== undefined ? patch.subject : c.subject,
+      body: patch.body !== undefined ? patch.body : c.body,
+      couponCode: patch.couponCode !== undefined ? patch.couponCode : c.couponCode,
+      consentRequired: patch.consentRequired ?? c.consentRequired,
+      status: "draft",
+      updatedAt: new Date().toISOString(),
+    });
+    save();
+    return c;
+  },
+  async deleteCampaign(id) {
+    store.campaigns = store.campaigns.filter((c) => c.id !== id);
+    store.campaignRecipients = store.campaignRecipients.filter((r) => r.campaignId !== id);
+    save();
+  },
+
+  async prepareCampaign(id) {
+    const campaign = store.campaigns.find((c) => c.id === id);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (campaign.status === "sent") throw new Error("CAMPAIGN_SENT");
+
+    const criteria: SegmentCriteria = campaign.segmentId
+      ? (store.segments.find((s) => s.id === campaign.segmentId)?.criteria ?? {})
+      : {};
+    const members = await this.segmentMembers(criteria);
+    const unsub = new Set(store.unsubscribes.map((u) => u.email.toLowerCase()));
+
+    store.campaignRecipients = store.campaignRecipients.filter((r) => r.campaignId !== id);
+    let ok = 0;
+    let skipped = 0;
+    const now = new Date().toISOString();
+    for (const m of members) {
+      const email = m.email?.toLowerCase() ?? null;
+      const phone = m.phone ?? m.whatsapp ?? null;
+      let status: CampaignRecipient["status"] = "pending";
+      let error: string | null = null;
+      if (campaign.consentRequired && !m.marketingConsent) {
+        status = "skipped";
+        error = "sin consentimiento";
+      } else if (campaign.channel === "email" && (!email || unsub.has(email))) {
+        status = email ? "unsubscribed" : "skipped";
+        error = email ? "baja de marketing" : "sin email";
+      } else if (campaign.channel === "whatsapp" && !phone) {
+        status = "skipped";
+        error = "sin teléfono";
+      }
+      if (status === "pending") ok++;
+      else skipped++;
+      store.campaignRecipients.push({
+        id: randomUUID(),
+        campaignId: id,
+        customerId: m.id,
+        email: m.email,
+        phone,
+        status,
+        error,
+        createdAt: now,
+      });
+    }
+    campaign.status = "prepared";
+    campaign.preparedAt = now;
+    campaign.recipientCount = ok;
+    campaign.updatedAt = now;
+    save();
+    return { campaign, recipients: ok, skipped };
+  },
+
+  async listCampaignRecipients(id) {
+    return store.campaignRecipients.filter((r) => r.campaignId === id);
+  },
+
+  async markCampaignSent(id) {
+    const campaign = store.campaigns.find((c) => c.id === id);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (campaign.status !== "prepared") throw new Error("CAMPAIGN_NOT_PREPARED");
+    const now = new Date().toISOString();
+    for (const r of store.campaignRecipients) {
+      if (r.campaignId === id && r.status === "pending") {
+        r.status = "skipped";
+        r.error = "Envío masivo no configurado (Aún no configurado)";
+      }
+    }
+    campaign.status = "sent";
+    campaign.sentAt = now;
+    campaign.updatedAt = now;
+    save();
+    return campaign;
+  },
+
+  async addUnsubscribe(email, source) {
+    const e = email.trim().toLowerCase();
+    if (!store.unsubscribes.some((u) => u.email === e)) {
+      store.unsubscribes.push({
+        email: e,
+        unsubscribedAt: new Date().toISOString(),
+        source: source ?? null,
+      });
+      const customer = store.customers.find((c) => (c.email ?? "").toLowerCase() === e);
+      if (customer) {
+        customer.marketingConsent = false;
+        customer.marketingConsentAt = null;
+      }
+      save();
+    }
+  },
+  async isUnsubscribed(email) {
+    return store.unsubscribes.some((u) => u.email === email.trim().toLowerCase());
+  },
+  async listUnsubscribes() {
+    return [...store.unsubscribes].sort((a, b) => b.unsubscribedAt.localeCompare(a.unsubscribedAt));
   },
 
   async listDailyRates(propertyId: string, from?: IsoDate, to?: IsoDate) {

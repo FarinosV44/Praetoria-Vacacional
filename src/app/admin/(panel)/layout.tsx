@@ -14,6 +14,7 @@ const nav = [
   { href: "/admin/reservas", label: "Reservas" },
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/facturas", label: "Facturas" },
+  { href: "/admin/marketing", label: "Marketing" },
   { href: "/admin/pagos", label: "Pagos y emails" },
   { href: "/admin/promociones", label: "Promociones" },
   { href: "/admin/contenido", label: "Contenido" },

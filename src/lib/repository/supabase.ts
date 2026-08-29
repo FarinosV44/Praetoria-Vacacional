@@ -38,6 +38,14 @@ import {
 } from "@/domains/invoicing/types";
 import { computeInvoiceTotals, lineAmountCents } from "@/domains/invoicing/totals";
 import { getPropertyById } from "@/domains/properties/registry";
+import type {
+  Campaign,
+  CampaignInput,
+  CampaignRecipient,
+  Segment,
+  SegmentInput,
+} from "@/domains/marketing/types";
+import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -242,6 +250,49 @@ function invoiceRowFrom(input: CreateInvoiceInput, totals: {
     tax_exempt: input.taxExempt,
     tax_note: input.taxNote,
     notes: input.notes ?? null,
+  };
+}
+
+function mapSegment(row: any): Segment {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? null,
+    criteria: (row.criteria ?? {}) as SegmentCriteria,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapCampaign(row: any): Campaign {
+  return {
+    id: row.id,
+    name: row.name,
+    channel: row.channel,
+    status: row.status,
+    segmentId: row.segment_id ?? null,
+    subject: row.subject ?? null,
+    body: row.body ?? null,
+    couponCode: row.coupon_code ?? null,
+    consentRequired: !!row.consent_required,
+    preparedAt: row.prepared_at ?? null,
+    sentAt: row.sent_at ?? null,
+    recipientCount: row.recipient_count ?? 0,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapCampaignRecipient(row: any): CampaignRecipient {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    customerId: row.customer_id ?? null,
+    email: row.email ?? null,
+    phone: row.phone ?? null,
+    status: row.status,
+    error: row.error ?? null,
+    createdAt: row.created_at,
   };
 }
 
@@ -587,6 +638,228 @@ export const supabaseRepository: Repository = {
       .from("property_settings")
       .upsert({ property_id: propertyId, rate_config: rateConfig }, { onConflict: "property_id" });
     if (error) throw error;
+  },
+
+  // --- Marketing (issue #56 §6) -------------------------------------
+  async listCustomerProfiles() {
+    const db = supabaseAdmin();
+    const [{ data: customers }, { data: reservations }] = await Promise.all([
+      db.from("customers").select().is("merged_into", null),
+      db.from("reservations").select(),
+    ]);
+    const res = (reservations ?? []).map(mapReservation);
+    return (customers ?? []).map((c: any) => buildCustomerProfile(mapCustomer(c), res));
+  },
+
+  async segmentMembers(criteria: SegmentCriteria) {
+    return evaluateSegment(criteria, await this.listCustomerProfiles());
+  },
+
+  async listSegments() {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("segments").select().order("name");
+    if (error) throw error;
+    return (data ?? []).map(mapSegment);
+  },
+  async getSegment(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("segments").select().eq("id", id).maybeSingle();
+    return data ? mapSegment(data) : null;
+  },
+  async createSegment(input: SegmentInput) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("segments")
+      .insert({ name: input.name, description: input.description ?? null, criteria: input.criteria })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapSegment(data);
+  },
+  async updateSegment(id, patch) {
+    const db = supabaseAdmin();
+    const row: Record<string, unknown> = {};
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.description !== undefined) row.description = patch.description ?? null;
+    if (patch.criteria !== undefined) row.criteria = patch.criteria;
+    const { data, error } = await db.from("segments").update(row).eq("id", id).select().single();
+    if (error) throw error;
+    return mapSegment(data);
+  },
+  async deleteSegment(id) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("segments").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async listCampaigns() {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .select()
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapCampaign);
+  },
+  async getCampaign(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("campaigns").select().eq("id", id).maybeSingle();
+    return data ? mapCampaign(data) : null;
+  },
+  async createCampaign(input: CampaignInput) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .insert({
+        name: input.name,
+        channel: input.channel,
+        segment_id: input.segmentId ?? null,
+        subject: input.subject ?? null,
+        body: input.body ?? null,
+        coupon_code: input.couponCode ?? null,
+        consent_required: input.consentRequired,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+  async updateCampaign(id, patch) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("campaigns").select("status").eq("id", id).maybeSingle();
+    if (cur?.status === "sent") throw new Error("CAMPAIGN_SENT");
+    const row: Record<string, unknown> = { status: "draft" };
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.channel !== undefined) row.channel = patch.channel;
+    if (patch.segmentId !== undefined) row.segment_id = patch.segmentId;
+    if (patch.subject !== undefined) row.subject = patch.subject;
+    if (patch.body !== undefined) row.body = patch.body;
+    if (patch.couponCode !== undefined) row.coupon_code = patch.couponCode;
+    if (patch.consentRequired !== undefined) row.consent_required = patch.consentRequired;
+    const { data, error } = await db.from("campaigns").update(row).eq("id", id).select().single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+  async deleteCampaign(id) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("campaigns").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async prepareCampaign(id) {
+    const db = supabaseAdmin();
+    const campaign = await this.getCampaign(id);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (campaign.status === "sent") throw new Error("CAMPAIGN_SENT");
+
+    const criteria = campaign.segmentId
+      ? ((await this.getSegment(campaign.segmentId))?.criteria ?? {})
+      : {};
+    const members = await this.segmentMembers(criteria);
+    const { data: unsubRows } = await db.from("marketing_unsubscribes").select("email");
+    const unsub = new Set((unsubRows ?? []).map((u: any) => (u.email as string).toLowerCase()));
+
+    await db.from("campaign_recipients").delete().eq("campaign_id", id);
+    let ok = 0;
+    let skipped = 0;
+    const rows = members.map((m) => {
+      const email = m.email?.toLowerCase() ?? null;
+      const phone = m.phone ?? m.whatsapp ?? null;
+      let status: CampaignRecipient["status"] = "pending";
+      let error: string | null = null;
+      if (campaign.consentRequired && !m.marketingConsent) {
+        status = "skipped";
+        error = "sin consentimiento";
+      } else if (campaign.channel === "email" && (!email || unsub.has(email))) {
+        status = email ? "unsubscribed" : "skipped";
+        error = email ? "baja de marketing" : "sin email";
+      } else if (campaign.channel === "whatsapp" && !phone) {
+        status = "skipped";
+        error = "sin teléfono";
+      }
+      if (status === "pending") ok++;
+      else skipped++;
+      return {
+        campaign_id: id,
+        customer_id: m.id,
+        email: m.email,
+        phone,
+        status,
+        error,
+      };
+    });
+    if (rows.length) await db.from("campaign_recipients").insert(rows);
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "prepared", prepared_at: new Date().toISOString(), recipient_count: ok })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return { campaign: mapCampaign(data), recipients: ok, skipped };
+  },
+
+  async listCampaignRecipients(id) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaign_recipients")
+      .select()
+      .eq("campaign_id", id)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapCampaignRecipient);
+  },
+
+  async markCampaignSent(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("campaigns").select("status").eq("id", id).maybeSingle();
+    if (!cur) throw new Error("CAMPAIGN_NOT_FOUND");
+    if (cur.status !== "prepared") throw new Error("CAMPAIGN_NOT_PREPARED");
+    await db
+      .from("campaign_recipients")
+      .update({ status: "skipped", error: "Envío masivo no configurado (Aún no configurado)" })
+      .eq("campaign_id", id)
+      .eq("status", "pending");
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "sent", sent_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+
+  async addUnsubscribe(email, source) {
+    const db = supabaseAdmin();
+    const e = email.trim().toLowerCase();
+    await db.from("marketing_unsubscribes").upsert({ email: e, source: source ?? null }, { onConflict: "email" });
+    await db
+      .from("customers")
+      .update({ marketing_consent: false, marketing_consent_at: null })
+      .ilike("email", e);
+  },
+  async isUnsubscribed(email) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("marketing_unsubscribes")
+      .select("email")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+    return !!data;
+  },
+  async listUnsubscribes() {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("marketing_unsubscribes")
+      .select()
+      .order("unsubscribed_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((r: any) => ({
+      email: r.email,
+      unsubscribedAt: r.unsubscribed_at,
+      source: r.source ?? null,
+    }));
   },
 
   async listDailyRates(propertyId: string, from?: string, to?: string) {
