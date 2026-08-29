@@ -44,6 +44,18 @@ export class InvoiceLockedError extends Error {
   }
 }
 
+/**
+ * Thrown when a write that must survive a refresh could not be persisted —
+ * e.g. DEMO mode on a read-only serverless filesystem. The caller must surface
+ * this to the user, never report success.
+ */
+export class PersistenceUnavailableError extends Error {
+  constructor(message = "PERSISTENCE_UNAVAILABLE") {
+    super(message);
+    this.name = "PersistenceUnavailableError";
+  }
+}
+
 export interface CreateHoldInput {
   propertyId: string;
   checkIn: IsoDate;
@@ -390,12 +402,14 @@ export interface Repository {
     source: BlockSource,
   ): Promise<{ created: number; updated: number; cancelled: number }>;
 
-  // --- Calendar sync bookkeeping -----------------------------------
+  // --- Calendar sync bookkeeping (telemetry only) -----------------
   getSyncRows(propertyId?: string): Promise<CalendarSyncRow[]>;
+  /** Records the outcome of a sync run. Never writes the feed URL — that is
+   *  owned exclusively by setImportFeedUrl (`channel_feeds`). */
   recordSyncRun(
     propertyId: string,
     channel: string,
     direction: "import" | "export",
-    result: { status: string; error?: string | null; eventsImported?: number; feedUrl?: string | null },
+    result: { status: string; error?: string | null; eventsImported?: number },
   ): Promise<void>;
 }

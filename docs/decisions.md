@@ -118,3 +118,27 @@ satisfies §10 "protección contra acceso directo a PDFs privados"). It has full
 **Why:** no owner PDF was provided (D-009); a headless-browser or `@react-pdf`
 dependency is heavier and more fragile than print-CSS for a document the owner
 will restyle anyway.
+
+## D-011 — Channel iCal feed URL: config, stored apart from sync telemetry
+**Date:** 2026-08-30 · bugfix
+The Booking/Airbnb iCal import URL used to live in `calendar_syncs.feed_url` —
+the same row `recordSyncRun()` upserts after every sync. Any run that did not
+re-pass the URL (the "not configured" path especially, and any transient DB read
+failure) overwrote it with `NULL`, so the admin fields went blank after a refresh
+and the cron kept wiping it.
+- New table **`channel_feeds` (property_id, channel) → url** (migration
+  `20260830090000`) is the single, authoritative store for the URL. Backfilled
+  from `calendar_syncs.feed_url`.
+- `recordSyncRun()` (both repos) **no longer writes `feed_url`** — it is telemetry
+  only. `calendar_syncs.feed_url` is now vestigial.
+- `setImportFeedUrl()` does a **read-after-write verification** and throws a
+  descriptive error on any failure; the server action maps it to a user-visible
+  message. "Guardado" is shown only on a confirmed DB write (`{ ok: true }`).
+- In DEMO mode a write that cannot be persisted (read-only serverless FS) throws
+  `PersistenceUnavailableError` instead of faking success.
+- `/admin/sincronizacion` shows per-property, per-channel status: configured /
+  not configured / error + last run + last status/error + events imported.
+- Verified end-to-end (`e2e/admin-ical-feeds.spec.ts` + a manual run with the
+  owner's real Booking URLs: saved, survived a full reload, "Sincronizar ahora"
+  imported 9 reservations from the persisted value and did not wipe it).
+**Why:** configuration and runtime telemetry must never share a write path.

@@ -62,7 +62,7 @@ them in any order; each is independent.
 
 The full management intranet (reservations, CRM, invoicing + PDF, operational
 calendar + pricing, marketing, roles, audit log) lives under `/admin` — see
-`docs/intranet.md`. Its migrations are `supabase/migrations/20260829*.sql`.
+`docs/intranet.md`. Its migrations are `supabase/migrations/2026083*.sql`.
 
 ## 5. iCal channel sync (Booking.com + Airbnb)
 

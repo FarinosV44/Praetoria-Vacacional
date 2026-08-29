@@ -1,116 +1,121 @@
-import { getRepository } from "@/lib/repository";
-import { getAllProperties, getPropertyById } from "@/domains/properties/registry";
+import { DEMO_MODE, env } from "@/lib/env";
 import { absoluteUrl } from "@/lib/seo";
-import { env } from "@/lib/env";
 import { setImportFeedUrlAction } from "@/domains/admin/actions";
+import { getImportFeedStatus, type FeedState } from "@/domains/integrations/sync-status";
 import { RunSyncButton } from "./RunSyncButton";
 import { ImportFeedForm } from "./ImportFeedForm";
 
 export const metadata = { title: "Sincronización" };
 
+const STATE_BADGE: Record<FeedState, { label: string; cls: string }> = {
+  configured: { label: "Configurado", cls: "bg-green-100 text-green-800" },
+  not_configured: { label: "No configurado", cls: "bg-gray-100 text-gray-600" },
+  error: { label: "Error", cls: "bg-red-100 text-red-700" },
+};
+
+const PLACEHOLDER: Record<string, string> = {
+  booking: "https://ical.booking.com/v1/export?t=…",
+  airbnb: "https://www.airbnb.com/calendar/ical/….ics",
+};
+
 export default async function AdminSyncPage() {
-  const repo = getRepository();
-  const rows = await repo.getSyncRows();
-  const properties = getAllProperties();
-  const feeds = Object.fromEntries(
-    await Promise.all(
-      properties.map(async (p) => [
-        p.slug,
-        {
-          booking: await repo.getImportFeedUrl(p.id, "booking").catch(() => null),
-          airbnb: await repo.getImportFeedUrl(p.id, "airbnb").catch(() => null),
-        },
-      ]),
-    ),
-  );
+  const status = await getImportFeedStatus();
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl">Sincronización de calendarios (iCal)</h1>
       <p className="text-sm text-[var(--color-ink-soft)]">
-        Cada alojamiento importa las reservas de Booking.com por su feed iCal y exporta las reservas
-        directas por su propio feed. iCal no es instantáneo: Booking actualiza cada pocas horas, así
-        que se revalida la disponibilidad justo antes de confirmar cualquier reserva directa.
+        Cada alojamiento importa las reservas de Booking.com y/o Airbnb por su feed iCal y exporta
+        las reservas directas por su propio feed. La URL de importación se guarda en la base de datos
+        (tabla <code>channel_feeds</code>), por <code>property_id</code>, y sobrevive a refrescos,
+        despliegues y reinicios del navegador.
       </p>
 
-      {/* Import feed URLs — editable */}
-      {properties.map((p) => (
-        <section key={p.slug} className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+      {DEMO_MODE && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <strong>Modo demostración (sin base de datos).</strong> Las URLs se guardan solo en un
+          fichero local del servidor; en un despliegue con sistema de archivos de solo lectura el
+          guardado fallará y se mostrará un error. Configura Supabase para producción.
+        </div>
+      )}
+
+      {status.map((p) => (
+        <section
+          key={p.slug}
+          className="space-y-3 rounded-xl border border-[var(--color-line)] bg-white p-5"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display text-lg">{p.name}</h2>
             <RunSyncButton propertySlug={p.slug} />
           </div>
-          {!feeds[p.slug]?.booking && !feeds[p.slug]?.airbnb && !p.icalImportUrls[0]?.url && (
-            <p className="mt-1 text-sm text-amber-700">
-              Aún no configurado — pega la URL iCal de Booking y/o Airbnb.
-            </p>
-          )}
-          <ImportFeedForm
-            propertySlug={p.slug}
-            channel="booking"
-            channelLabel="Booking.com"
-            placeholder="https://ical.booking.com/v1/export?t=…"
-            current={feeds[p.slug]?.booking ?? p.icalImportUrls[0]?.url ?? null}
-            action={setImportFeedUrlAction}
-          />
-          <ImportFeedForm
-            propertySlug={p.slug}
-            channel="airbnb"
-            channelLabel="Airbnb"
-            placeholder="https://www.airbnb.com/calendar/ical/…"
-            current={feeds[p.slug]?.airbnb ?? null}
-            action={setImportFeedUrlAction}
-          />
-          <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
-            Cada reserva importada crea también un registro interno (cliente por completar y reserva
-            «externa») visible en Reservas y en el calendario.
-          </p>
-          <p className="mt-3 break-all font-mono text-xs text-[var(--color-ink-soft)]">
-            Feed de exportación para Booking:{" "}
-            {absoluteUrl(`/api/ical/${p.slug}.ics?token=${env.icalExportConfigured ? "•••" : "PENDIENTE"}`)}
+
+          {p.channels.map((ch) => {
+            const badge = STATE_BADGE[ch.state];
+            return (
+              <div key={ch.channel} className="rounded-lg border border-[var(--color-line)] p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{ch.label}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${badge.cls}`}>
+                    {badge.label}
+                  </span>
+                  {ch.fromContentFileOnly && (
+                    <span className="text-xs text-amber-700">
+                      (definido en el fichero de contenido, no en la base de datos — guárdalo aquí)
+                    </span>
+                  )}
+                </div>
+
+                {ch.readError && (
+                  <p className="mt-1 text-xs text-red-700">
+                    No se pudo leer la URL guardada: {ch.readError}
+                  </p>
+                )}
+
+                <ImportFeedForm
+                  propertySlug={p.slug}
+                  channel={ch.channel}
+                  channelLabel={ch.label}
+                  placeholder={PLACEHOLDER[ch.channel]}
+                  current={ch.url}
+                  action={setImportFeedUrlAction}
+                />
+
+                <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-[var(--color-ink-soft)] sm:grid-cols-2">
+                  <div>
+                    <dt className="inline font-medium">Última sincronización: </dt>
+                    <dd className="inline">
+                      {ch.lastRunAt ? new Date(ch.lastRunAt).toLocaleString("es-ES") : "Nunca"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-medium">Eventos importados: </dt>
+                    <dd className="inline">{ch.eventsImported}</dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <dt className="inline font-medium">Estado del último intento: </dt>
+                    <dd className={`inline ${ch.lastError ? "text-red-700" : ""}`}>
+                      {ch.lastError ?? ch.lastStatus ?? "—"}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            );
+          })}
+
+          <p className="break-all font-mono text-xs text-[var(--color-ink-soft)]">
+            Feed de exportación para los canales:{" "}
+            {absoluteUrl(
+              `/api/ical/${p.slug}.ics?token=${env.icalExportConfigured ? "•••" : "PENDIENTE"}`,
+            )}
           </p>
         </section>
       ))}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-[var(--color-line)] text-left text-xs text-[var(--color-ink-soft)]">
-            <tr>
-              <th className="p-3">Alojamiento</th>
-              <th className="p-3">Canal</th>
-              <th className="p-3">Dirección</th>
-              <th className="p-3">Última ejecución</th>
-              <th className="p-3">Estado</th>
-              <th className="p-3">Eventos</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--color-line)]">
-            {rows.map((row) => (
-              <tr key={row.id} className={row.lastError ? "bg-red-50" : ""}>
-                <td className="p-3">{getPropertyById(row.propertyId)?.name ?? "—"}</td>
-                <td className="p-3">{row.channel}</td>
-                <td className="p-3">{row.direction === "import" ? "Importar" : "Exportar"}</td>
-                <td className="p-3">
-                  {row.lastRunAt ? new Date(row.lastRunAt).toLocaleString("es-ES") : "Nunca"}
-                </td>
-                <td className="p-3">
-                  {row.lastError ? (
-                    <span className="text-red-700">{row.lastError}</span>
-                  ) : (
-                    (row.lastStatus ?? "—")
-                  )}
-                </td>
-                <td className="p-3">{row.eventsImported}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       <p className="text-xs text-[var(--color-ink-soft)]">
         La sincronización automática se ejecuta por cron (<code>vercel.json</code> →{" "}
-        <code>/api/ical/import</code> cada 3&nbsp;h). iCal no es instantáneo; retrasos de hasta unas
-        horas son normales, por eso la disponibilidad se revalida en el checkout.
+        <code>/api/ical/import</code> cada 3&nbsp;h) y usa la URL guardada en la base de datos. iCal
+        no es instantáneo; por eso la disponibilidad se revalida en el checkout. «Sincronizar ahora»
+        importa de inmediato desde el valor persistido y crea el registro interno de cada reserva.
       </p>
     </div>
   );
