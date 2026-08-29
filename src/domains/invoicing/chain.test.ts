@@ -1,6 +1,4 @@
-import { afterAll, describe, expect, it } from "vitest";
-import { rmSync } from "node:fs";
-import path from "node:path";
+import { describe, expect, it } from "vitest";
 import { memoryRepository as repo } from "@/lib/repository/memory";
 import { getAllProperties } from "@/domains/properties/registry";
 import { draftInvoiceFromReservation } from "./draft";
@@ -17,14 +15,6 @@ import { getRateConfig } from "@/content/rates";
  */
 
 const property = getAllProperties()[0]!;
-
-afterAll(() => {
-  try {
-    rmSync(path.join(process.cwd(), ".data"), { recursive: true, force: true });
-  } catch {
-    /* ignore */
-  }
-});
 
 describe("reserva → cliente → factura → calendario → historial → segmento", () => {
   it("runs the full chain and persists every step", async () => {

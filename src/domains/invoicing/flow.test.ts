@@ -1,6 +1,4 @@
-import { afterAll, describe, expect, it } from "vitest";
-import { rmSync } from "node:fs";
-import path from "node:path";
+import { describe, expect, it } from "vitest";
 import { memoryRepository as repo } from "@/lib/repository/memory";
 import { getAllProperties } from "@/domains/properties/registry";
 import { draftInvoiceFromReservation } from "./draft";
@@ -15,14 +13,6 @@ import { InvoiceLockedError, InvoiceNumberTakenError } from "@/lib/repository/ty
  */
 
 const property = getAllProperties()[0]!;
-
-afterAll(() => {
-  try {
-    rmSync(path.join(process.cwd(), ".data"), { recursive: true, force: true });
-  } catch {
-    /* ignore */
-  }
-});
 
 describe("reserva → cliente → factura → historial", () => {
   it("registers a manual reservation, auto-links a customer, invoices it, and locks the invoice", async () => {
