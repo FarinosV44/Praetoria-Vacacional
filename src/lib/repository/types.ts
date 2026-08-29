@@ -11,6 +11,30 @@ import type {
 import type { Coupon } from "@/domains/pricing/coupons";
 import type { Customer, CustomerFilter, CustomerInput, CustomerProfile } from "@/domains/crm/types";
 import type { DuplicateMatch } from "@/domains/crm/dedup";
+import type {
+  CreateInvoiceInput,
+  Invoice,
+  InvoiceFilter,
+  InvoiceSettings,
+  InvoiceStatus,
+  InvoiceWithItems,
+} from "@/domains/invoicing/types";
+
+/** Thrown when an invoice number is already used by another invoice. */
+export class InvoiceNumberTakenError extends Error {
+  constructor(message = "INVOICE_NUMBER_TAKEN") {
+    super(message);
+    this.name = "InvoiceNumberTakenError";
+  }
+}
+
+/** Thrown when an operation is not allowed for the invoice's current status. */
+export class InvoiceLockedError extends Error {
+  constructor(message = "INVOICE_LOCKED") {
+    super(message);
+    this.name = "InvoiceLockedError";
+  }
+}
 
 export interface CreateHoldInput {
   propertyId: string;
@@ -262,6 +286,28 @@ export interface Repository {
   updateReservation(id: string, patch: ReservationPatch): Promise<Reservation>;
   /** Get-or-create a customer from a reservation's guest fields and link it. */
   linkOrCreateCustomerFromReservation(reservationId: string): Promise<Customer | null>;
+
+  // --- Invoicing (issue #56 §3) ----------------------------------
+  listInvoices(filter?: InvoiceFilter): Promise<Invoice[]>;
+  getInvoice(id: string): Promise<InvoiceWithItems | null>;
+  getInvoiceByNumber(number: string): Promise<Invoice | null>;
+  invoicesForReservation(reservationId: string): Promise<Invoice[]>;
+  allInvoiceNumbers(propertyId?: string): Promise<string[]>;
+  invoiceSettings(propertyId: string): Promise<InvoiceSettings>;
+  setInvoiceSettings(
+    propertyId: string,
+    patch: Partial<Omit<InvoiceSettings, "propertyId">>,
+  ): Promise<InvoiceSettings>;
+  /** Always created as 'draft'. Rejects a number already in use. */
+  createInvoice(input: CreateInvoiceInput): Promise<InvoiceWithItems>;
+  /** Only while 'draft'. Replaces items and recomputes totals. */
+  updateInvoiceDraft(id: string, input: CreateInvoiceInput): Promise<InvoiceWithItems>;
+  /** 'draft' → 'issued'; freezes the invoice (immutable thereafter). */
+  issueInvoice(id: string): Promise<Invoice>;
+  /** Status transitions after issue: issued→paid/void/rectified, paid→void. */
+  setInvoiceStatus(id: string, status: InvoiceStatus): Promise<Invoice>;
+  /** Only a 'draft' can be deleted. */
+  deleteInvoiceDraft(id: string): Promise<void>;
 
   // --- Channel import feed URLs, admin-editable (issue #42) --------
   getImportFeedUrl(propertyId: string, channel: string): Promise<string | null>;

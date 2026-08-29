@@ -25,6 +25,19 @@ import { normalizeCode, type Coupon } from "@/domains/pricing/coupons";
 import type { Customer, CustomerInput } from "@/domains/crm/types";
 import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
 import { buildCustomerProfile } from "@/domains/crm/profile";
+import { InvoiceLockedError, InvoiceNumberTakenError } from "./types";
+import {
+  DEFAULT_TAX_NOTE,
+  defaultSeriesFor,
+  type CreateInvoiceInput,
+  type Invoice,
+  type InvoiceItem,
+  type InvoiceSettings,
+  type InvoiceStatus,
+  type InvoiceWithItems,
+} from "@/domains/invoicing/types";
+import { computeInvoiceTotals, lineAmountCents } from "@/domains/invoicing/totals";
+import { getPropertyById } from "@/domains/properties/registry";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -153,6 +166,82 @@ function mapPayment(row: any): Payment {
     raw: row.raw,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function mapInvoice(row: any): Invoice {
+  return {
+    id: row.id,
+    propertyId: row.property_id,
+    reservationId: row.reservation_id ?? null,
+    customerId: row.customer_id ?? null,
+    series: row.series,
+    number: row.number,
+    status: row.status,
+    issueDate: row.issue_date,
+    billTo: {
+      name: row.bill_to_name ?? "",
+      taxId: row.bill_to_tax_id ?? null,
+      address: row.bill_to_address ?? null,
+      postalCode: row.bill_to_postal ?? null,
+      city: row.bill_to_city ?? null,
+      province: row.bill_to_province ?? null,
+      country: row.bill_to_country ?? null,
+      email: row.bill_to_email ?? null,
+    },
+    subtotalCents: Number(row.subtotal_cents ?? 0),
+    taxRate: Number(row.tax_rate ?? 0),
+    taxCents: Number(row.tax_cents ?? 0),
+    totalCents: Number(row.total_cents ?? 0),
+    taxExempt: !!row.tax_exempt,
+    taxNote: row.tax_note ?? null,
+    currency: row.currency ?? "EUR",
+    notes: row.notes ?? null,
+    issuedAt: row.issued_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapInvoiceItem(row: any): InvoiceItem {
+  return {
+    id: row.id,
+    invoiceId: row.invoice_id,
+    position: row.position,
+    description: row.description,
+    quantity: Number(row.quantity),
+    unitCents: Number(row.unit_cents),
+    amountCents: Number(row.amount_cents),
+  };
+}
+
+function invoiceRowFrom(input: CreateInvoiceInput, totals: {
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+}): Record<string, unknown> {
+  return {
+    property_id: input.propertyId,
+    reservation_id: input.reservationId ?? null,
+    customer_id: input.customerId ?? null,
+    series: input.series.toUpperCase(),
+    number: input.number.trim().toUpperCase(),
+    issue_date: input.issueDate,
+    bill_to_name: input.billTo.name,
+    bill_to_tax_id: input.billTo.taxId,
+    bill_to_address: input.billTo.address,
+    bill_to_postal: input.billTo.postalCode,
+    bill_to_city: input.billTo.city,
+    bill_to_province: input.billTo.province,
+    bill_to_country: input.billTo.country,
+    bill_to_email: input.billTo.email,
+    subtotal_cents: totals.subtotalCents,
+    tax_rate: input.taxRate,
+    tax_cents: totals.taxCents,
+    total_cents: totals.totalCents,
+    tax_exempt: input.taxExempt,
+    tax_note: input.taxNote,
+    notes: input.notes ?? null,
   };
 }
 
@@ -845,6 +934,228 @@ export const supabaseRepository: Repository = {
     }
     await this.updateReservation(reservationId, { customerId: customer.id });
     return customer;
+  },
+
+  // --- Invoicing (issue #56 §3) --------------------------------------
+  async listInvoices(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("invoices").select().order("number", { ascending: false });
+    if (filter?.propertyId) q = q.eq("property_id", filter.propertyId);
+    if (filter?.series) q = q.eq("series", filter.series);
+    if (filter?.status) q = q.in("status", filter.status);
+    if (filter?.customerId) q = q.eq("customer_id", filter.customerId);
+    if (filter?.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(`number.ilike.${t},bill_to_name.ilike.${t},bill_to_tax_id.ilike.${t},bill_to_email.ilike.${t}`);
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapInvoice);
+  },
+
+  async getInvoice(id) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("invoices").select().eq("id", id).maybeSingle();
+    if (!data) return null;
+    const { data: items } = await db
+      .from("invoice_items")
+      .select()
+      .eq("invoice_id", id)
+      .order("position", { ascending: true });
+    return { ...mapInvoice(data), items: (items ?? []).map(mapInvoiceItem) };
+  },
+
+  async getInvoiceByNumber(number) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("invoices")
+      .select()
+      .ilike("number", number.trim())
+      .maybeSingle();
+    return data ? mapInvoice(data) : null;
+  },
+
+  async invoicesForReservation(reservationId) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("invoices")
+      .select()
+      .eq("reservation_id", reservationId)
+      .order("number", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapInvoice);
+  },
+
+  async allInvoiceNumbers(propertyId) {
+    const db = supabaseAdmin();
+    let q = db.from("invoices").select("number");
+    if (propertyId) q = q.eq("property_id", propertyId);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map((r: any) => r.number as string);
+  },
+
+  async invoiceSettings(propertyId) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("invoice_settings")
+      .select()
+      .eq("property_id", propertyId)
+      .maybeSingle();
+    if (data) {
+      return {
+        propertyId,
+        series: data.series,
+        taxRate: Number(data.tax_rate),
+        taxExempt: !!data.tax_exempt,
+        taxNote: data.tax_note,
+      };
+    }
+    const slug = getPropertyById(propertyId)?.slug ?? propertyId;
+    return {
+      propertyId,
+      series: defaultSeriesFor(slug),
+      taxRate: 0,
+      taxExempt: true,
+      taxNote: DEFAULT_TAX_NOTE,
+    } satisfies InvoiceSettings;
+  },
+
+  async setInvoiceSettings(propertyId, patch) {
+    const db = supabaseAdmin();
+    const current = await this.invoiceSettings(propertyId);
+    const next: InvoiceSettings = { ...current, ...patch, propertyId };
+    const { error } = await db.from("invoice_settings").upsert(
+      {
+        property_id: propertyId,
+        series: next.series,
+        tax_rate: next.taxRate,
+        tax_exempt: next.taxExempt,
+        tax_note: next.taxNote,
+      },
+      { onConflict: "property_id" },
+    );
+    if (error) throw error;
+    return next;
+  },
+
+  async createInvoice(input: CreateInvoiceInput) {
+    const db = supabaseAdmin();
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    const { data, error } = await db
+      .from("invoices")
+      .insert({ ...invoiceRowFrom(input, totals), status: "draft" })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === "23505") throw new InvoiceNumberTakenError();
+      throw error;
+    }
+    if (cleanItems.length) {
+      const { error: itemErr } = await db.from("invoice_items").insert(
+        cleanItems.map((it, position) => ({
+          invoice_id: data.id,
+          position,
+          description: it.description.trim(),
+          quantity: it.quantity,
+          unit_cents: it.unitCents,
+          amount_cents: lineAmountCents(it.quantity, it.unitCents),
+        })),
+      );
+      if (itemErr) throw itemErr;
+    }
+    return (await this.getInvoice(data.id)) as InvoiceWithItems;
+  },
+
+  async updateInvoiceDraft(id, input: CreateInvoiceInput) {
+    const db = supabaseAdmin();
+    const existing = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!existing.data) throw new Error("INVOICE_NOT_FOUND");
+    if (existing.data.status !== "draft") throw new InvoiceLockedError();
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    const { error } = await db
+      .from("invoices")
+      .update(invoiceRowFrom(input, totals))
+      .eq("id", id);
+    if (error) {
+      if (error.code === "23505") throw new InvoiceNumberTakenError();
+      throw error;
+    }
+    await db.from("invoice_items").delete().eq("invoice_id", id);
+    if (cleanItems.length) {
+      await db.from("invoice_items").insert(
+        cleanItems.map((it, position) => ({
+          invoice_id: id,
+          position,
+          description: it.description.trim(),
+          quantity: it.quantity,
+          unit_cents: it.unitCents,
+          amount_cents: lineAmountCents(it.quantity, it.unitCents),
+        })),
+      );
+    }
+    return (await this.getInvoice(id)) as InvoiceWithItems;
+  },
+
+  async issueInvoice(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select().eq("id", id).maybeSingle();
+    if (!cur) throw new Error("INVOICE_NOT_FOUND");
+    if (cur.status === "issued" || cur.status === "paid") return mapInvoice(cur);
+    if (cur.status !== "draft") throw new InvoiceLockedError();
+    const { data, error } = await db
+      .from("invoices")
+      .update({ status: "issued", issued_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapInvoice(data);
+  },
+
+  async setInvoiceStatus(id, status: InvoiceStatus) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!cur) throw new Error("INVOICE_NOT_FOUND");
+    const allowed: Record<InvoiceStatus, InvoiceStatus[]> = {
+      draft: ["issued"],
+      issued: ["paid", "void", "rectified"],
+      paid: ["void", "rectified"],
+      void: [],
+      rectified: [],
+    };
+    if (cur.status === status) {
+      const { data } = await db.from("invoices").select().eq("id", id).single();
+      return mapInvoice(data);
+    }
+    if (!allowed[cur.status as InvoiceStatus].includes(status)) {
+      throw new InvoiceLockedError(`INVOICE_TRANSITION_INVALID: ${cur.status} → ${status}`);
+    }
+    const { data, error } = await db
+      .from("invoices")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapInvoice(data);
+  },
+
+  async deleteInvoiceDraft(id) {
+    const db = supabaseAdmin();
+    const { data: cur } = await db.from("invoices").select("status").eq("id", id).maybeSingle();
+    if (!cur) return;
+    if (cur.status !== "draft") throw new InvoiceLockedError();
+    const { error } = await db.from("invoices").delete().eq("id", id);
+    if (error) throw error;
   },
 
   async getImportFeedUrl(propertyId: string, channel: string) {

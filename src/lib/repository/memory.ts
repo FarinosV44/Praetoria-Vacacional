@@ -10,7 +10,7 @@ import type {
   Payment,
   Reservation,
 } from "@/domains/booking/types";
-import { getAllProperties } from "@/domains/properties/registry";
+import { getAllProperties, getPropertyById } from "@/domains/properties/registry";
 import {
   PropertyUnavailableError,
   type AttachGuestInput,
@@ -34,6 +34,17 @@ import {
 import type { Customer, CustomerInput } from "@/domains/crm/types";
 import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
 import { buildCustomerProfile } from "@/domains/crm/profile";
+import { InvoiceLockedError, InvoiceNumberTakenError } from "./types";
+import {
+  DEFAULT_TAX_NOTE,
+  defaultSeriesFor,
+  type CreateInvoiceInput,
+  type Invoice,
+  type InvoiceItem,
+  type InvoiceSettings,
+  type InvoiceStatus,
+} from "@/domains/invoicing/types";
+import { computeInvoiceTotals, lineAmountCents } from "@/domains/invoicing/totals";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -82,6 +93,9 @@ interface Store {
   }[];
   contentOverrides: Record<string, { value: unknown; updatedAt: string }>;
   customers: Customer[];
+  invoices: Invoice[];
+  invoiceItems: InvoiceItem[];
+  invoiceSettings: Record<string, InvoiceSettings>;
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -165,6 +179,9 @@ function seed(): Store {
     redemptions: [],
     contentOverrides: {},
     customers: [],
+    invoices: [],
+    invoiceItems: [],
+    invoiceSettings: {},
   };
 }
 
@@ -211,6 +228,9 @@ store.coupons ??= [];
 store.redemptions ??= [];
 store.contentOverrides ??= {};
 store.customers ??= [];
+store.invoices ??= [];
+store.invoiceItems ??= [];
+store.invoiceSettings ??= {};
 
 function save() {
   persist(store);
@@ -556,6 +576,210 @@ export const memoryRepository: Repository = {
 
   async getImportFeedUrl(propertyId: string, channel: string) {
     return store.importFeeds[`${propertyId}:${channel}`] ?? null;
+  },
+
+  // --- Invoicing (issue #56 §3) --------------------------------------
+  async listInvoices(filter) {
+    const q = filter?.q?.trim().toLowerCase();
+    return store.invoices
+      .filter((i) => (filter?.propertyId ? i.propertyId === filter.propertyId : true))
+      .filter((i) => (filter?.series ? i.series === filter.series : true))
+      .filter((i) => (filter?.status ? filter.status.includes(i.status) : true))
+      .filter((i) => (filter?.customerId ? i.customerId === filter.customerId : true))
+      .filter((i) =>
+        q
+          ? [i.number, i.billTo.name, i.billTo.taxId, i.billTo.email]
+              .filter(Boolean)
+              .some((v) => v!.toLowerCase().includes(q))
+          : true,
+      )
+      .sort((a, b) => (a.number < b.number ? 1 : -1));
+  },
+
+  async getInvoice(id) {
+    const inv = store.invoices.find((i) => i.id === id);
+    if (!inv) return null;
+    return {
+      ...inv,
+      items: store.invoiceItems
+        .filter((it) => it.invoiceId === id)
+        .sort((a, b) => a.position - b.position),
+    };
+  },
+
+  async getInvoiceByNumber(number) {
+    const n = number.trim().toUpperCase();
+    return store.invoices.find((i) => i.number.toUpperCase() === n) ?? null;
+  },
+
+  async invoicesForReservation(reservationId) {
+    return store.invoices
+      .filter((i) => i.reservationId === reservationId)
+      .sort((a, b) => (a.number < b.number ? 1 : -1));
+  },
+
+  async allInvoiceNumbers(propertyId) {
+    return store.invoices
+      .filter((i) => (propertyId ? i.propertyId === propertyId : true))
+      .map((i) => i.number);
+  },
+
+  async invoiceSettings(propertyId) {
+    const existing = store.invoiceSettings[propertyId];
+    if (existing) return existing;
+    const slug = getPropertyById(propertyId)?.slug ?? propertyId;
+    return {
+      propertyId,
+      series: defaultSeriesFor(slug),
+      taxRate: 0,
+      taxExempt: true,
+      taxNote: DEFAULT_TAX_NOTE,
+    };
+  },
+
+  async setInvoiceSettings(propertyId, patch) {
+    const current = await this.invoiceSettings(propertyId);
+    const next: InvoiceSettings = { ...current, ...patch, propertyId };
+    store.invoiceSettings[propertyId] = next;
+    save();
+    return next;
+  },
+
+  async createInvoice(input: CreateInvoiceInput) {
+    const number = input.number.trim().toUpperCase();
+    if (store.invoices.some((i) => i.number.toUpperCase() === number)) {
+      throw new InvoiceNumberTakenError();
+    }
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    const invoice: Invoice = {
+      id,
+      propertyId: input.propertyId,
+      reservationId: input.reservationId ?? null,
+      customerId: input.customerId ?? null,
+      series: input.series.toUpperCase(),
+      number,
+      status: "draft",
+      issueDate: input.issueDate,
+      billTo: { ...input.billTo },
+      subtotalCents: totals.subtotalCents,
+      taxRate: input.taxRate,
+      taxCents: totals.taxCents,
+      totalCents: totals.totalCents,
+      taxExempt: input.taxExempt,
+      taxNote: input.taxNote,
+      currency: "EUR",
+      notes: input.notes ?? null,
+      issuedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.invoices.push(invoice);
+    cleanItems.forEach((it, position) => {
+      store.invoiceItems.push({
+        id: randomUUID(),
+        invoiceId: id,
+        position,
+        description: it.description.trim(),
+        quantity: it.quantity,
+        unitCents: it.unitCents,
+        amountCents: lineAmountCents(it.quantity, it.unitCents),
+      });
+    });
+    save();
+    return (await this.getInvoice(id))!;
+  },
+
+  async updateInvoiceDraft(id, input: CreateInvoiceInput) {
+    const inv = store.invoices.find((i) => i.id === id);
+    if (!inv) throw new Error("INVOICE_NOT_FOUND");
+    if (inv.status !== "draft") throw new InvoiceLockedError();
+    const number = input.number.trim().toUpperCase();
+    if (store.invoices.some((i) => i.id !== id && i.number.toUpperCase() === number)) {
+      throw new InvoiceNumberTakenError();
+    }
+    const cleanItems = input.items.filter((it) => it.description.trim());
+    const totals = computeInvoiceTotals(cleanItems, {
+      taxExempt: input.taxExempt,
+      taxRate: input.taxRate,
+    });
+    Object.assign(inv, {
+      propertyId: input.propertyId,
+      reservationId: input.reservationId ?? null,
+      customerId: input.customerId ?? null,
+      series: input.series.toUpperCase(),
+      number,
+      issueDate: input.issueDate,
+      billTo: { ...input.billTo },
+      subtotalCents: totals.subtotalCents,
+      taxRate: input.taxRate,
+      taxCents: totals.taxCents,
+      totalCents: totals.totalCents,
+      taxExempt: input.taxExempt,
+      taxNote: input.taxNote,
+      notes: input.notes ?? null,
+      updatedAt: new Date().toISOString(),
+    });
+    store.invoiceItems = store.invoiceItems.filter((it) => it.invoiceId !== id);
+    cleanItems.forEach((it, position) => {
+      store.invoiceItems.push({
+        id: randomUUID(),
+        invoiceId: id,
+        position,
+        description: it.description.trim(),
+        quantity: it.quantity,
+        unitCents: it.unitCents,
+        amountCents: lineAmountCents(it.quantity, it.unitCents),
+      });
+    });
+    save();
+    return (await this.getInvoice(id))!;
+  },
+
+  async issueInvoice(id) {
+    const inv = store.invoices.find((i) => i.id === id);
+    if (!inv) throw new Error("INVOICE_NOT_FOUND");
+    if (inv.status === "issued" || inv.status === "paid") return inv;
+    if (inv.status !== "draft") throw new InvoiceLockedError();
+    inv.status = "issued";
+    inv.issuedAt = new Date().toISOString();
+    inv.updatedAt = inv.issuedAt;
+    save();
+    return inv;
+  },
+
+  async setInvoiceStatus(id, status: InvoiceStatus) {
+    const inv = store.invoices.find((i) => i.id === id);
+    if (!inv) throw new Error("INVOICE_NOT_FOUND");
+    const allowed: Record<InvoiceStatus, InvoiceStatus[]> = {
+      draft: ["issued"],
+      issued: ["paid", "void", "rectified"],
+      paid: ["void", "rectified"],
+      void: [],
+      rectified: [],
+    };
+    if (inv.status === status) return inv;
+    if (!allowed[inv.status].includes(status)) {
+      throw new InvoiceLockedError(`INVOICE_TRANSITION_INVALID: ${inv.status} → ${status}`);
+    }
+    inv.status = status;
+    inv.updatedAt = new Date().toISOString();
+    save();
+    return inv;
+  },
+
+  async deleteInvoiceDraft(id) {
+    const inv = store.invoices.find((i) => i.id === id);
+    if (!inv) return;
+    if (inv.status !== "draft") throw new InvoiceLockedError();
+    store.invoices = store.invoices.filter((i) => i.id !== id);
+    store.invoiceItems = store.invoiceItems.filter((it) => it.invoiceId !== id);
+    save();
   },
 
   // --- Customers / CRM (issue #56) -------------------------------------

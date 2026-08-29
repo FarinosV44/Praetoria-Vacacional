@@ -9,6 +9,8 @@ import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { cancelReservationAction } from "@/domains/admin/actions";
 import { ReservationForm } from "../ReservationForm";
 import { updateReservationAction } from "@/domains/reservations/actions";
+import { draftInvoiceFromReservationAction } from "@/domains/invoicing/actions";
+import { INVOICE_STATUS_LABEL } from "@/domains/invoicing/types";
 
 export const metadata = { title: "Reserva" };
 
@@ -22,9 +24,10 @@ export default async function ReservaDetailPage({
   const reservation = await repo.getReservation(id);
   if (!reservation) notFound();
 
-  const [customers, customer] = await Promise.all([
+  const [customers, customer, invoices] = await Promise.all([
     repo.listCustomers(),
     reservation.customerId ? repo.getCustomer(reservation.customerId) : Promise.resolve(null),
+    repo.invoicesForReservation(reservation.id),
   ]);
   const property = getPropertyById(reservation.propertyId);
 
@@ -88,6 +91,40 @@ export default async function ReservaDetailPage({
           </ConfirmSubmit>
         </form>
       )}
+
+      <section className="rounded-xl border border-[var(--color-line)] bg-white p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg">Facturación</h2>
+          <form action={draftInvoiceFromReservationAction}>
+            <input type="hidden" name="reservationId" value={reservation.id} />
+            <button className="h-9 rounded-lg bg-[var(--accent-600)] px-4 text-sm font-medium text-white">
+              Emitir factura
+            </button>
+          </form>
+        </div>
+        {invoices.length === 0 ? (
+          <p className="mt-2 text-sm text-[var(--color-ink-soft)]">
+            Sin facturas para esta reserva. «Emitir factura» crea un borrador con los datos
+            precargados.
+          </p>
+        ) : (
+          <ul className="mt-2 space-y-1 text-sm">
+            {invoices.map((inv) => (
+              <li key={inv.id}>
+                <Link
+                  className="font-mono text-[var(--accent-700)] hover:underline"
+                  href={`/admin/facturas/${inv.id}`}
+                >
+                  {inv.number}
+                </Link>{" "}
+                <span className="text-[var(--color-ink-soft)]">
+                  · {INVOICE_STATUS_LABEL[inv.status]} · {formatMoney(inv.totalCents)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="rounded-xl border border-[var(--color-line)] bg-white p-4">
         <h2 className="mb-3 font-display text-lg">Editar datos</h2>

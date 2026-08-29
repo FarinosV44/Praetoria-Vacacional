@@ -13,4 +13,8 @@ export function getRepository(): Repository {
 }
 
 export type { Repository } from "./types";
-export { PropertyUnavailableError } from "./types";
+export {
+  PropertyUnavailableError,
+  InvoiceNumberTakenError,
+  InvoiceLockedError,
+} from "./types";
