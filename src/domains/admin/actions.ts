@@ -217,8 +217,13 @@ export async function deleteCouponAction(formData: FormData): Promise<void> {
 
 const feedSchema = z.object({
   propertySlug: z.string(),
-  channel: z.string().min(1).default("booking"),
-  url: z.string().trim().url().or(z.literal("")),
+  channel: z.enum(["booking", "airbnb"]).default("booking"),
+  url: z
+    .string()
+    .trim()
+    .url()
+    .refine((u) => u.startsWith("https://"), "La URL debe empezar por https://")
+    .or(z.literal("")),
 });
 
 export async function setImportFeedUrlAction(
@@ -226,21 +231,48 @@ export async function setImportFeedUrlAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
+  assertCapability("settings.write");
   const parsed = feedSchema.safeParse({
     propertySlug: formData.get("propertySlug"),
     channel: formData.get("channel") || "booking",
     url: formData.get("url") ?? "",
   });
-  if (!parsed.success) return { ok: false, error: "URL no válida (debe empezar por https://)" };
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "URL no válida" };
+  }
 
   const property = getPropertyBySlug(parsed.data.propertySlug);
   if (!property) return { ok: false, error: "Alojamiento no encontrado" };
 
-  await getRepository().setImportFeedUrl(
-    property.id,
-    parsed.data.channel,
-    parsed.data.url || null,
-  );
+  try {
+    await getRepository().setImportFeedUrl(
+      property.id,
+      parsed.data.channel,
+      parsed.data.url || null,
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "error desconocido";
+    if (msg.includes("PERSISTENCE_UNAVAILABLE")) {
+      return {
+        ok: false,
+        error:
+          "No se pudo guardar: esta instancia no tiene base de datos persistente. Configura Supabase (NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY) para que la URL sobreviva a un refresco.",
+      };
+    }
+    if (/relation .*channel_feeds.* does not exist|channel_feeds/i.test(msg)) {
+      return {
+        ok: false,
+        error:
+          "No se pudo guardar: falta la tabla channel_feeds. Aplica las migraciones de Supabase (supabase/migrations/20260830090000_channel_feeds.sql).",
+      };
+    }
+    return { ok: false, error: msg };
+  }
+
+  await logAction(parsed.data.url ? "feed.set" : "feed.clear", {
+    entity: "channel_feed",
+    entityId: `${property.slug}:${parsed.data.channel}`,
+  });
   revalidatePath("/admin/sincronizacion");
   return { ok: true };
 }

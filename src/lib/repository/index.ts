@@ -17,4 +17,5 @@ export {
   PropertyUnavailableError,
   InvoiceNumberTakenError,
   InvoiceLockedError,
+  PersistenceUnavailableError,
 } from "./types";

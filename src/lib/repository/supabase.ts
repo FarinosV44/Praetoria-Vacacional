@@ -1526,14 +1526,15 @@ export const supabaseRepository: Repository = {
 
   async getImportFeedUrl(propertyId: string, channel: string) {
     const db = supabaseAdmin();
-    const { data } = await db
-      .from("calendar_syncs")
-      .select("feed_url")
+    const { data, error } = await db
+      .from("channel_feeds")
+      .select("url")
       .eq("property_id", propertyId)
       .eq("channel", channel)
-      .eq("direction", "import")
+      .limit(1)
       .maybeSingle();
-    return data?.feed_url ?? null;
+    if (error) throw new Error(error.message);
+    return data?.url ?? null;
   },
 
   async getCouponByCode(codeStr: string) {
@@ -1626,25 +1627,46 @@ export const supabaseRepository: Repository = {
 
   async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {
     const db = supabaseAdmin();
-    const { error } = await db.from("calendar_syncs").upsert(
-      { property_id: propertyId, channel, direction: "import", feed_url: url },
-      { onConflict: "property_id,channel,direction" },
+
+    if (!url) {
+      const { error } = await db
+        .from("channel_feeds")
+        .delete()
+        .eq("property_id", propertyId)
+        .eq("channel", channel);
+      if (error) throw new Error(`No se pudo borrar en la base de datos: ${error.message}`);
+      return;
+    }
+
+    const { error } = await db.from("channel_feeds").upsert(
+      { property_id: propertyId, channel, url, updated_at: new Date().toISOString() },
+      { onConflict: "property_id,channel" },
     );
-    if (error) throw error;
+    if (error) throw new Error(`No se pudo guardar en la base de datos: ${error.message}`);
+
+    // Read-after-write: only a confirmed row counts as saved.
+    const { data, error: readErr } = await db
+      .from("channel_feeds")
+      .select("url")
+      .eq("property_id", propertyId)
+      .eq("channel", channel)
+      .maybeSingle();
+    if (readErr) throw new Error(`No se pudo verificar el guardado: ${readErr.message}`);
+    if (data?.url !== url) {
+      throw new Error("La base de datos no confirmó el guardado de la URL.");
+    }
   },
 
   async listImportFeeds(propertyId: string) {
     const db = supabaseAdmin();
     const { data, error } = await db
-      .from("calendar_syncs")
-      .select("channel, feed_url")
-      .eq("property_id", propertyId)
-      .eq("direction", "import")
-      .not("feed_url", "is", null);
-    if (error) throw error;
+      .from("channel_feeds")
+      .select("channel, url")
+      .eq("property_id", propertyId);
+    if (error) throw new Error(error.message);
     return (data ?? [])
-      .filter((r: any) => r.feed_url)
-      .map((r: any) => ({ channel: r.channel as string, url: r.feed_url as string }));
+      .filter((r: any) => r.url)
+      .map((r: any) => ({ channel: r.channel as string, url: r.url as string }));
   },
 
   async reconcileExternalReservations(propertyId, source) {
@@ -1722,12 +1744,13 @@ export const supabaseRepository: Repository = {
 
   async recordSyncRun(propertyId, channel, direction, result) {
     const db = supabaseAdmin();
+    // Telemetry only — NEVER writes feed_url. The feed URL lives in
+    // channel_feeds and is owned exclusively by setImportFeedUrl().
     const { error } = await db.from("calendar_syncs").upsert(
       {
         property_id: propertyId,
         channel,
         direction,
-        feed_url: result.feedUrl ?? null,
         last_run_at: new Date().toISOString(),
         last_status: result.status,
         last_error: result.error ?? null,

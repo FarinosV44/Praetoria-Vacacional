@@ -109,6 +109,23 @@ Merged to `main` 2026-08-29 at the user's explicit request. Overview:
 
 **Issue #56 complete.** `tsc` + `next lint` + `next build` + **134 unit** + **75 chromium e2e** green. Merged to `main` at the user's explicit request. Overview: `docs/intranet.md`.
 
+### Bugfix (2026-08-30) — Booking iCal admin persistence
+
+The iCal import URL lived in `calendar_syncs.feed_url`, the same row
+`recordSyncRun()` upserts every sync → the "not configured" run path (and DB read
+failures) wiped it to NULL, so the admin fields went blank on refresh. Fix
+(D-011): new authoritative table **`channel_feeds`** (migration
+`20260830090000`), `recordSyncRun()` no longer touches `feed_url`,
+`setImportFeedUrl()` does a read-after-write verification and throws a real error
+on failure (`{ ok: false, error }` — "Guardado" only on a confirmed write), DEMO
+mode throws `PersistenceUnavailableError` instead of faking success,
+`/admin/sincronizacion` rebuilt with per-property per-channel status
+(configurado / no configurado / error + última sincronización + eventos).
+Verified with `e2e/admin-ical-feeds.spec.ts` (2 tests) + a manual run with the
+owner's real Booking URLs: saved → survived a full reload → "Sincronizar ahora"
+imported 9 reservations from the persisted value → not wiped. Now 138 unit + 77
+chromium e2e.
+
 ## Exact position
 
 **Issue #56 (management intranet) merged to `main`** (2026-08-29). `develop` and

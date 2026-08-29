@@ -96,6 +96,7 @@ trigger + per-property advisory lock in the hold RPC.
 | `20260829120000_invoicing.sql` | `invoices`, `invoice_items`, `invoice_settings` + immutability triggers |
 | `20260829130000_daily_rates.sql` | `daily_rates` (per-date price / min-stay override) |
 | `20260829140000_marketing.sql` | `segments`, `campaigns`, `campaign_recipients`, `marketing_unsubscribes` |
+| `20260830090000_channel_feeds.sql` | `channel_feeds` (property_id, channel) → url — the authoritative store for Booking/Airbnb iCal import URLs, decoupled from `calendar_syncs` telemetry (D-011). Backfills from `calendar_syncs.feed_url` |
 
 `ADMIN_ROLE` (`admin` \| `gestion` \| `lectura`, default `admin`) selects the
 single login's role.

@@ -15,7 +15,7 @@ firmada HttpOnly, `noindex`. Toda la operativa de los dos alojamientos
 | `/admin/calendario` | Rejilla mensual por alojamiento (colores por canal), navegación de mes, selección múltiple de días → aplicar precio / estancia mínima / quitar ajustes / cerrar fechas (bloqueo manual) / abrir fechas. Los cambios afectan de inmediato a la web y al checkout |
 | `/admin/marketing` | Segmentos guardados (criterios AND: alojamiento, canal, idioma, nacional/extranjero, repetidores, gasto, última reserva, consentimiento, cupón); campañas email / WhatsApp / promo con lista de destinatarios materializada (respeta consentimiento y bajas); export CSV de contactos; `/admin/marketing/bajas` |
 | `/admin/promociones` | Cupones (código, %/importe, alojamiento, límites, caducidad, quién los usó). «Crear cupón» rápido desde la ficha de cliente o el segmento |
-| `/admin/sincronizacion` | URLs iCal de Booking y Airbnb por alojamiento; cada importación crea también el registro interno de reserva (`external`) |
+| `/admin/sincronizacion` | URLs iCal de Booking y Airbnb por alojamiento, guardadas en la BD (`channel_feeds`, por `property_id`), con estado por canal (configurado / no configurado / error + última sincronización + eventos). Cada importación crea también el registro interno de reserva (`external`). El botón «Guardar» hace verificación de lectura tras escritura: solo muestra «Guardado» si la BD lo confirma (D-011) |
 | `/admin/actividad` | Registro de acciones críticas (cancelaciones, emisión/anulación de facturas, fusiones, envíos de campañas, cierres de calendario) |
 
 ## Roles (§10)
@@ -44,7 +44,7 @@ como no enviados. Estado en `/admin/configuracion` → `campaigns`. Decisión D-
 
 ## Modelo de datos
 
-Migraciones `20260829100000`–`20260829140000` (ver `docs/api/INDEX.md`):
+Migraciones `20260829100000`–`20260830090000` (ver `docs/api/INDEX.md`):
 `customers`, `customer_merges`, `invoices`, `invoice_items`, `invoice_settings`,
 `daily_rates`, `segments`, `campaigns`, `campaign_recipients`,
 `marketing_unsubscribes`; columnas nuevas en `reservations`; nuevos valores de

@@ -36,7 +36,7 @@ import {
 import type { Customer, CustomerInput } from "@/domains/crm/types";
 import { findDuplicates, mergedFields } from "@/domains/crm/dedup";
 import { buildCustomerProfile } from "@/domains/crm/profile";
-import { InvoiceLockedError, InvoiceNumberTakenError } from "./types";
+import { InvoiceLockedError, InvoiceNumberTakenError, PersistenceUnavailableError } from "./types";
 import {
   DEFAULT_TAX_NOTE,
   defaultSeriesFor,
@@ -225,13 +225,17 @@ function load(): Store {
   return fresh;
 }
 
-function persist(store: Store): void {
-  if (EPHEMERAL) return;
+/** Returns true if the store is now durable (written to disk, or ephemeral by
+ *  design under vitest); false if the write silently failed (read-only FS). */
+function persist(store: Store): boolean {
+  if (EPHEMERAL) return true;
   try {
     if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
     writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
+    return true;
   } catch {
-    /* read-only fs — keep in memory only */
+    /* read-only fs (e.g. serverless) — keep in memory only for this process */
+    return false;
   }
 }
 
@@ -266,8 +270,17 @@ store.campaignRecipients ??= [];
 store.unsubscribes ??= [];
 store.auditLog ??= [];
 
-function save() {
-  persist(store);
+function save(): boolean {
+  return persist(store);
+}
+
+/** For writes that MUST survive a refresh: throw if they could not be persisted. */
+function saveDurable(): void {
+  if (!save()) {
+    throw new PersistenceUnavailableError(
+      "PERSISTENCE_UNAVAILABLE: esta instancia no tiene base de datos y el sistema de archivos es de solo lectura. Configura Supabase para que el ajuste persista.",
+    );
+  }
 }
 
 function code(): string {
@@ -1459,9 +1472,21 @@ export const memoryRepository: Repository = {
 
   async setImportFeedUrl(propertyId: string, channel: string, url: string | null) {
     const key = `${propertyId}:${channel}`;
+    const previous = store.importFeeds[key];
     if (url) store.importFeeds[key] = url;
     else delete store.importFeeds[key];
-    save();
+    try {
+      saveDurable();
+    } catch (err) {
+      // Roll back so a failed save never leaves a value we claimed we stored.
+      if (previous === undefined) delete store.importFeeds[key];
+      else store.importFeeds[key] = previous;
+      throw err;
+    }
+    // Read-after-write from the singleton (mirrors the on-disk state).
+    if ((store.importFeeds[key] ?? null) !== url) {
+      throw new PersistenceUnavailableError("PERSISTENCE_UNAVAILABLE: no se pudo confirmar el guardado.");
+    }
   },
 
   async getSyncRows(propertyId?: string) {
@@ -1478,7 +1503,7 @@ export const memoryRepository: Repository = {
         propertyId,
         channel,
         direction,
-        feedUrl: result.feedUrl ?? null,
+        feedUrl: null,
         lastRunAt: null,
         lastStatus: null,
         lastError: null,
@@ -1486,10 +1511,11 @@ export const memoryRepository: Repository = {
       };
       store.syncs.push(row);
     }
+    // Telemetry only — the feed URL lives in store.importFeeds and is never
+    // touched here (that coupling was the persistence bug).
     row.lastRunAt = new Date().toISOString();
     row.lastStatus = result.status;
     row.lastError = result.error ?? null;
-    if (result.feedUrl !== undefined) row.feedUrl = result.feedUrl;
     if (typeof result.eventsImported === "number") row.eventsImported = result.eventsImported;
     save();
   },

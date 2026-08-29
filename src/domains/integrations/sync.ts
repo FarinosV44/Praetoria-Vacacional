@@ -1,6 +1,6 @@
 import "server-only";
 import { addDays, todayIso } from "@/lib/dates";
-import { getRepository } from "@/lib/repository";
+import { getRepository, type Repository } from "@/lib/repository";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
 import { generateIcs, parseIcs, type IcsExportEvent } from "./ical";
 
@@ -50,6 +50,18 @@ export async function buildExportFeed(slug: string): Promise<string | null> {
   return generateIcs(`${property.name} · Praetoria Vacacional`, events);
 }
 
+/** The persisted import URL for a channel (channel_feeds), or the content-file
+ *  default. Throws are surfaced by the caller as an error report. */
+async function resolveImportUrl(
+  repo: Repository,
+  propertyId: string,
+  channel: string,
+  contentUrl: string,
+): Promise<string> {
+  const persisted = await repo.getImportFeedUrl(propertyId, channel);
+  return (persisted || contentUrl || "").trim();
+}
+
 export interface ImportReport {
   property: string;
   channel: string;
@@ -69,25 +81,47 @@ async function importOne(slug: string): Promise<ImportReport[]> {
   const repo = getRepository();
   const reports: ImportReport[] = [];
 
-  // Content-file feeds ∪ any channel with an admin-set URL (e.g. Airbnb added later).
+  // Candidate channels: the two we support + whatever the content file / DB
+  // mention. Channel discovery never depends on a DB read succeeding.
   const adminFeeds = await repo.listImportFeeds(property.id).catch(() => []);
-  const channels = new Map<string, string>();
+  const channels = new Map<string, string>([
+    ["booking", ""],
+    ["airbnb", ""],
+  ]);
   for (const f of property.icalImportUrls) channels.set(f.channel, f.url);
   for (const f of adminFeeds) channels.set(f.channel, f.url);
-  if (channels.size === 0) channels.set("booking", "");
 
   for (const [channel, contentUrl] of channels) {
-    const feed = { channel, url: contentUrl };
-    // Admin-entered URL (calendar_syncs.feed_url) wins over the content-file default.
-    const adminUrl = await repo.getImportFeedUrl(property.id, feed.channel).catch(() => null);
-    const url = adminUrl || feed.url;
+    const feed = { channel };
+
+    // Admin-persisted URL (channel_feeds) wins over the content-file default.
+    let url: string;
+    try {
+      url = await resolveImportUrl(repo, property.id, feed.channel, contentUrl);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "error desconocido";
+      reports.push({
+        property: slug,
+        channel: feed.channel,
+        status: "error",
+        created: 0,
+        removed: 0,
+        kept: 0,
+        error: `No se pudo leer la URL guardada: ${message}`,
+      });
+      await repo
+        .recordSyncRun(property.id, feed.channel, "import", {
+          status: "error",
+          error: `No se pudo leer la URL guardada: ${message}`,
+        })
+        .catch(() => undefined);
+      continue;
+    }
 
     if (!url) {
+      // Nothing to sync for this channel and nothing to record — the "not
+      // configured" state is derived from channel_feeds, not from a sync run.
       reports.push({ property: slug, channel: feed.channel, status: "skipped", created: 0, removed: 0, kept: 0 });
-      await repo.recordSyncRun(property.id, feed.channel, "import", {
-        status: "Aún no configurado: falta la URL del feed de Booking",
-        feedUrl: null,
-      });
       continue;
     }
     try {
@@ -111,7 +145,6 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       });
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "ok",
-        feedUrl: url,
         eventsImported: result.created + result.kept,
       });
     } catch (err) {
@@ -128,7 +161,6 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "error",
         error: message,
-        feedUrl: url,
       });
     }
   }
