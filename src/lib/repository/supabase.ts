@@ -13,6 +13,7 @@ import {
   type CouponInput,
   type CreateBlockInput,
   type CreateHoldInput,
+  type CreateManualReservationInput,
   type EmailLogEntry,
   type EmailLogRow,
   type ExternalEvent,
@@ -288,8 +289,17 @@ export const supabaseRepository: Repository = {
     let q = db.from("reservations").select().order("check_in", { ascending: true });
     if (filter.propertyId) q = q.eq("property_id", filter.propertyId);
     if (filter.status) q = q.in("status", filter.status);
+    if (filter.source) q = q.eq("source", filter.source);
+    if (filter.paymentState) q = q.eq("payment_state", filter.paymentState);
+    if (filter.customerId) q = q.eq("customer_id", filter.customerId);
     if (filter.from) q = q.gte("check_out", filter.from);
     if (filter.to) q = q.lte("check_in", filter.to);
+    if (filter.q) {
+      const t = `%${filter.q}%`;
+      q = q.or(
+        `code.ilike.${t},guest_name.ilike.${t},guest_email.ilike.${t},guest_phone.ilike.${t},guest_doc_number.ilike.${t},invoice_number.ilike.${t},external_locator.ilike.${t}`,
+      );
+    }
     const { data, error } = await q;
     if (error) throw error;
     return (data ?? []).map(mapReservation);
@@ -697,6 +707,56 @@ export const supabaseRepository: Repository = {
       meta: { merged: duplicateId },
     });
     return mapCustomer(data);
+  },
+
+  async createManualReservation(input: CreateManualReservationInput) {
+    const db = supabaseAdmin();
+    const genCode = `PV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const { data, error } = await db
+      .from("reservations")
+      .insert({
+        property_id: input.propertyId,
+        code: genCode,
+        status: input.status,
+        source: input.source,
+        channel_detail: input.channelDetail ?? null,
+        check_in: input.checkIn,
+        check_out: input.checkOut,
+        guests: input.guests,
+        currency: input.currency ?? "EUR",
+        total_cents: input.totalCents,
+        price_breakdown: { manual: true },
+        customer_id: input.customerId ?? null,
+        guest_name: input.guestName ?? null,
+        guest_email: input.guestEmail ?? null,
+        guest_phone: input.guestPhone ?? null,
+        guest_doc_type: input.guestDocType ?? null,
+        guest_doc_number: input.guestDocNumber ?? null,
+        guest_address: input.guestAddress ?? null,
+        guest_postal_code: input.guestPostalCode ?? null,
+        guest_city: input.guestCity ?? null,
+        guest_province: input.guestProvince ?? null,
+        guest_country: input.guestCountry ?? null,
+        external_locator: input.externalLocator ?? null,
+        invoice_number: input.invoiceNumber ?? null,
+        payment_method: input.paymentMethod ?? null,
+        payment_state: input.paymentState ?? "pending",
+        coupon_code: input.couponCode ?? null,
+        notes: input.notes ?? null,
+      })
+      .select()
+      .single();
+    if (isUnavailable(error)) throw new PropertyUnavailableError();
+    if (error) throw error;
+    const reservation = mapReservation(data);
+    if (
+      !reservation.customerId &&
+      (reservation.guestEmail || reservation.guestPhone || reservation.guestName)
+    ) {
+      await this.linkOrCreateCustomerFromReservation(reservation.id);
+      return (await this.getReservation(reservation.id)) ?? reservation;
+    }
+    return reservation;
   },
 
   async updateReservation(id, patch) {

@@ -20,6 +20,7 @@ import {
   type EmailLogEntry,
   type EmailLogRow,
   type ExternalEvent,
+  type CreateManualReservationInput,
   type Repository,
   type ReservationFilter,
   type ReservationPatch,
@@ -311,11 +312,30 @@ export const memoryRepository: Repository = {
   },
 
   async listReservations(filter: ReservationFilter) {
+    const q = filter.q?.trim().toLowerCase();
     return store.reservations
       .filter((r) => (filter.propertyId ? r.propertyId === filter.propertyId : true))
       .filter((r) => (filter.status ? filter.status.includes(r.status) : true))
+      .filter((r) => (filter.source ? r.source === filter.source : true))
+      .filter((r) => (filter.paymentState ? r.paymentState === filter.paymentState : true))
+      .filter((r) => (filter.customerId ? r.customerId === filter.customerId : true))
       .filter((r) => (filter.from ? r.checkOut > filter.from : true))
       .filter((r) => (filter.to ? r.checkIn < filter.to : true))
+      .filter((r) =>
+        q
+          ? [
+              r.code,
+              r.guestName,
+              r.guestEmail,
+              r.guestPhone,
+              r.guestDocNumber,
+              r.invoiceNumber,
+              r.externalLocator,
+            ]
+              .filter(Boolean)
+              .some((v) => v!.toLowerCase().includes(q))
+          : true,
+      )
       .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
   },
 
@@ -651,6 +671,60 @@ export const memoryRepository: Repository = {
     void actorEmail;
     save();
     return primary;
+  },
+
+  async createManualReservation(input: CreateManualReservationInput) {
+    if (input.checkIn >= input.checkOut) throw new Error("INVALID_RANGE");
+    if (input.status === "confirmed" && !available(input.propertyId, input.checkIn, input.checkOut)) {
+      throw new PropertyUnavailableError();
+    }
+    const nowIso = new Date().toISOString();
+    const reservation: Reservation = {
+      id: randomUUID(),
+      propertyId: input.propertyId,
+      code: code(),
+      status: input.status,
+      source: input.source,
+      checkIn: input.checkIn,
+      checkOut: input.checkOut,
+      nights: nightsBetween(input.checkIn, input.checkOut),
+      guests: input.guests,
+      guestName: input.guestName ?? null,
+      guestEmail: input.guestEmail ?? null,
+      guestPhone: input.guestPhone ?? null,
+      currency: input.currency ?? "EUR",
+      totalCents: input.totalCents,
+      originalTotalCents: null,
+      discountCents: 0,
+      couponCode: input.couponCode ?? null,
+      priceBreakdown: { manual: true },
+      termsAcceptedAt: null,
+      holdExpiresAt: null,
+      externalUid: null,
+      idempotencyKey: null,
+      notes: input.notes ?? null,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      customerId: input.customerId ?? null,
+      channelDetail: input.channelDetail ?? null,
+      guestDocType: input.guestDocType ?? null,
+      guestDocNumber: input.guestDocNumber ?? null,
+      guestAddress: input.guestAddress ?? null,
+      guestPostalCode: input.guestPostalCode ?? null,
+      guestCity: input.guestCity ?? null,
+      guestProvince: input.guestProvince ?? null,
+      guestCountry: input.guestCountry ?? null,
+      externalLocator: input.externalLocator ?? null,
+      invoiceNumber: input.invoiceNumber ?? null,
+      paymentMethod: input.paymentMethod ?? null,
+      paymentState: input.paymentState ?? "pending",
+    };
+    store.reservations.push(reservation);
+    save();
+    if (!reservation.customerId && (reservation.guestEmail || reservation.guestPhone || reservation.guestName)) {
+      await this.linkOrCreateCustomerFromReservation(reservation.id);
+    }
+    return store.reservations.find((r) => r.id === reservation.id)!;
   },
 
   async updateReservation(id, patch: ReservationPatch) {

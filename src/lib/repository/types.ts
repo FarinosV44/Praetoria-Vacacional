@@ -52,6 +52,37 @@ export interface AttachGuestInput {
   notes?: string | null;
 }
 
+/** Manually register a reservation from any channel (issue #56 §2). */
+export interface CreateManualReservationInput {
+  propertyId: string;
+  source: import("@/domains/booking/types").ReservationSource;
+  channelDetail?: string | null;
+  /** 'confirmed' holds availability; 'external' is informational (block holds it). */
+  status: "confirmed" | "external" | "pending";
+  checkIn: IsoDate;
+  checkOut: IsoDate;
+  guests: number;
+  totalCents: number;
+  currency?: "EUR";
+  customerId?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  guestDocType?: string | null;
+  guestDocNumber?: string | null;
+  guestAddress?: string | null;
+  guestPostalCode?: string | null;
+  guestCity?: string | null;
+  guestProvince?: string | null;
+  guestCountry?: string | null;
+  externalLocator?: string | null;
+  invoiceNumber?: string | null;
+  paymentMethod?: string | null;
+  paymentState?: import("@/domains/booking/types").PaymentState;
+  couponCode?: string | null;
+  notes?: string | null;
+}
+
 /** Fields the intranet can set on a reservation (issue #56 §2). */
 export interface ReservationPatch {
   source?: import("@/domains/booking/types").ReservationSource;
@@ -79,6 +110,11 @@ export interface ReservationFilter {
   status?: ReservationStatus[];
   from?: IsoDate;
   to?: IsoDate;
+  source?: import("@/domains/booking/types").ReservationSource;
+  paymentState?: import("@/domains/booking/types").PaymentState;
+  customerId?: string;
+  /** Free-text over code, guest name/email/phone/doc, invoice number, locator. */
+  q?: string;
 }
 
 export interface CreateBlockInput {
@@ -222,6 +258,7 @@ export interface Repository {
   ): Promise<Customer>;
 
   // --- Reservation editing from the intranet (issue #56 §2) -------
+  createManualReservation(input: CreateManualReservationInput): Promise<Reservation>;
   updateReservation(id: string, patch: ReservationPatch): Promise<Reservation>;
   /** Get-or-create a customer from a reservation's guest fields and link it. */
   linkOrCreateCustomerFromReservation(reservationId: string): Promise<Customer | null>;

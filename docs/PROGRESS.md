@@ -95,9 +95,10 @@ detail in `docs/issues.md`.
 |--------|-------|--------|
 | 56-A · Legal data (Part A) | PRAETORIA, S.L. data centralised in `src/content/company.ts`; aviso legal gets full Registro Mercantil / IRUS / administrador / fecha de operaciones; footer + contact page + Organization JSON-LD + transactional-email footer all read from it; 4 legal docs stay separate. Tourist-registry + property geo unchanged (D-008). 8 unit tests | ✅ code |
 | 56-B · CRM foundation | `customers` + `customer_merges` migration; `reservation_source` widened (airbnb/other); reservations enriched (customer link, channel detail, guest fiscal data, external locator, manual invoice number, `payment_state`). Pure dedup (email/phone/doc/name+contact) + field-merge + profile stats — 20 unit tests. Repository CRM methods on memory + supabase. `/admin/clientes`: list + filters (canal, alojamiento, consentimiento, repetidores, búsqueda), detail (KPIs, reservation history, duplicate detection + one-click merge), manual create/edit incl. marketing consent w/ date+source. Nav updated | ✅ code |
-| 56-C → 56-L | Reservations intranet, invoicing+PDF, calendar+pricing, marketing/segments/campaigns, promotions, Booking/Airbnb→internal, search/exports, roles/dashboard/logs, final E2E | ⬜ |
+| 56-C · Reservations intranet | New `external` reservation status (informational, does not hold availability — its iCal block does). `createManualReservation` on memory + supabase. `/admin/reservas/nuevo` (property, channel, dates, guests, amount, "bloquear disponibilidad" toggle, full guest + fiscal block, external locator, invoice number, payment method/state, notes) + `/admin/reservas/[id]` (edit metadata, cancel, customer link). List: channel + payment-state + free-text search filters, customer link, invoice column, rows link to detail. Auto-links/creates the customer from guest data on manual create | ✅ code |
+| 56-D → 56-L | Invoicing+PDF, calendar+pricing, marketing/segments/campaigns, promotions, Booking/Airbnb→internal, search/exports, roles/dashboard/logs, final E2E | ⬜ |
 
-`tsc` + `next lint` + `next build` + 85 unit green after 56-B.
+`tsc` + `next lint` + `next build` + 85 unit green after 56-C.
 
 ## Exact position
 

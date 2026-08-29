@@ -1,6 +1,13 @@
 import type { IsoDate } from "@/lib/dates";
 
-export type ReservationStatus = "pending" | "confirmed" | "cancelled" | "expired";
+export type ReservationStatus =
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "expired"
+  /** Informational record of an external-channel (Booking/Airbnb) reservation;
+   *  does not hold availability — its iCal block does. Issue #56. */
+  | "external";
 export type ReservationSource = "direct" | "booking" | "airbnb" | "manual" | "other";
 export type BlockSource = "booking" | "airbnb" | "manual" | "other";
 export type PaymentState = "pending" | "partial" | "paid" | "refunded";
