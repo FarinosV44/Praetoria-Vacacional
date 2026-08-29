@@ -208,7 +208,11 @@ function seed(): Store {
   };
 }
 
+/** Under vitest the store is memory-only — tests never touch `.data/demo.json`. */
+const EPHEMERAL = !!process.env.VITEST;
+
 function load(): Store {
+  if (EPHEMERAL) return seed();
   try {
     if (existsSync(DATA_FILE)) {
       return JSON.parse(readFileSync(DATA_FILE, "utf8")) as Store;
@@ -222,6 +226,7 @@ function load(): Store {
 }
 
 function persist(store: Store): void {
+  if (EPHEMERAL) return;
   try {
     if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
     writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
