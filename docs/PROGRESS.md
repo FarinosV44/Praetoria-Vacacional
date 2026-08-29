@@ -107,7 +107,7 @@ Merged to `main` 2026-08-29 at the user's explicit request. Overview:
 | 56-K · Security / roles / dashboard | `domains/admin/roles.ts` — a capability matrix for `admin` / `gestion` / `lectura` (env `ADMIN_ROLE`, default admin; architecture-ready, one login today) with `assertCapability` wired into every critical mutating server action. `admin_audit_log` repo methods + a non-throwing `logAction` helper wired into reservation cancel/create, invoice issue/void/paid/delete, customer merge, campaign send and calendar close; new `/admin/actividad` page. Dashboard rebuilt against §1: month + property filter, KPI row (ingresos, pagos recibidos, reservas, noches, ocupación), reservas por canal, próximas (30d) + recientes, facturas pendientes de emitir, estado de sincronización, accesos rápidos. Role shown in the admin header. 3 role tests. (noindex + private-PDF protection were already in place.) | ✅ code |
 | 56-L · Final E2E + docs | `src/domains/invoicing/chain.test.ts` drives the whole `reserva → cliente → factura → documento → calendario → historial → segmento` chain against the repository and asserts persistence. `e2e/intranet.spec.ts` asserts every intranet route + export endpoint is private/redirects. `docs/intranet.md` (module map, roles, fiscalidad, data model), `docs/api/INDEX.md` (intranet functions + HTTP routes + migrations), `docs/SETUP.md` + `.env.example` (`ADMIN_ROLE`, Airbnb feeds, campaign-send "Aún no configurado"). Merged `develop → main`. | ✅ |
 
-**Issue #56 complete.** `tsc` + `next lint` + `next build` + **134 unit** + **77 chromium e2e** green. Merged to `main` at the user's explicit request. Overview: `docs/intranet.md`.
+**Issue #56 complete.** `tsc` + `next lint` + `next build` + **134 unit** + **75 chromium e2e** green. Merged to `main` at the user's explicit request. Overview: `docs/intranet.md`.
 
 ## Exact position
 
@@ -120,7 +120,7 @@ print-to-PDF document, operational calendar with per-date pricing, marketing
 (admin/gestion/lectura), audit log. Runs in DEMO/in-memory now; production needs
 the `20260829*` migrations. See `docs/intranet.md`.
 
-`tsc` + `next lint` + `next build` + 134 unit + 77 chromium e2e green.
+`tsc` + `next lint` + `next build` + 134 unit + 75 chromium e2e green.
 
 Remaining before V1 "done" (issue #22):
 1. **User adds real Supabase + Stripe(test) + Resend keys + Booking iCal URLs**
