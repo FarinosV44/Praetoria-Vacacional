@@ -43,12 +43,22 @@ export default async function AdminClientesPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Clientes</h1>
-        <Link
-          href="/admin/clientes/nuevo"
-          className="h-10 rounded-lg bg-[var(--accent-600)] px-4 text-sm font-medium leading-10 text-white"
-        >
-          Nuevo cliente
-        </Link>
+        <div className="flex gap-2">
+          <a
+            href={`/admin/clientes/export?${new URLSearchParams(
+              Object.entries(sp).filter(([, v]) => v) as [string, string][],
+            ).toString()}`}
+            className="h-10 rounded-lg border border-[var(--color-line)] px-4 text-sm leading-10"
+          >
+            Exportar CSV
+          </a>
+          <Link
+            href="/admin/clientes/nuevo"
+            className="h-10 rounded-lg bg-[var(--accent-600)] px-4 text-sm font-medium leading-10 text-white"
+          >
+            Nuevo cliente
+          </Link>
+        </div>
       </div>
 
       <form className="flex flex-wrap items-end gap-2 text-sm">

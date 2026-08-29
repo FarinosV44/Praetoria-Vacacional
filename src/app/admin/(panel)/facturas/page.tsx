@@ -47,12 +47,22 @@ export default async function AdminFacturasPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Facturas</h1>
-        <Link
-          href="/admin/facturas/ajustes"
-          className="text-sm text-[var(--accent-700)] hover:underline"
-        >
-          Ajustes de facturación
-        </Link>
+        <div className="flex items-center gap-3">
+          <a
+            href={`/admin/facturas/export?${new URLSearchParams(
+              Object.entries(sp).filter(([, v]) => v) as [string, string][],
+            ).toString()}`}
+            className="h-9 rounded-lg border border-[var(--color-line)] px-3 text-sm leading-9"
+          >
+            Exportar CSV
+          </a>
+          <Link
+            href="/admin/facturas/ajustes"
+            className="text-sm text-[var(--accent-700)] hover:underline"
+          >
+            Ajustes de facturación
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
