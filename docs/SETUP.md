@@ -72,7 +72,8 @@ calendar + pricing, marketing, roles, audit log) lives under `/admin` — see
    Airbnb calendar-export URL (or set `icalImportUrls[].url` in
    `src/content/properties/<slug>.ts`).
 3. In Booking.com → Calendar → Sync calendars (and Airbnb → Calendar → Import),
-   subscribe to `https://<domain>/api/ical/<slug>.ics?token=<ICAL_EXPORT_TOKEN>`.
+   subscribe to the clean feed URL shown per property in `/admin/sincronizacion`:
+   `https://<domain>/api/ical/<slug>/<ICAL_EXPORT_TOKEN>.ics` (HTTPS, no query string, 200 with no redirect).
 4. Schedule the import: `vercel.json` runs `GET /api/ical/import` on a cron;
    or call it manually with `Authorization: Bearer <ICAL_EXPORT_TOKEN>`.
    Each import also mirrors the imported bookings as internal `external`

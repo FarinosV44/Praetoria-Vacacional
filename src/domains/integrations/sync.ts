@@ -42,10 +42,13 @@ export async function buildExportFeed(slug: string): Promise<string | null> {
       })),
   ];
 
-  await repo.recordSyncRun(property.id, "praetoria", "export", {
-    status: "ok",
-    eventsImported: events.length,
-  });
+  // Telemetry must never break the feed Booking.com is fetching.
+  await repo
+    .recordSyncRun(property.id, "praetoria", "export", {
+      status: "ok",
+      eventsImported: events.length,
+    })
+    .catch(() => undefined);
 
   return generateIcs(`${property.name} · Praetoria Vacacional`, events);
 }

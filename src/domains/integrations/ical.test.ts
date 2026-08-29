@@ -59,8 +59,65 @@ describe("generateIcs", () => {
     expect(parsed[0]).toMatchObject({ startDate: "2026-06-01", endDate: "2026-06-05" });
   });
 
-  it("uses CRLF line endings", () => {
-    expect(generateIcs("x", [])).toContain("\r\n");
+  it("uses CRLF line endings, starts with BEGIN:VCALENDAR, ends with END:VCALENDAR", () => {
+    const ics = generateIcs("x", []);
+    expect(ics).toContain("\r\n");
+    expect(ics).not.toContain("\n\n");
+    expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
+    expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
+    expect(ics).not.toMatch(/^﻿/); // no BOM
+  });
+
+  it("carries VERSION:2.0, a PRODID and every mandatory VEVENT property", () => {
+    const ics = generateIcs("Javalambre", [
+      { uid: "res-1", startDate: "2026-06-01", endDate: "2026-06-05", summary: "x" },
+    ]);
+    expect(ics).toContain("VERSION:2.0");
+    expect(ics).toMatch(/PRODID:-\/\/.+\/\/.+/);
+    expect(ics).toContain("CALSCALE:GREGORIAN");
+    expect(ics).toMatch(/UID:res-1@[\w.-]+/);
+    expect(ics).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20260601");
+    expect(ics).toContain("DTEND;VALUE=DATE:20260605");
+  });
+
+  it("is NEVER empty — an events-free feed still has one VEVENT (Booking rejects empty)", () => {
+    const ics = generateIcs("Valencia", []);
+    expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBe(1);
+    expect(ics).toContain("keepalive@");
+  });
+
+  it("folds every line to <= 75 octets (RFC 5545 §3.1)", () => {
+    const longName = "Javalambre Mountain SuperSki — apartamento con vistas a la estación de esquí";
+    const ics = generateIcs(longName, [
+      {
+        uid: "res-1",
+        startDate: "2026-06-01",
+        endDate: "2026-06-05",
+        summary:
+          "Reserva directa Praetoria Vacacional con un localizador razonablemente largo PV-ABCDEF12345",
+      },
+    ]);
+    for (const line of ics.split("\r\n")) {
+      // continuation lines start with a space; the folded segment itself is ≤ 75
+      expect(Buffer.byteLength(line, "utf8")).toBeLessThanOrEqual(75);
+    }
+    // and it still parses back
+    expect(parseIcs(ics)).toHaveLength(1);
+  });
+
+  it("escapes TEXT values (comma / semicolon / backslash / newline)", () => {
+    const ics = generateIcs("Cal", [
+      {
+        uid: "b1",
+        startDate: "2026-07-01",
+        endDate: "2026-07-03",
+        summary: "Bloqueo: obras, pintura; ala norte\\anexo\nsegunda línea",
+      },
+    ]);
+    expect(ics).toContain("SUMMARY:Bloqueo: obras\\, pintura\\; ala norte\\\\anexo\\nsegunda línea");
+    // round-trips (parseIcs unfolds; escaped text stays literal for our purposes)
+    expect(parseIcs(ics)).toHaveLength(1);
   });
 });
 

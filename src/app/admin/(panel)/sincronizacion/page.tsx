@@ -102,12 +102,22 @@ export default async function AdminSyncPage() {
             );
           })}
 
-          <p className="break-all font-mono text-xs text-[var(--color-ink-soft)]">
-            Feed de exportación para los canales:{" "}
-            {absoluteUrl(
-              `/api/ical/${p.slug}.ics?token=${env.icalExportConfigured ? "•••" : "PENDIENTE"}`,
+          <div className="text-xs text-[var(--color-ink-soft)]">
+            <p className="font-medium">Feed de exportación para Booking.com / Airbnb (esta propiedad):</p>
+            {env.icalExportConfigured ? (
+              <p className="mt-1 break-all rounded bg-[var(--color-paper)] p-2 font-mono text-[var(--color-ink)]">
+                {absoluteUrl(`/api/ical/${p.slug}/${env.ICAL_EXPORT_TOKEN ?? ""}.ics`)}
+              </p>
+            ) : (
+              <p className="mt-1 text-amber-700">
+                Define <code>ICAL_EXPORT_TOKEN</code> para generar la URL del feed.
+              </p>
             )}
-          </p>
+            <p className="mt-1">
+              Pégala tal cual (HTTPS, sin parámetros). Responde 200 directo, sin redirecciones,
+              con <code>Content-Type: text/calendar</code> y un VCALENDAR válido.
+            </p>
+          </div>
         </section>
       ))}
 
