@@ -123,8 +123,21 @@ mode throws `PersistenceUnavailableError` instead of faking success,
 (configurado / no configurado / error + última sincronización + eventos).
 Verified with `e2e/admin-ical-feeds.spec.ts` (2 tests) + a manual run with the
 owner's real Booking URLs: saved → survived a full reload → "Sincronizar ahora"
-imported 9 reservations from the persisted value → not wiped. Now 138 unit + 77
-chromium e2e.
+imported 9 reservations from the persisted value → not wiped.
+
+### Bugfix (2026-08-30) — iCal EXPORT feed rejected by Booking.com
+
+Booking rejected the export URL as "not a valid iCal URL" (the browser still
+downloaded a working .ics). Fix (D-012): clean tokenized path
+`/api/ical/<slug>/<token>.ics` (no query string; legacy `?token=` kept),
+response is **200 with no redirect**, `text/calendar; charset=utf-8`, explicit
+`Content-Length`, **no `Content-Disposition`**. `generateIcs` now folds every
+line to ≤75 octets, escapes TEXT, drops `METHOD:PUBLISH`, and **never emits an
+empty calendar** (a bookings-free feed still has one inert VEVENT). Export
+telemetry can't 500 the feed. `/admin/sincronizacion` shows the exact clean
+HTTPS URL. `e2e/ical-export.spec.ts` (6 tests) + `curl` verify 200/no-redirect/
+headers/RFC. **Owner must confirm Booking accepts both URLs** (no access to the
+Booking extranet). Now 142 unit + 83 chromium e2e.
 
 ## Exact position
 

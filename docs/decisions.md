@@ -142,3 +142,27 @@ and the cron kept wiping it.
   owner's real Booking URLs: saved, survived a full reload, "Sincronizar ahora"
   imported 9 reservations from the persisted value and did not wipe it).
 **Why:** configuration and runtime telemetry must never share a write path.
+
+## D-012 — iCal export feed: maximal Booking.com compatibility
+**Date:** 2026-08-30 · bugfix
+Booking.com rejected the export URL as "not a valid iCal URL" though the browser
+downloaded a working `.ics`. Fixes:
+- **Clean tokenized path** `/api/ical/<slug>/<token>.ics` (no query string).
+  Legacy `/api/ical/<slug>.ics?token=` still works.
+- Response: **200 directly, no redirect**, `Content-Type: text/calendar;
+  charset=utf-8`, explicit `Content-Length`, **no `Content-Disposition`** (an
+  `attachment` made validators treat it as a file download, not a live feed).
+- Body (`generateIcs`): starts `BEGIN:VCALENDAR`, ends `END:VCALENDAR\r\n`, CRLF
+  throughout, **every line folded to ≤75 octets** (RFC 5545 §3.1), TEXT values
+  escaped (§3.3.11), `VERSION:2.0` + short fixed `PRODID` + `CALSCALE` + VEVENTs
+  with `UID@domain` / `DTSTAMP` / `DTSTART;VALUE=DATE` / `DTEND;VALUE=DATE` /
+  `SUMMARY` / `STATUS` / `TRANSP`. Dropped `METHOD:PUBLISH` (Booking's own
+  exports omit it; some importers reject it).
+- **Never empty:** a feed with no bookings still emits one inert VEVENT (a
+  fixed year-2000 all-day marker). Booking rejects a VCALENDAR with zero VEVENT.
+- Export telemetry (`recordSyncRun`) is `.catch()`-ed so it can never 500 the feed.
+- `/admin/sincronizacion` shows the exact clean HTTPS URL per property to paste.
+**Verified:** `e2e/ical-export.spec.ts` (200/no-redirect, headers, RFC checks,
+403/404, legacy path) + a raw `curl` inspection. **Not** verified inside
+Booking's own extranet — no access to the owner's Booking account; the owner
+must add both URLs and confirm acceptance.

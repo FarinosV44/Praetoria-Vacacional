@@ -15,7 +15,7 @@ Zod (`src/lib/validation.ts`); all money in EUR cents; prices computed server-si
 | POST | `/api/checkout/pay` | Begin payment → returns Stripe (or DEMO simulator) URL | — | 15/min/IP |
 | POST | `/api/checkout/simulate` | DEMO-only payment simulator (disabled once Stripe configured) | — | — |
 | POST | `/api/webhooks/stripe` | Stripe events; confirms reservations. Signature-verified, idempotent | Stripe sig | — |
-| GET | `/api/ical/[slug].ics` | Per-property export feed for Booking.com | `?token=` | — |
+| GET | `/api/ical/<slug>/<token>.ics` | Per-property export feed for Booking.com / Airbnb (clean path, no query string). Legacy `/api/ical/<slug>.ics?token=` still works. 200, no redirect, `text/calendar`, non-empty RFC-5545 VCALENDAR | path token | — |
 | GET/POST | `/api/ical/import` | Pull configured Booking feeds → availability_blocks | Bearer token / Vercel cron | — |
 | GET | `/api/cron/expire-holds` | Release expired pending holds | Bearer token / Vercel cron | — |
 

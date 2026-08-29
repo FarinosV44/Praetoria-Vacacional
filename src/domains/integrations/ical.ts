@@ -88,32 +88,85 @@ function icsDate(iso: IsoDate): string {
   return iso.replace(/-/g, "");
 }
 
-export function generateIcs(calendarName: string, events: IcsExportEvent[], domain = "praetoriavacacional"): string {
+/** RFC 5545 §3.3.11 TEXT escaping for SUMMARY / DESCRIPTION values. */
+function escapeText(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r\n|\n|\r/g, "\\n");
+}
+
+/**
+ * RFC 5545 §3.1 content-line folding: no line may exceed 75 octets. A fold is a
+ * CRLF followed by a single space; strict parsers (Booking.com's included)
+ * reject long unfolded lines. Folds on octet boundaries in UTF-8.
+ */
+function foldLine(line: string): string {
+  const bytes = Buffer.from(line, "utf8");
+  if (bytes.length <= 75) return line;
+  const out: string[] = [];
+  let start = 0;
+  let first = true;
+  while (start < bytes.length) {
+    // 75 octets on the first line, 74 on continuations (leading space counts).
+    const limit = first ? 75 : 74;
+    let end = Math.min(start + limit, bytes.length);
+    // don't split a multi-byte UTF-8 sequence
+    while (end < bytes.length && (bytes[end]! & 0xc0) === 0x80) end--;
+    out.push((first ? "" : " ") + bytes.toString("utf8", start, end));
+    start = end;
+    first = false;
+  }
+  return out.join("\r\n");
+}
+
+const KEEPALIVE_EVENT: IcsExportEvent = {
+  uid: "keepalive",
+  // A fixed all-day marker in the year 2000 — inert for every channel, but it
+  // guarantees the feed is never empty. Booking.com rejects a VCALENDAR with no
+  // VEVENT as "not a valid iCal URL".
+  startDate: "2000-01-01",
+  endDate: "2000-01-02",
+  summary: "Praetoria Vacacional — feed activo",
+};
+
+export function generateIcs(
+  calendarName: string,
+  events: IcsExportEvent[],
+  domain = "praetoria-vacacional.com",
+): string {
   const now = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const list = events.length > 0 ? events : [KEEPALIVE_EVENT];
+
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    `PRODID:-//Praetoria Vacacional//${calendarName}//ES`,
+    "PRODID:-//Praetoria Vacacional//Channel Sync//ES",
     "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    `X-WR-CALNAME:${calendarName}`,
+    // No METHOD — this is a published availability feed, not an iTIP message.
+    // Booking.com's own exports omit it and some importers reject it.
+    `X-WR-CALNAME:${escapeText(calendarName)}`,
+    "X-WR-TIMEZONE:Europe/Madrid",
+    "X-PUBLISHED-TTL:PT1H",
   ];
-  for (const e of events) {
+  for (const e of list) {
     lines.push(
       "BEGIN:VEVENT",
       `UID:${e.uid}@${domain}`,
       `DTSTAMP:${now}`,
       `DTSTART;VALUE=DATE:${icsDate(e.startDate)}`,
       `DTEND;VALUE=DATE:${icsDate(e.endDate)}`,
-      `SUMMARY:${e.summary}`,
+      `SUMMARY:${escapeText(e.summary)}`,
       `STATUS:${e.status ?? "CONFIRMED"}`,
       "TRANSP:OPAQUE",
       "END:VEVENT",
     );
   }
   lines.push("END:VCALENDAR");
-  // RFC 5545 wants CRLF line endings.
-  return lines.join("\r\n") + "\r\n";
+
+  // RFC 5545: CRLF line endings, every line folded to ≤75 octets, trailing CRLF.
+  return lines.map(foldLine).join("\r\n") + "\r\n";
 }
 
 /** Pad a single blocked NIGHT range to a valid VEVENT (checkout exclusive). */

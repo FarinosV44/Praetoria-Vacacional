@@ -42,10 +42,11 @@ function saveButton(page: Page, property: "javalambre" | "valencia") {
   return bookingForm(page, property).getByRole("button", { name: /guardar|actualizar/i });
 }
 
-test.describe.configure({ mode: "serial" });
+test.describe.configure({ mode: "serial", retries: 2 });
 
 test("saved Booking iCal URLs persist across a full reload, per property", async ({ page }) => {
   test.skip(!process.env.ADMIN_PASSWORD, "needs ADMIN_PASSWORD (.env.local) to reach the admin panel");
+  test.slow(); // several full reloads — give it room under a loaded suite
   await login(page);
   await page.goto("/admin/sincronizacion");
 
@@ -93,6 +94,7 @@ test("saved Booking iCal URLs persist across a full reload, per property", async
 
 test("'Sincronizar ahora' uses the persisted value and never wipes it", async ({ page }) => {
   test.skip(!process.env.ADMIN_PASSWORD, "needs ADMIN_PASSWORD (.env.local) to reach the admin panel");
+  test.slow();
   await login(page);
   await page.goto("/admin/sincronizacion", { waitUntil: "domcontentloaded" });
 

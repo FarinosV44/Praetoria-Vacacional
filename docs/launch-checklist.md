@@ -64,7 +64,7 @@ A missing external credential may leave a service `not_configured` (shown in
 - [ ] In `/admin/sincronizacion`, paste each property's Booking.com iCal export
       URL; "Sincronizar ahora" runs without error and `Última ejecución` updates.
 - [ ] In Booking.com, subscribe each property to
-      `https://<domain>/api/ical/<slug>.ics?token=<ICAL_EXPORT_TOKEN>`.
+      `https://<domain>/api/ical/<slug>/<ICAL_EXPORT_TOKEN>.ics`
 - [ ] A block from Booking on Javalambre appears only on Javalambre; same for Valencia.
 - [ ] Re-run the import → no duplicated events (dedupe by property+source+uid).
 - [ ] Not configured → the row shows "Aún no configurado", the feature stays present.
