@@ -85,6 +85,17 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | V3 · Cupón 10PRAETORIA10 | #54 | ✅ | Activates the promo code `10PRAETORIA10` (10% off, both properties, no expiry/limit, `active`). Production DB via migration `20260828120000_coupon_10praetoria10.sql` (upsert by `code`, re-activates on re-run); DEMO mode seeds the same object from the new `PRAETORIA10_COUPON` domain constant (+ forward-compat upsert for existing stores). Discount is server-computed only (client never sends price/percentage) — infra from #45. 13 coupon unit tests + e2e `10PRAETORIA10` on both properties (incl. lower-case normalization). Shows in `/admin/promociones` via existing `listCoupons`. `tsc`+`lint`+`build`+61 unit+65 chromium e2e green |
 | V3 · Guías SEO → hubs | #46 | ✅ | `/guias/javalambre` + `/guias/valencia-playa` pillar hubs (quick facts, TOC, sections w/ anchors, FAQ, Article+Breadcrumb+FAQ JSON-LD, contextual non-aggressive CTA); satellite route `/guias/[hub]/[slug]`; old pillar guides fold into the hub; 301 redirects for moved URLs; sitemap/seo-inventory/property-page links updated; `/guias` index relinked; a11y tests updated (hub + satellite), all chromium e2e green |
 
+### V4 batch (issue #56) — legal data + management intranet (epic, decision D-009)
+
+Merge to `main` only when `reserva → cliente → factura → PDF → calendario →
+historial → segmento` works end to end and persists. Sprint tracker + per-sprint
+detail in `docs/issues.md`.
+
+| Sprint | Scope | Status |
+|--------|-------|--------|
+| 56-A · Legal data (Part A) | PRAETORIA, S.L. data centralised in `src/content/company.ts`; aviso legal gets full Registro Mercantil / IRUS / administrador / fecha de operaciones; footer + contact page + Organization JSON-LD + transactional-email footer all read from it; 4 legal docs stay separate. Tourist-registry + property geo unchanged (D-008). 8 unit tests. `tsc`+`lint`+`build`+72 unit green | ✅ code |
+| 56-B → 56-L | Intranet: data model, reservations, CRM, invoicing+PDF, calendar+pricing, marketing/segments/campaigns, promotions, Booking/Airbnb→internal, search/exports, roles/dashboard/logs, final E2E | ⬜ |
+
 ## Exact position
 
 Working `develop` (pushed, 13 commits). Platform builds static (~40 pages), 34

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllProperties } from "@/domains/properties/registry";
+import { company, companyAddressOneLine } from "@/content/company";
 
 const legal = [
   { href: "/legal/aviso-legal", label: "Aviso legal" },
@@ -78,9 +79,15 @@ export function SiteFooter() {
       {/* bottom clearance so the mobile/tablet sticky booking bar never covers
           the copyright line; removed once that bar is gone (lg+) */}
       <div className="border-t border-[var(--color-line)] pb-16 lg:pb-0">
-        <p className="container-page py-6 text-xs text-[var(--color-ink-soft)]">
-          © {year} Praetoria Vacacional. Pagos seguros procesados por Stripe.
-        </p>
+        <div className="container-page space-y-1 py-6 text-xs text-[var(--color-ink-soft)]">
+          <p>
+            © {year} {company.tradeName}. Pagos seguros procesados por Stripe.
+          </p>
+          <p>
+            {company.legalName} ({company.legalForm}) · NIF {company.taxId} ·{" "}
+            {companyAddressOneLine()}
+          </p>
+        </div>
       </div>
     </footer>
   );

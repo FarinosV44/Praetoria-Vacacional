@@ -3,6 +3,7 @@ import { publicEnv } from "./env";
 import type { PropertyContent } from "@/domains/properties/types";
 import { defaultLocale, locales, localizedPath, type Locale } from "@/i18n/config";
 import { propertyPhotos } from "@/content/properties/photos";
+import { company } from "@/content/company";
 
 const SITE = publicEnv.siteName;
 const BASE = publicEnv.siteUrl.replace(/\/$/, "");
@@ -70,8 +71,27 @@ export function organizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE,
+    legalName: company.legalName,
     url: BASE,
     logo: absoluteUrl("/icon.svg"),
+    email: company.email,
+    telephone: company.phone,
+    taxID: company.taxId,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: company.registeredOffice.street,
+      postalCode: company.registeredOffice.postalCode,
+      addressLocality: company.registeredOffice.city,
+      addressRegion: company.registeredOffice.province,
+      addressCountry: company.registeredOffice.countryCode,
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      telephone: company.phone,
+      email: company.email,
+      availableLanguage: ["es", "en"],
+    },
     sameAs: [] as string[],
   };
 }
