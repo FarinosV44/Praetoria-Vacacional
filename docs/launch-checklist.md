@@ -20,10 +20,15 @@ A missing external credential may leave a service `not_configured` (shown in
 
 ## 1 · Database (Supabase)
 
-- [ ] Production project; `NEXT_PUBLIC_SUPABASE_URL / _ANON_KEY / SUPABASE_SERVICE_ROLE_KEY` set.
-- [ ] `supabase db push` applied all migrations (`init`, `booking_rpc`,
-      `seed_properties`, `production`). Verify: `properties` has 2 rows,
-      `email_log` and the RPCs exist.
+- [ ] Production project; `NEXT_PUBLIC_SUPABASE_URL`,
+      `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `_ANON_KEY`) and
+      `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`) set.
+- [ ] `supabase db push` applied **every** migration in `supabase/migrations/`
+      (through `20260831120000_availability_rpc`). Verify:
+      `select proname from pg_proc where proname = 'property_busy_ranges';`
+      returns a row, `properties` has 2 rows.
+- [ ] `supabase db execute --file supabase/tests/property_busy_ranges.test.sql`
+      prints `ALL ASSERTIONS PASSED`.
 - [ ] Overlap protection verified: try to insert two overlapping `pending`
       reservations for one property → the second is rejected
       (`reservations_no_overlap`).

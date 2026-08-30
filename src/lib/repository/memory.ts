@@ -10,6 +10,7 @@ import type {
   Payment,
   Reservation,
 } from "@/domains/booking/types";
+import { consolidateBusyRanges } from "@/domains/booking/busy-ranges";
 import { getAllProperties, getPropertyById } from "@/domains/properties/registry";
 import {
   PropertyUnavailableError,
@@ -353,16 +354,16 @@ function code(): string {
   return `PV-${randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-const occupies = (r: Reservation) => r.status === "pending" || r.status === "confirmed";
-
+/**
+ * The DEMO-mode equivalent of the Postgres function `public.property_busy_ranges`
+ * — same consolidation, same half-open `[check_in, check_out)` semantics — kept
+ * in sync through the shared pure `consolidateBusyRanges`.
+ */
 function busyRangesFor(propertyId: string): BusyRange[] {
-  const fromRes: BusyRange[] = store.reservations
-    .filter((r) => r.propertyId === propertyId && occupies(r))
-    .map((r) => ({ start: r.checkIn, end: r.checkOut, kind: "reservation" as const }));
-  const fromBlocks: BusyRange[] = store.blocks
-    .filter((b) => b.propertyId === propertyId)
-    .map((b) => ({ start: b.startDate, end: b.endDate, kind: "block" as const }));
-  return [...fromRes, ...fromBlocks];
+  return consolidateBusyRanges(
+    store.reservations.filter((r) => r.propertyId === propertyId),
+    store.blocks.filter((b) => b.propertyId === propertyId),
+  );
 }
 
 function available(propertyId: string, checkIn: IsoDate, checkOut: IsoDate): boolean {

@@ -9,20 +9,33 @@ them in any order; each is independent.
 ## 1. Supabase (database + admin auth)
 
 1. Create a project at supabase.com.
-2. **Project Settings → API** — copy into `.env.local`:
+2. **Project Settings → API Keys** — copy into `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (keep secret — server only)
-3. Apply the schema. With the Supabase CLI:
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (the `sb_publishable_…` key; the
+     legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works)
+   - `SUPABASE_SECRET_KEY` (the `sb_secret_…` key — server only; the legacy
+     `SUPABASE_SERVICE_ROLE_KEY` also works)
+3. **Apply the schema BEFORE the first deploy.** With the Supabase CLI:
    ```bash
    supabase link --project-ref <ref>
-   supabase db push          # applies supabase/migrations/*
+   supabase db push          # applies supabase/migrations/* in order
    ```
    Or paste each file in `supabase/migrations/` into the SQL editor in order.
+   Missing migrations are the usual cause of a build failing with
+   "`public.property_busy_ranges` is not found in the schema cache" — the
+   production build itself no longer needs the database, but the running site
+   does. After a manual apply, run `notify pgrst, 'reload schema';` (the last
+   migration does this automatically).
 4. The seed migration creates both properties with the UUIDs the app expects.
 5. Restart `npm run dev`. DEMO mode turns off automatically; availability, holds
    and reservations now persist in Postgres. Overlap prevention is enforced by a
    Postgres exclusion constraint + trigger, not just app code.
+6. Run the SQL availability test once against the linked DB:
+   ```bash
+   supabase db execute --file supabase/tests/property_busy_ranges.test.sql
+   ```
+   It runs in a transaction and rolls back; it must print
+   `ALL ASSERTIONS PASSED`.
 
 ## 2. Stripe (payments)
 

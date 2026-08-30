@@ -51,6 +51,19 @@ process → fresh in-memory store) and `--workers=1`:
 Deleting `.data/` under a running server does *not* reset it — the store lives in
 `globalThis.__pvStore`; restart the process.
 
+## L-007 — Never read live DB / call an RPC from a prerendered route
+**When:** 2026-08-31. `<AvailabilityNote>` was an async server component on the
+ISR-prerendered `/[property]` page; `next build` therefore called the
+`property_busy_ranges` RPC and failed hard when it wasn't deployed (and would
+have baked stale occupancy even when it was). **How to apply:** anything that
+reads current availability, holds, payments or any mutable DB state must be
+behind a `dynamic = "force-dynamic"` route handler or an auth-gated (already
+dynamic) page — never in a component that a static/`generateStaticParams` +
+`revalidate` route renders. Feed such widgets from a client `fetch` to a
+runtime API. Also: apply Supabase migrations before the first deploy —
+"function not found in schema cache" almost always means the migration set
+never ran. D-021, D-007.
+
 ## L-003 — Pricing/availability tests must pin `now`
 **When:** 2026-08-27. `buildQuote` rejects past check-in dates via `leadTimeDays`,
 so fixture dates silently became invalid as real "today" moved. All time-sensitive

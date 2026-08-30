@@ -21,10 +21,14 @@ const schema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_SITE_NAME: z.string().default("Praetoria Vacacional"),
 
-  // Supabase
+  // Supabase — both the legacy (JWT anon / service_role) and the new
+  // (sb_publishable_… / sb_secret_…) key names are accepted; whichever is set
+  // wins. The `@supabase/supabase-js` client treats them interchangeably.
   NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_SECRET_KEY: z.string().optional(),
 
   // Stripe
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -68,12 +72,29 @@ if (!parsed.success) {
 
 const raw = parsed.data;
 
+// Resolve the Supabase keys once, preferring the new sb_publishable_/sb_secret_
+// names and falling back to the legacy anon/service_role names.
+const supabaseUrl = isReal(raw.NEXT_PUBLIC_SUPABASE_URL) ? raw.NEXT_PUBLIC_SUPABASE_URL : undefined;
+const supabasePublishableKey = isReal(raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+  ? raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  : isReal(raw.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    ? raw.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    : undefined;
+const supabaseSecretKey = isReal(raw.SUPABASE_SECRET_KEY)
+  ? raw.SUPABASE_SECRET_KEY
+  : isReal(raw.SUPABASE_SERVICE_ROLE_KEY)
+    ? raw.SUPABASE_SERVICE_ROLE_KEY
+    : undefined;
+
 export const env = {
   ...raw,
-  supabaseConfigured:
-    isReal(raw.NEXT_PUBLIC_SUPABASE_URL) &&
-    isReal(raw.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
-    isReal(raw.SUPABASE_SERVICE_ROLE_KEY),
+  /** URL of the Supabase project (or undefined in DEMO mode). */
+  supabaseUrl,
+  /** Publishable / anon key — RLS-gated, safe on the client. */
+  supabasePublishableKey,
+  /** Secret / service-role key — bypasses RLS, server-only. */
+  supabaseSecretKey,
+  supabaseConfigured: !!supabaseUrl && !!supabasePublishableKey && !!supabaseSecretKey,
   stripeConfigured: isReal(raw.STRIPE_SECRET_KEY) && isReal(raw.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),

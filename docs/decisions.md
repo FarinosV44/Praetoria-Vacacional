@@ -368,3 +368,55 @@ merged `develop → main` only on the user's explicit instruction when the
   flow end to end (no manual steps) — passes. Merged `feat/60-admin-v2` →
   `develop` → `main` on the user's standing instruction ("when finish push to
   main").
+
+## D-021 — Supabase build failure: RPC deploy + availability out of the prerender path
+**Date:** 2026-08-31
+**Symptom:** `next build` failed — `public.property_busy_ranges` "is not found in
+the Supabase schema cache" during static prerendering of `/[property]` and
+`/en/[property]`.
+
+**Root cause (two independent faults):**
+1. **The RPC was never deployed.** `property_busy_ranges` / `is_stay_available`
+   are defined in `20260827091000_booking_rpc.sql`, but that migration set was
+   never applied to the production Supabase project (it ran in DEMO mode until
+   now). PostgREST's schema cache therefore has no such function.
+2. **Live availability was read during the build.** `<AvailabilityNote>` (the
+   issue-#49 "filling up" signal) was an async **server** component. On the
+   ISR-prerendered property page the build called
+   `getAvailabilityInsight → repo.getBusyRanges → rpc('property_busy_ranges')`,
+   so the production build depended on the current database state — wrong even
+   once the RPC exists (the signal would be baked up to 1 h stale).
+
+**Fix:**
+- **Migration `20260831120000_availability_rpc.sql`** (idempotent):
+  `create or replace` both read RPCs with `security definer` +
+  `set search_path = public, pg_temp`, explicit half-open `[check_in,
+  check_out)` semantics, consolidating occupying reservations (`pending` /
+  `confirmed`; `external` excluded — its iCal block holds the dates) and every
+  `availability_blocks` row (manual + imported iCal/Booking/Airbnb). `grant
+  execute` on the two PII-free read functions to `anon` / `authenticated` /
+  `service_role`; `revoke` the mutating RPCs from `public` (service role only);
+  `notify pgrst, 'reload schema'`.
+- **`<AvailabilityNote>` is now a client component** that fetches the new
+  `dynamic = 'force-dynamic'` route `/api/properties/[property]/availability-
+  insight` after hydration. The property page is fully static/ISR again with no
+  DB dependency; the note is progressive enhancement (hides itself on failure or
+  low occupancy — it is a soft signal, not the calendar).
+- **The calendar route stays strict:** `/api/properties/[property]/calendar`
+  and `getPropertyCalendar` still throw / 500 on RPC failure — never an empty
+  calendar (task point 9).
+- **New Supabase key names:** `env.ts` resolves `supabaseUrl` /
+  `supabasePublishableKey` / `supabaseSecretKey`, preferring
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_SECRET_KEY` and falling
+  back to the legacy `*_ANON_KEY` / `*_SERVICE_ROLE_KEY`. `supabaseAdmin()` /
+  `supabaseServer()` use the resolved values.
+- **Parity:** the DEMO repo's `busyRangesFor` and the SQL RPC now share one
+  contract via the pure `src/domains/booking/busy-ranges.ts`
+  (`consolidateBusyRanges`, `statusOccupies`).
+
+**Tests:** `src/domains/booking/busy-ranges.test.ts` (14 — adjacent bookings,
+same-day turnover, direct/manual/iCal blocks, external de-dup, cancelled/expired
+ignored, no phantom checkout day, `buildCalendar` over the consolidated ranges).
+`supabase/tests/property_busy_ranges.test.sql` (runnable transaction, rolls
+back). Verified: `next build` succeeds in DEMO **and** with Supabase configured
+against an unreachable DB — `/[property]` stays `● SSG`.

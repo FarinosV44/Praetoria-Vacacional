@@ -83,9 +83,25 @@ provide all of them.
 ## Database RPCs (Supabase)
 
 `create_reservation_hold`, `is_stay_available`, `property_busy_ranges`,
-`confirm_reservation`, `expire_stale_holds` — see `supabase/migrations/`.
-Overlap prevented by a GiST exclusion constraint per table + a cross-table
-trigger + per-property advisory lock in the hold RPC.
+`confirm_reservation`, `expire_stale_holds`, `redeem_coupon` — see
+`supabase/migrations/`. Overlap prevented by a GiST exclusion constraint per
+table + a cross-table trigger + per-property advisory lock in the hold RPC.
+
+`property_busy_ranges(p_property uuid, p_from date, p_to date) → table(start_date
+date, end_date date, kind text)` and `is_stay_available(p_property uuid,
+p_check_in date, p_check_out date) → boolean` are hardened in
+`20260831120000_availability_rpc.sql`: `security definer`, pinned `search_path`,
+half-open `[check_in, check_out)`, consolidate occupying reservations
+(`pending`/`confirmed`) + every `availability_blocks` row. `execute` granted to
+`anon`/`authenticated`/`service_role` (PII-free); the mutating RPCs are
+`service_role` only. The pure mirror used by the DEMO repo and the tests is
+`src/domains/booking/busy-ranges.ts`.
+
+### HTTP — availability (runtime only, never prerendered)
+| Route | Method | Notes |
+|---|---|---|
+| `/api/properties/[property]/calendar` | GET | `force-dynamic`. 500s on RPC failure, never an empty calendar. |
+| `/api/properties/[property]/availability-insight` | GET | `force-dynamic`. Feeds the client `<AvailabilityNote>`; 500s loudly, the note hides itself. |
 
 ## Intranet migrations (issue #56)
 
@@ -97,6 +113,7 @@ trigger + per-property advisory lock in the hold RPC.
 | `20260829130000_daily_rates.sql` | `daily_rates` (per-date price / min-stay override) |
 | `20260829140000_marketing.sql` | `segments`, `campaigns`, `campaign_recipients`, `marketing_unsubscribes` |
 | `20260830090000_channel_feeds.sql` | `channel_feeds` (property_id, channel) → url — the authoritative store for Booking/Airbnb iCal import URLs, decoupled from `calendar_syncs` telemetry (D-011). Backfills from `calendar_syncs.feed_url` |
+| `20260831120000_availability_rpc.sql` | Idempotent re-deploy + hardening of `property_busy_ranges` / `is_stay_available` (`security definer`, pinned `search_path`, grants); locks mutating RPCs to `service_role`; `notify pgrst, 'reload schema'` (D-021) |
 
 `ADMIN_ROLE` (`admin` \| `gestion` \| `lectura`, default `admin`) selects the
 single login's role.
