@@ -218,3 +218,36 @@ and `/valencia/<landing>` work; only `/valencia` and `/en/valencia` return a
 prerendered 404 — consistent with a build where the property route baked those
 paths as 404 under `dynamicParams = false`. Fixed structurally by the route
 change above; needs a fresh redeploy of `main` (clean `.next`) to take effect.
+
+## D-015 — Public availability calendar: timezone-safe cell dates (bugfix)
+**Date:** 2026-08-30
+`AvailabilityCalendar.tsx` built each cell date with
+`new Date(year, month, day).toISOString().slice(0,10)` — the Date is LOCAL
+midnight and `toISOString()` formats in UTC, so in Spain (UTC+1/+2) day 1 of a
+month came out as the **last day of the previous month**: the June grid started
+with "31" (May 31), July with "30" (June 30), etc.
+- New pure module `src/lib/calendar-cells.ts` (`monthCells`, `ymd`,
+  `firstWeekdayIndex`, `daysInMonth`) builds cells purely from strings / UTC.
+  7 unit tests, including a regression assert that every non-null cell is inside
+  the requested month.
+- `AvailabilityCalendar` uses it; `rangeClear` iterates by `YYYY-MM-DD` string
+  (`nextDay`) instead of local `Date.setDate`; "past" compares against a UTC
+  `todayStr()`. `AvailabilitySearch.todayPlus` switched to `setUTCDate`.
+- The admin calendar (`buildMonthGrid`) was already correct — it uses the
+  UTC-based helpers in `src/lib/dates.ts`.
+
+## D-016 — iCal import URL: env-var fallback so it survives redeploys
+**Date:** 2026-08-30
+Production runs in DEMO mode (no Supabase), so an admin-entered Booking/Airbnb
+import URL is written to `.data/demo.json` on the server disk — and a redeploy
+replaces that directory, wiping it (the owner had to re-enter it every deploy).
+- New `src/domains/integrations/feed-config.ts` → `envImportUrl(slug, channel)`
+  reads `ICAL_IMPORT_<SLUG>_<CHANNEL>` (e.g. `ICAL_IMPORT_VALENCIA_BOOKING`).
+  Env vars in the hosting panel survive every redeploy.
+- Resolution order everywhere (`sync.ts` import + `sync-status.ts` panel):
+  **admin-saved value (`channel_feeds` / `.data`) → env var → content-file
+  default**. Saving from `/admin/sincronizacion` still wins while a DB exists.
+- `/admin/sincronizacion` shows "(definido por variable de entorno — sobrevive a
+  los redespliegues)" and the DEMO banner now tells the owner to set the env var.
+- `.env.example` documents the four vars. 4 unit tests.
+- The real fix remains connecting Supabase; this is the durable floor until then.

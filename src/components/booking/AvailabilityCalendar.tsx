@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { SkeletonCalendar } from "@/components/ui/Skeleton";
+import { monthCells } from "@/lib/calendar-cells";
 
 type DayState = "free" | "busy" | "past" | "checkout-only";
 interface CalendarDay {
@@ -15,12 +16,15 @@ const MONTHS = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
 
-function iso(d: Date) {
-  return d.toISOString().slice(0, 10);
+/** Today's date as YYYY-MM-DD in UTC — matches the server's `todayIso()`. */
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
 }
-/** Monday = 0 */
-function mondayIndex(dow: number) {
-  return (dow + 6) % 7;
+/** Step a YYYY-MM-DD string by one day, timezone-free. */
+function nextDay(date: string) {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 }
 
 export interface RangeSelection {
@@ -73,17 +77,16 @@ export function AvailabilityCalendar({
   }, [monthOffset]);
 
   function stateOf(date: string): DayState {
-    return days.get(date) ?? (date < iso(new Date()) ? "past" : "free");
+    return days.get(date) ?? (date < todayStr() ? "past" : "free");
   }
 
   /** Is every night in [a,b) free? */
   function rangeClear(a: string, b: string): boolean {
-    const cur = new Date(a);
-    const end = new Date(b);
-    while (cur < end) {
-      const s = stateOf(iso(cur));
+    let cur = a;
+    while (cur < b) {
+      const s = stateOf(cur);
       if (s === "busy" || s === "past") return false;
-      cur.setDate(cur.getDate() + 1);
+      cur = nextDay(cur);
     }
     return true;
   }
@@ -114,11 +117,8 @@ export function AvailabilityCalendar({
     const d = new Date(base);
     d.setMonth(d.getMonth() + offset);
     const year = d.getFullYear();
-    const month = d.getMonth();
-    const firstDow = mondayIndex(new Date(year, month, 1).getDay());
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells: (string | null)[] = Array(firstDow).fill(null);
-    for (let day = 1; day <= daysInMonth; day++) cells.push(iso(new Date(year, month, day)));
+    const month = d.getMonth(); // 0-indexed
+    const cells = monthCells(year, month + 1);
 
     const previewEnd = value.checkIn && !value.checkOut && hover ? hover : value.checkOut;
 

@@ -50,6 +50,18 @@ iCal, checkout y JSON-LD de propiedad reverificados.
 limpia para que desaparezca el 404 de `/valencia`; luego revisar los dos
 borradores del blog y publicarlos/editarlos; cerrar el issue en GitHub.
 
+### Bugfixes 2026-08-30 (reportados en conversación, sin issue en GitHub) — en `main`
+
+- **Calendario público desfasado un día** (junio mostraba "31" de mayo como
+  primer día, etc.). Causa: `new Date(y,m,d).toISOString()` en zona horaria
+  UTC+ . Arreglado con `src/lib/calendar-cells.ts` (puro, 7 tests). D-015, L-006.
+- **La URL de importación iCal se perdía en cada redespliegue** (modo demo, sin
+  base de datos). Añadida variable de entorno de reserva
+  `ICAL_IMPORT_<ALOJAMIENTO>_<CANAL>` que sobrevive a los despliegues; orden
+  valor guardado → variable → fichero. D-016. **El propietario debe definir
+  `ICAL_IMPORT_VALENCIA_BOOKING` / `ICAL_IMPORT_JAVALAMBRE_BOOKING` en el panel
+  de Hostinger** (o configurar Supabase).
+
 ### #56 · Aviso legal completo + intranet de gestión (epic) — MERGED TO main
 
 All 12 sprints (56-A…56-L) complete on `develop` and merged to `main`.

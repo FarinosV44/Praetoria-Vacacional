@@ -3,6 +3,7 @@ import { addDays, todayIso } from "@/lib/dates";
 import { getRepository, type Repository } from "@/lib/repository";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
 import { generateIcs, parseIcs, type IcsExportEvent } from "./ical";
+import { envImportUrl } from "./feed-config";
 
 /**
  * Channel calendar sync (issue #9). Each property is independent: its import
@@ -57,12 +58,14 @@ export async function buildExportFeed(slug: string): Promise<string | null> {
  *  default. Throws are surfaced by the caller as an error report. */
 async function resolveImportUrl(
   repo: Repository,
+  slug: string,
   propertyId: string,
   channel: string,
   contentUrl: string,
 ): Promise<string> {
   const persisted = await repo.getImportFeedUrl(propertyId, channel);
-  return (persisted || contentUrl || "").trim();
+  // admin-saved value → env var (survives redeploys) → content-file default
+  return (persisted || envImportUrl(slug, channel) || contentUrl || "").trim();
 }
 
 export interface ImportReport {
@@ -100,7 +103,7 @@ async function importOne(slug: string): Promise<ImportReport[]> {
     // Admin-persisted URL (channel_feeds) wins over the content-file default.
     let url: string;
     try {
-      url = await resolveImportUrl(repo, property.id, feed.channel, contentUrl);
+      url = await resolveImportUrl(repo, property.slug, property.id, feed.channel, contentUrl);
     } catch (err) {
       const message = err instanceof Error ? err.message : "error desconocido";
       reports.push({

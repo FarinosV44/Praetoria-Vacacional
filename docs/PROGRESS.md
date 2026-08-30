@@ -152,6 +152,15 @@ Booking extranet). Now 142 unit + 83 chromium e2e.
 (`e2e/blog.spec.ts` + `/blog` en `accessibility.spec.ts`). Merged `develop → main`
 2026-08-30 por instrucción explícita del usuario.
 
+### Bugfixes (2026-08-30, post-#57) — merged to `main`
+
+| Fix | Detalle | Decisión |
+|-----|---------|----------|
+| Calendario público desfasado un día | `AvailabilityCalendar` construía la fecha de cada celda con `new Date(y,m,d).toISOString()` → en España (UTC+1/+2) el día 1 salía como el último del mes anterior (junio empezaba con "31" de mayo). Nuevo módulo puro `src/lib/calendar-cells.ts` (`monthCells`, 7 tests); `rangeClear` y el chequeo de "pasado" pasan a strings/UTC; `AvailabilitySearch.todayPlus` → `setUTCDate`. El calendario del admin ya estaba bien | D-015 · L-006 |
+| La URL de sincronización iCal se borra en cada redespliegue | En modo demo (sin Supabase) la URL vive en `.data/demo.json`, que el redespliegue reemplaza. Nueva variable de entorno de reserva `ICAL_IMPORT_<ALOJAMIENTO>_<CANAL>` (`feed-config.ts`, 4 tests); orden: valor guardado → variable de entorno → fichero de contenido. `/admin/sincronizacion` lo indica; `.env.example` documenta las 4 variables | D-016 |
+
+`tsc` + `lint` + `build` limpios · **172 unit** · **86 chromium e2e**.
+
 ## Exact position
 
 **Issue #57 (capacidad + blog/CMS) merged to `main`** (2026-08-30). Before it,

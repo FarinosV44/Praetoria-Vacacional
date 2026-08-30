@@ -26,16 +26,19 @@ export default async function AdminSyncPage() {
       <h1 className="font-display text-2xl">Sincronización de calendarios (iCal)</h1>
       <p className="text-sm text-[var(--color-ink-soft)]">
         Cada alojamiento importa las reservas de Booking.com y/o Airbnb por su feed iCal y exporta
-        las reservas directas por su propio feed. La URL de importación se guarda en la base de datos
-        (tabla <code>channel_feeds</code>), por <code>property_id</code>, y sobrevive a refrescos,
-        despliegues y reinicios del navegador.
+        las reservas directas por su propio feed. La URL de importación se resuelve en este orden:
+        valor guardado aquí (base de datos <code>channel_feeds</code>) → variable de entorno{" "}
+        <code>ICAL_IMPORT_&lt;ALOJAMIENTO&gt;_&lt;CANAL&gt;</code> → fichero de contenido.
       </p>
 
       {DEMO_MODE && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          <strong>Modo demostración (sin base de datos).</strong> Las URLs se guardan solo en un
-          fichero local del servidor; en un despliegue con sistema de archivos de solo lectura el
-          guardado fallará y se mostrará un error. Configura Supabase para producción.
+          <strong>Modo demostración (sin base de datos).</strong> Lo que guardes aquí se escribe solo
+          en un fichero local del servidor y <strong>se pierde en cada redespliegue</strong>. Para
+          que la URL sobreviva a los despliegues sin base de datos, defínela como variable de entorno
+          en el panel de hosting: <code>ICAL_IMPORT_VALENCIA_BOOKING</code>,{" "}
+          <code>ICAL_IMPORT_JAVALAMBRE_BOOKING</code> (y <code>…_AIRBNB</code> si procede). Lo ideal
+          es configurar Supabase.
         </div>
       )}
 
@@ -58,6 +61,11 @@ export default async function AdminSyncPage() {
                   <span className={`rounded-full px-2 py-0.5 text-xs ${badge.cls}`}>
                     {badge.label}
                   </span>
+                  {ch.fromEnv && (
+                    <span className="text-xs text-green-700">
+                      (definido por variable de entorno — sobrevive a los redespliegues)
+                    </span>
+                  )}
                   {ch.fromContentFileOnly && (
                     <span className="text-xs text-amber-700">
                       (definido en el fichero de contenido, no en la base de datos — guárdalo aquí)
