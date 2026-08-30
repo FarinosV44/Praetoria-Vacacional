@@ -184,6 +184,7 @@ function seed(): Store {
     { ...PRAETORIA10_COUPON, id: randomUUID() },
   ];
   return {
+    contentOverrides: seedBlogDrafts(),
     reservations: [],
     blocks,
     payments: [],
@@ -194,7 +195,6 @@ function seed(): Store {
     importFeeds: {},
     coupons,
     redemptions: [],
-    contentOverrides: {},
     customers: [],
     invoices: [],
     invoiceItems: [],
@@ -206,6 +206,72 @@ function seed(): Store {
     unsubscribes: [],
     auditLog: [],
   };
+}
+
+/**
+ * Two starter blog posts (issue #57), seeded as DRAFTS so nothing auto-publishes:
+ * the owner sees the CMS working and can edit/publish them. Real content only.
+ */
+function seedBlogDrafts(): Record<string, { value: unknown; updatedAt: string }> {
+  const now = new Date().toISOString();
+  const mk = (
+    slug: string,
+    title: string,
+    destination: string,
+    category: string,
+    tags: string[],
+    excerpt: string,
+    bodyMarkdown: string,
+  ) => ({
+    id: randomUUID(),
+    slug,
+    status: "draft",
+    title,
+    excerpt,
+    bodyMarkdown,
+    featuredImageUrl: null,
+    featuredImageAlt: "",
+    category,
+    tags,
+    destination,
+    relatedPropertySlug: null,
+    author: "Praetoria Vacacional",
+    seoTitle: null,
+    metaDescription: null,
+    canonicalUrl: null,
+    ogTitle: null,
+    ogDescription: null,
+    ogImageUrl: null,
+    publishedAt: null,
+    updatedContentAt: now,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const posts = [
+    mk(
+      "camarena-de-la-sierra-que-ver",
+      "Camarena de la Sierra: qué ver en el pueblo a los pies de Javalambre",
+      "javalambre",
+      "Sierra",
+      ["javalambre", "camarena de la sierra", "montaña"],
+      "El pueblo desde el que se sube a esquiar a Javalambre en diez minutos: su plaza, su entorno de sabinar y por qué es una buena base para una escapada de montaña.",
+      "## Un pueblo de montaña a diez minutos de las pistas\n\nCamarena de la Sierra está en el macizo de Javalambre, en el sur de la provincia de Teruel. Desde el pueblo se llega a la estación de esquí de Javalambre en unos diez minutos en coche, así que sirve como base tranquila para pasar unos días de nieve sin alojarse en la propia estación.\n\n## Qué se puede hacer\n\n- Pasear por el casco del pueblo y su entorno de sabinar, uno de los bosques de sabina más extensos de Europa.\n- Subir al observatorio astrofísico de Javalambre y disfrutar de uno de los cielos más oscuros de la península.\n- Rutas de senderismo y BTT en primavera y verano.\n\n## Dónde alojarse\n\nNuestro apartamento en Camarena de la Sierra tiene dos dormitorios, chimenea de pellets y plaza de parking en el mismo edificio, para hasta seis personas.",
+    ),
+    mk(
+      "arroces-cerca-de-la-playa-de-la-llastra",
+      "Dónde comer arroz cerca de la playa de la Llastra",
+      "valencia",
+      "Gastronomía",
+      ["valencia", "arroz", "gastronomía", "el perelló"],
+      "Entre El Perelló, Les Palmeres y Sueca hay una buena concentración de restaurantes de arroz. Una guía breve para acertar cerca del apartamento.",
+      "## Zona de arrocerías\n\nEl tramo de costa entre Les Palmeres y El Perelló, en el municipio de Sueca, está en pleno territorio del arroz: la Albufera queda a unos ocho kilómetros y los arrozales llegan casi hasta la playa.\n\n## Qué pedir\n\n- **Arròs a banda** y **arroz del senyoret**, clásicos de la costa.\n- **Paella valenciana** con pollo, conejo y verdura de temporada.\n- En El Palmar, dentro del parque natural, **all i pebre** de anguila.\n\n## A tener en cuenta\n\nLa mayoría de arrocerías sirven el arroz solo a mediodía y conviene reservar los fines de semana. Desde el apartamento, a pie de la playa de la Llastra, El Perelló queda a un paso.",
+    ),
+  ];
+
+  const out: Record<string, { value: unknown; updatedAt: string }> = {};
+  for (const p of posts) out[`blog:post:${p.id}`] = { value: p, updatedAt: now };
+  return out;
 }
 
 /** Under vitest the store is memory-only — tests never touch `.data/demo.json`. */

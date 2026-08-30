@@ -14,6 +14,7 @@ export function SiteHeader() {
       icon: p.experience === "ski" ? "❄" : "☀",
     })),
     { href: "/guias", label: "Guías", icon: "🧭" },
+    { href: "/blog", label: "Blog", icon: "📰" },
     { href: "/contacto", label: "Contacto", icon: "✉" },
   ];
 
@@ -47,6 +48,12 @@ export function SiteHeader() {
             className="rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] hover:text-[var(--accent-700)]"
           >
             Guías
+          </Link>
+          <Link
+            href="/blog"
+            className="rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] hover:text-[var(--accent-700)]"
+          >
+            Blog
           </Link>
         </nav>
 

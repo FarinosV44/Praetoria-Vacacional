@@ -151,3 +151,67 @@
     animation: booking-target-fade 2s ease-out 0.4s forwards;
   }
 }
+
+/*
+ * Blog article body (issue #57). The Markdown renderer emits a closed tag set
+ * (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr); style it here so
+ * the article reads well without a typography plugin.
+ */
+.blog-prose {
+  color: var(--color-ink);
+  line-height: 1.75;
+}
+.blog-prose > * + * {
+  margin-top: 1.15em;
+}
+.blog-prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin-top: 2em;
+}
+.blog-prose h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-top: 1.6em;
+}
+.blog-prose h4 {
+  font-weight: 600;
+  margin-top: 1.4em;
+}
+.blog-prose a {
+  color: var(--accent-700);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-prose ul,
+.blog-prose ol {
+  padding-left: 1.4em;
+}
+.blog-prose ul {
+  list-style: disc;
+}
+.blog-prose ol {
+  list-style: decimal;
+}
+.blog-prose li + li {
+  margin-top: 0.4em;
+}
+.blog-prose blockquote {
+  border-left: 3px solid var(--accent-500);
+  padding-left: 1em;
+  color: var(--color-ink-soft);
+  font-style: italic;
+}
+.blog-prose code {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 0.35em;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+.blog-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  margin-block: 2em;
+}

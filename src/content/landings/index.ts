@@ -195,7 +195,7 @@ export const landings: Landing[] = [
       {
         heading: "El apartamento",
         body: [
-          "Para hasta 4 personas, con zona privada de playa, terraza, recepción 24 horas y parking gratuito. Muy valorado por parejas y familias que buscan desconectar.",
+          "Para hasta 6 personas, con zona privada de playa, terraza, recepción 24 horas y parking gratuito. Muy valorado por parejas y familias que buscan desconectar.",
         ],
       },
       {
@@ -213,7 +213,8 @@ export const landings: Landing[] = [
       },
       {
         question: "¿Cuántas personas caben?",
-        answer: "Hasta 4 personas en 3 dormitorios: 1 cama doble extragrande y 2 literas.",
+        answer:
+          "Hasta 6 personas en 3 dormitorios: uno con cama doble extragrande y dos con literas.",
       },
     ],
     published: true,

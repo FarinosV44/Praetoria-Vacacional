@@ -11,6 +11,8 @@ import { localizedPath, type Locale } from "@/i18n/config";
 import type { PropertyContent, Review } from "@/domains/properties/types";
 import { heroPhoto, propertyPhotos } from "@/content/properties/photos";
 import { guideHubs } from "@/content/guides/hubs";
+import { listPublicPosts } from "@/domains/blog/store";
+import { autoExcerpt } from "@/domains/blog/helpers";
 import {
   directBookingAdvantages,
   directBookingAdvantagesEn,
@@ -89,6 +91,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
   const skiHero = heroPhoto("javalambre");
   const seaHero = heroPhoto("valencia");
+  const recentPosts = locale === "es" ? (await listPublicPosts()).slice(0, 3) : [];
 
   // A short, real review from each property for the social-proof strip.
   const reviewStrip: { property: PropertyContent; review: Review }[] = [];
@@ -320,6 +323,50 @@ export async function HomeView({ locale }: { locale: Locale }) {
                   <span className="mt-3 inline-block text-sm font-medium text-[var(--accent-700)]">
                     Abrir la guía →
                   </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 7b · Actualidad — latest blog posts (issue #57) */}
+      {recentPosts.length > 0 && (
+        <section className="reveal border-t border-[var(--color-line)] bg-white py-16">
+          <div className="container-page">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="eyebrow">Actualidad</p>
+                <h2 className="mt-2 font-display text-3xl sm:text-4xl">Del blog</h2>
+              </div>
+              <Link href="/blog" className="text-sm font-medium text-[var(--accent-700)] hover:underline">
+                Ver todo el blog →
+              </Link>
+            </div>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {recentPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/blog/${post.slug}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] transition hover:border-[var(--accent-500)]"
+                >
+                  {post.featuredImageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={post.featuredImageUrl}
+                      alt={post.featuredImageAlt || post.title}
+                      loading="lazy"
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  )}
+                  <div className="flex flex-1 flex-col p-5">
+                    <p className="font-display text-lg group-hover:text-[var(--accent-700)]">
+                      {post.title}
+                    </p>
+                    <p className="mt-2 flex-1 text-sm text-[var(--color-ink-soft)]">
+                      {autoExcerpt(post, 120)}
+                    </p>
+                  </div>
                 </Link>
               ))}
             </div>

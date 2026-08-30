@@ -43,7 +43,7 @@ export const valencia: PropertyContent = {
     },
     {
       title: "75 m², tres dormitorios, cocina completa y parking gratis",
-      body: "Salón-comedor, cocina totalmente equipada y tres dormitorios para hasta 4 personas. Plaza de aparcamiento gratuita, sin depender de la calle en verano. Ropa de cama y toallas incluidas.",
+      body: "Salón-comedor, cocina totalmente equipada y tres dormitorios para hasta 6 personas. Plaza de aparcamiento gratuita, sin depender de la calle en verano. Ropa de cama y toallas incluidas.",
     },
     {
       title: "La Albufera, El Perelló, Cullera y Valencia muy cerca",
@@ -68,11 +68,11 @@ export const valencia: PropertyContent = {
   },
 
   capacity: {
-    guests: 4,
+    guests: 6,
     bedrooms: 3,
     beds: 3,
     bathrooms: 1,
-    bedConfig: "1 cama doble extragrande · 2 literas",
+    bedConfig: "1 dormitorio con cama doble extragrande · 2 dormitorios con literas",
     sizeSqm: 75,
   },
 
@@ -179,7 +179,7 @@ export const valencia: PropertyContent = {
     {
       question: "¿Cuántas personas caben?",
       answer:
-        "Hasta 4 personas en 3 dormitorios: 1 cama doble extragrande y 2 literas. El apartamento tiene 75 m² y 1 baño.",
+        "Hasta 6 personas en 3 dormitorios: uno con cama doble extragrande y dos con literas. El apartamento tiene 75 m² y 1 baño.",
     },
     {
       question: "¿Hay parking?",
@@ -333,7 +333,7 @@ export const valencia: PropertyContent = {
       },
       {
         title: "75 m², three bedrooms, full kitchen and free parking",
-        body: "A living-dining room, a fully equipped kitchen and three bedrooms for up to 4 people. A free parking space — no relying on the street in summer. Linen and towels included.",
+        body: "A living-dining room, a fully equipped kitchen and three bedrooms for up to 6 people. A free parking space — no relying on the street in summer. Linen and towels included.",
       },
       {
         title: "The Albufera, El Perelló, Cullera and Valencia all close",

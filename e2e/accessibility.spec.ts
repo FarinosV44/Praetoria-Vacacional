@@ -13,6 +13,7 @@ const pages = [
   { name: "landing", path: "/valencia/apartamento-playa-valencia" },
   { name: "guide-hub", path: "/guias/valencia-playa" },
   { name: "guide", path: "/guias/valencia-playa/que-hacer-junto-al-mar-en-valencia" },
+  { name: "blog", path: "/blog" },
   { name: "legal", path: "/legal/condiciones-reserva" },
   { name: "checkout", path: "/reservar/javalambre?checkIn=2027-01-10&checkOut=2027-01-14&guests=2" },
 ];

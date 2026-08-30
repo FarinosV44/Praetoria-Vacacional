@@ -100,3 +100,22 @@ trigger + per-property advisory lock in the hold RPC.
 
 `ADMIN_ROLE` (`admin` \| `gestion` \| `lectura`, default `admin`) selects the
 single login's role.
+
+## Blog / Actualidad (issue #57)
+
+No migration — posts are `blog:post:<id>` documents in `content_overrides`.
+
+| Module | Exports |
+|---|---|
+| `src/domains/blog/types.ts` | `BlogPost`, `BlogPostInput`, `BlogStatus`, `BlogDestination`, `BLOG_DESTINATIONS` |
+| `src/domains/blog/markdown.ts` | `renderMarkdown`, `markdownToText`, `escapeHtml`, `safeHref` (pure, 10 tests) |
+| `src/domains/blog/helpers.ts` | `slugify`, `isPubliclyVisible`, `isScheduled`, `relatedPropertySlug`, `ctaForPost`, `readingMinutes`, `autoExcerpt`, `relatedPosts`, `sortByPublished` (pure, 9 tests) |
+| `src/domains/blog/store.ts` | `listAllPosts`, `getPostById`, `getPostBySlug`, `slugTaken`, `savePost`, `deletePost`, `listPublicPosts`, `getPublicPostBySlug` |
+| `src/domains/blog/actions.ts` | `saveBlogPostAction`, `deleteBlogPostAction` (`"use server"`, `content.write`) |
+| `src/lib/seo.ts` | `articleJsonLd(...)` |
+
+New capability `content.write` (roles `admin`, `gestion`). Public routes:
+`/blog` (ISR 1h), `/blog/[slug]` (`dynamicParams`, SSG from published posts).
+`/[property]` and `/en/[property]` moved to `dynamicParams = true` (issue #57):
+known slugs still prerender, a valid slug missing from a build renders on demand
+instead of a permanent 404.

@@ -19,6 +19,7 @@ const nav = [
   { href: "/admin/pagos", label: "Pagos y emails" },
   { href: "/admin/promociones", label: "Promociones" },
   { href: "/admin/contenido", label: "Contenido" },
+  { href: "/admin/blog", label: "Blog" },
   { href: "/admin/calendario", label: "Calendario y precios" },
   { href: "/admin/precios", label: "Tarifa base y reglas" },
   { href: "/admin/sincronizacion", label: "Sincronización" },

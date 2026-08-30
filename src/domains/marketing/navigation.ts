@@ -4,6 +4,7 @@ import { hubForPropertySlug } from "@/content/guides";
 import { resolvePublishedGuides } from "@/content/guides/overrides";
 import { guideHubs } from "@/content/guides/hubs";
 import { publishedSeasonalPages } from "@/content/seasonal";
+import { listPublicPosts } from "@/domains/blog/store";
 
 /**
  * The single source of truth for indexable URLs (issues #14, #28, #32).
@@ -15,13 +16,14 @@ export interface SiteRoute {
   path: string;
   changefreq: "daily" | "weekly" | "monthly";
   priority: number;
-  section: "home" | "destino" | "propiedad" | "landing" | "guia" | "info" | "legal";
+  section: "home" | "destino" | "propiedad" | "landing" | "guia" | "blog" | "info" | "legal";
 }
 
 const staticInfoRoutes: SiteRoute[] = [
   { path: "/", changefreq: "weekly", priority: 1, section: "home" },
   { path: "/ventajas-reserva-directa", changefreq: "monthly", priority: 0.6, section: "info" },
   { path: "/guias", changefreq: "weekly", priority: 0.5, section: "guia" },
+  { path: "/blog", changefreq: "weekly", priority: 0.5, section: "blog" },
   { path: "/contacto", changefreq: "monthly", priority: 0.4, section: "info" },
 ];
 
@@ -83,6 +85,15 @@ export async function getIndexableRoutes(): Promise<SiteRoute[]> {
       changefreq: "monthly",
       priority: 0.55,
       section: "landing",
+    });
+  }
+
+  for (const post of await listPublicPosts()) {
+    routes.push({
+      path: `/blog/${post.slug}`,
+      changefreq: "monthly",
+      priority: 0.5,
+      section: "blog",
     });
   }
 

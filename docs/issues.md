@@ -4,11 +4,51 @@ Living log of GitHub issues accessed or worked. Records the inventory, how each
 resolved issue was fixed (diagnosis, resolution, commits, verification), and what
 remains pending. Keel never closes an issue from code reading — comments only.
 
-Last sweep: 2026-08-29
+Last sweep: 2026-08-30
 
 ---
 
 ## Resolved (awaiting owner close)
+
+### #57 · Capacidad a 6 plazas + blog/CMS SEO desde `/admin` — MERGED TO main
+
+**Diagnosis + resolution:**
+- **Capacidad (Valencia Frente al Mar):** el contenido decía 4 huéspedes / 3
+  dormitorios / "1 cama doble · 2 literas". El issue pedía 6 plazas manteniendo
+  2 habitaciones; preguntado, el propietario aclaró que **son 3 habitaciones**
+  (una con cama doble, dos con literas). Aplicado: `guests` 4 → 6, `bedrooms`
+  se queda en 3, `bedConfig` reescrito, y toda la copia ES+EN ("hasta 4
+  personas" / "up to 4 people") corregida a 6 en `valencia.ts` y
+  `landings/index.ts`. JSON-LD, tabla de datos y `BookingWidget` derivan de
+  `capacity.*` → se corrigen solos. Javalambre ya estaba a 6 / 2. D-013.
+- **Blog/CMS:** nuevo módulo `src/domains/blog/*` (types, schema zod, renderer
+  Markdown propio y seguro, helpers, store sobre `content_overrides`, acciones
+  server). Admin en `/admin/blog` (lista + `/nuevo` + `/[id]`) con crear /
+  editar / borrador / publicar / programar / eliminar y todos los campos del
+  issue (slug, extracto, contenido, imagen destacada + ALT, categoría,
+  etiquetas, destino, alojamiento para el CTA, autor, fechas, bloque SEO/OG).
+  Capacidad nueva `content.write` (admin + gestión). Público: `/blog` +
+  `/blog/[slug]` (SSG desde publicados, ISR 1h), `Article` + `BreadcrumbList`
+  JSON-LD, breadcrumbs, canonical, sitemap automático, CTA contextual a la
+  ficha, bloque "sigue leyendo", 3 últimos en la home. `Blog` en header + menú
+  móvil + footer. Sin canibalización con `/guias` (hub evergreen vs. actualidad
+  fechada). D-014.
+- **404 de `/valencia` en producción:** reproducido solo en el sitio desplegado
+  (Hostinger), no en un build limpio de `main`. `/[property]` y `/en/[property]`
+  pasan a `dynamicParams = true`: los slugs conocidos se siguen pre-generando y
+  uno válido que un build omita se renderiza bajo demanda en vez de quedar como
+  404 permanente. **Requiere un redespliegue limpio de `main`.**
+
+**Verificación:** `tsc` + `next lint` + `next build` limpios · 161 unit
+(19 nuevos: `blog/markdown.test.ts`, `blog/helpers.test.ts`) · 86 chromium e2e
+(4 nuevos en `e2e/blog.spec.ts` — índice indexable, slug desconocido 404, panel
+privado, y el ciclo admin completo crear→publicar→público 200→despublicar→404→
+borrar; `/blog` añadido a `e2e/accessibility.spec.ts`, 0 serias). Los feeds
+iCal, checkout y JSON-LD de propiedad reverificados.
+
+**Post-merge (owner):** redesplegar `main` en Hostinger con caché de build
+limpia para que desaparezca el 404 de `/valencia`; luego revisar los dos
+borradores del blog y publicarlos/editarlos; cerrar el issue en GitHub.
 
 ### #56 · Aviso legal completo + intranet de gestión (epic) — MERGED TO main
 
