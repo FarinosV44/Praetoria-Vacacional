@@ -56,6 +56,14 @@ test.describe("admin V2 shell", () => {
     await expect(page).toHaveURL(/\/admin\/precios$/);
   });
 
+  test("dashboard V2 shows the operative widgets", async ({ page }) => {
+    await login(page);
+    await page.goto("/admin");
+    for (const w of ["Alojados ahora", "Entradas (7 días)", "Salidas (7 días)", "Huecos difíciles de vender", "Ocupación 30 / 60 / 90"]) {
+      await expect(page.getByText(w, { exact: true }).first()).toBeVisible();
+    }
+  });
+
   test("the Alojamientos hub shows both properties with operational shortcuts", async ({ page }) => {
     await login(page);
     await page.goto("/admin/alojamientos");
