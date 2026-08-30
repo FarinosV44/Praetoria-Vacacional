@@ -32,6 +32,8 @@ const WIDGET_STR = {
     discount: "Descuento",
     reserve: "Reservar",
     noCharge: "No se cobra nada hasta el último paso. Precio total, sin comisiones ocultas.",
+    nearbyDates: "Fechas cercanas libres",
+    chooseDates: "Elegir",
   },
   en: {
     heading: "Check your dates",
@@ -54,12 +56,28 @@ const WIDGET_STR = {
     discount: "Discount",
     reserve: "Book",
     noCharge: "Nothing is charged until the last step. Full price, no hidden fees.",
+    nearbyDates: "Nearby free dates",
+    chooseDates: "Choose",
   },
 } as const;
+
+function fmtShort(iso: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(`${iso}T00:00:00Z`));
+}
 
 interface QuoteResponse {
   available: boolean;
   reason: string | null;
+  alternatives?: {
+    checkIn: string;
+    checkOut: string;
+    nights: number;
+    kind: "shift-earlier" | "shift-later" | "weekend";
+    totalCents: number;
+  }[];
   quote: {
     nights: number;
     minNights: number;
@@ -194,10 +212,41 @@ export function BookingWidget({
         {loading && <p className="text-[var(--color-ink-soft)]">{s.checking}</p>}
         {error && !loading && <p className="text-red-600">{error}</p>}
         {!loading && !error && data && !data.available && (
-          <p className="text-[var(--color-ink-soft)]">
-            {data.reason ?? s.notAvailable}
-            {q && q.minNights > q.nights ? s.minStay(q.minNights) : ""}
-          </p>
+          <div>
+            <p className="text-[var(--color-ink-soft)]">
+              {data.reason ?? s.notAvailable}
+              {q && q.minNights > q.nights ? s.minStay(q.minNights) : ""}
+            </p>
+            {data.alternatives && data.alternatives.length > 0 && (
+              <div className="mt-3 border-t border-[var(--color-line)] pt-3">
+                <p className="text-xs font-medium text-[var(--color-ink-soft)]">{s.nearbyDates}</p>
+                <ul className="mt-2 space-y-1.5">
+                  {data.alternatives.map((a) => (
+                    <li key={`${a.checkIn}-${a.checkOut}`} className="flex items-center justify-between gap-2">
+                      <span className="text-sm">
+                        <span className="font-medium">
+                          {fmtShort(a.checkIn, locale)} – {fmtShort(a.checkOut, locale)}
+                        </span>
+                        <span className="ml-1.5 text-xs text-[var(--color-ink-soft)]">
+                          {formatMoney(a.totalCents)}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRange({ checkIn: a.checkIn, checkOut: a.checkOut });
+                          track("select_alternative_dates", { property_slug: propertySlug, kind: a.kind });
+                        }}
+                        className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+                      >
+                        {s.chooseDates}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
         {!loading && !error && data?.available && q && (
           <dl className="space-y-1">
