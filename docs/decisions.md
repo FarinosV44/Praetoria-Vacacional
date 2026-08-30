@@ -251,3 +251,27 @@ replaces that directory, wiping it (the owner had to re-enter it every deploy).
   los redespliegues)" and the DEMO banner now tells the owner to set the env var.
 - `.env.example` documents the four vars. 4 unit tests.
 - The real fix remains connecting Supabase; this is the durable floor until then.
+
+## D-017 — Issue #59: public calendar honours the half-open stay model
+**Date:** 2026-08-30
+The booking engine, the pricing engine's min-nights (`nights = nightsBetween`),
+the iCal parser (DTEND exclusive) and the Postgres exclusion constraints
+(`daterange(..., '[)')`) were ALL already correct half-open `[check-in,
+check-out)`. The bug reported in #59 lived only in the public
+`AvailabilityCalendar` component: it disabled every `busy` day, so a day that is
+`busy` only because another guest ARRIVES then (its previous night free) could
+not be picked as a check-out.
+- New pure module `src/domains/booking/calendar-select.ts` (`isDaySelectable`,
+  `applyDayClick`, `dayRole`, `nightsClear`, `stayNights`) — 15 unit tests
+  covering the 8 mandatory cases from the issue. The check-out day's own state
+  is irrelevant; only the nights strictly between check-in and check-out must be
+  free.
+- `AvailabilityCalendar` rewritten onto that module. A departure-only day
+  (`data-role="exit-only"`) stays clickable and is drawn with a diagonal
+  half-fill + explicit `aria-label` ("disponible solo como fecha de salida");
+  a legend explains libre / solo salida / no disponible. Min-stay is shown by
+  real nights and turns red when the selected range is below `minNightsHint`.
+- `e2e/calendar-checkout.spec.ts`: seeds a hold, then verifies its arrival day
+  is `exit-only`, enabled, and completes a 3-night range as the check-out.
+- Fixed a latent `tsc` error in `e2e/home-faq-spacing.spec.ts` (pre-existing,
+  non-null assertion on `rows[rows.length - 1]`).

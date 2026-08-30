@@ -8,6 +8,35 @@ Last sweep: 2026-08-30
 
 ---
 
+## In progress (on `develop`, not yet on `main`)
+
+### #58 · Limpieza opcional y configurable — _pending_
+### #59 · Calendario: checkout en día ocupado + estancia mínima por noches — ✅ code on `develop`
+
+**Diagnosis:** the half-open `[check-in, check-out)` model was already correct in
+the booking engine, the pricing min-nights check, the iCal parser and the
+Postgres exclusion constraints. The only defect was the public
+`AvailabilityCalendar` UI: it disabled every `busy` day, so a day occupied purely
+by another guest's arrival (previous night free) could not be chosen as a
+check-out — the exact 21→24 scenario from the issue.
+
+**Resolution:** new pure `src/domains/booking/calendar-select.ts`
+(`isDaySelectable` / `applyDayClick` / `dayRole` / `nightsClear` / `stayNights`,
+15 unit tests covering all 8 mandatory cases). `AvailabilityCalendar` rebuilt on
+it: departure-only days stay selectable, drawn as a diagonal half-cell with an
+explicit aria-label + a 3-state legend; min-stay shown by real nights and flagged
+red below the minimum. `e2e/calendar-checkout.spec.ts` seeds a hold and verifies
+its arrival day is `exit-only`, enabled and completes a 3-night range. D-017.
+Also fixed a latent pre-existing `tsc` error in `e2e/home-faq-spacing.spec.ts`.
+
+**Verification:** `tsc` + `next lint` + `next build` clean · 187 unit · e2e sweep
+(calendar-checkout, booking-flow, property-cta, coupons, accessibility, mobile) —
+60 green.
+
+**Post-merge (owner):** redeploy `main` (nothing else — no migration).
+
+---
+
 ## Resolved (awaiting owner close)
 
 ### #57 · Capacidad a 6 plazas + blog/CMS SEO desde `/admin` — MERGED TO main

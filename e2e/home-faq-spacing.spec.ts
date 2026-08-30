@@ -11,7 +11,7 @@ async function faqToFooterGap(page: import("@playwright/test").Page) {
   return page.evaluate(() => {
     const faq = document.querySelector("#faq-heading")!.closest("section")!;
     const rows = faq.querySelectorAll("details");
-    const lastRow = rows[rows.length - 1].getBoundingClientRect();
+    const lastRow = rows[rows.length - 1]!.getBoundingClientRect();
     const footer = document.querySelector("footer")!.getBoundingClientRect();
     return {
       gap: Math.round(footer.top - lastRow.bottom),
