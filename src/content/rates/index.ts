@@ -17,7 +17,12 @@ export const javalambreRates: RateConfig = {
   weekendNightlyCents: 11000, // 110 €
   minNights: 2,
   maxNights: 21,
-  cleaningFeeCents: 4500, // 45 €
+  cleaningFeeCents: 0, // legacy — see `fees`
+  // Optional per-stay charges (issue #58). Disabled by default: the guest sees
+  // no cleaning line until the owner turns it on from Admin → Precios y cargos.
+  fees: [
+    { key: "cleaning", label: "Limpieza", enabled: false, amountCents: 4500 },
+  ],
   includedGuests: 4,
   extraGuestNightlyCents: 1200, // 12 €/guest/night above 4
   maxGuests: 6,
@@ -63,10 +68,13 @@ export const valenciaRates: RateConfig = {
   weekendNightlyCents: 10000,
   minNights: 2,
   maxNights: 28,
-  cleaningFeeCents: 5000,
+  cleaningFeeCents: 0, // legacy — see `fees`
+  fees: [
+    { key: "cleaning", label: "Limpieza", enabled: false, amountCents: 5000 },
+  ],
   includedGuests: 2,
   extraGuestNightlyCents: 1500,
-  maxGuests: 4,
+  maxGuests: 6,
   seasons: [
     {
       key: "summer-beach",

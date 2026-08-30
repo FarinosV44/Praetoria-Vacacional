@@ -161,6 +161,17 @@ Booking extranet). Now 142 unit + 83 chromium e2e.
 
 `tsc` + `lint` + `build` limpios · **172 unit** · **86 chromium e2e**.
 
+### V6 batch — issues #58, #59, #60
+
+| Issue | Scope | Status |
+|-------|-------|--------|
+| #59 · Calendario checkout | The half-open `[check-in, check-out)` model was already correct in the engine, pricing min-nights, iCal parser and Postgres exclusion constraints. Only the public `AvailabilityCalendar` was wrong: it disabled every `busy` day, blocking a check-out on a day another guest arrives (the 21→24 case). New pure `src/domains/booking/calendar-select.ts` (15 tests, all 8 mandatory cases); calendar rebuilt on it — departure-only days stay clickable, drawn as a diagonal half-cell + `data-role="exit-only"` + legend; min-stay by real nights, red below the minimum. `e2e/calendar-checkout.spec.ts`. D-017 | ✅ on `develop` |
+| #58 · Limpieza opcional | `RateConfig.cleaningFeeCents` → configurable `fees: StayFee[]` (enabled/amount/description/taxable). Pure `fees.ts` (24 tests w/ engine). Default OFF both properties; owner toggles from Admin → Precios y reglas → "Cargos opcionales", no redeploy. Legacy fallback preserved. `Quote.cleaningFeeCents` → `fees`/`feesCents` (no 0 € line possible). Stripe/invoice already bill the exact total. Valencia `maxGuests` 4→6 (D-019). D-018. `e2e/cleaning-fee.spec.ts` | ✅ on `develop` |
+| #60 · Admin Panel V2 | Premium redesign epic — pragmatic in-code build (no design handoff, per user). Not started. | ⬜ |
+
+**#58 + #59:** `tsc` + `next lint` + `next build` clean · **199 unit** · **full
+chromium e2e 89 green**. Ready for `main` (no migration; owner redeploys).
+
 ## Exact position
 
 **Issue #57 (capacidad + blog/CMS) merged to `main`** (2026-08-30). Before it,

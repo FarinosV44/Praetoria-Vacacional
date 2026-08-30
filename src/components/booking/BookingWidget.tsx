@@ -8,6 +8,7 @@ import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { AvailabilityCalendar, type RangeSelection } from "./AvailabilityCalendar";
 import { CouponField, type CouponState } from "./CouponField";
+import { feeLabel } from "@/domains/pricing/fees";
 
 const WIDGET_STR = {
   es: {
@@ -63,7 +64,7 @@ interface QuoteResponse {
     nights: number;
     minNights: number;
     nightlySubtotalCents: number;
-    cleaningFeeCents: number;
+    fees: { key: string; label: string; amountCents: number; description?: string }[];
     extraGuestFeeCents: number;
     taxCents: number;
     totalCents: number;
@@ -210,7 +211,9 @@ export function BookingWidget({
             {q.extraGuestFeeCents > 0 && (
               <Row label={s.extraGuests} value={formatMoney(q.extraGuestFeeCents)} />
             )}
-            <Row label={s.cleaning} value={formatMoney(q.cleaningFeeCents)} />
+            {q.fees.map((f) => (
+              <Row key={f.key} label={feeLabel(f, locale)} value={formatMoney(f.amountCents)} />
+            ))}
             {q.taxCents > 0 && <Row label={s.taxes} value={formatMoney(q.taxCents)} />}
             {q.coupon?.applied && (
               <Row

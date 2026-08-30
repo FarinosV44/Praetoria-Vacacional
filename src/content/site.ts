@@ -9,7 +9,7 @@ export const directBookingAdvantages: { title: string; body: string; icon: strin
   },
   {
     title: "Precio total desde el principio",
-    body: "Ves el importe final con la limpieza incluida antes de pagar. Sin sorpresas al final.",
+    body: "Ves el importe final, con todos los cargos desglosados, antes de pagar. Sin sorpresas al final.",
     icon: "receipt",
   },
   {
@@ -38,7 +38,7 @@ export const directBookingAdvantagesEn: { title: string; body: string }[] = [
   },
   {
     title: "The full price up front",
-    body: "You see the final amount, cleaning included, before you pay. No surprises at the end.",
+    body: "You see the final amount, every charge itemised, before you pay. No surprises at the end.",
   },
   {
     title: "Instant confirmation, dates blocked",

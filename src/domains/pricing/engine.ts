@@ -15,6 +15,7 @@ import type {
   RateConfig,
   Season,
 } from "./types";
+import { feesTotalCents, quoteFees, taxableFeesCents } from "./fees";
 
 /**
  * Server-side price engine (issue #8).
@@ -131,10 +132,17 @@ export function buildQuote(config: RateConfig, req: QuoteRequest, now: IsoDate =
   const extraGuests = Math.max(0, Math.min(req.guests, config.maxGuests) - config.includedGuests);
   const extraGuestFeeCents = extraGuests * config.extraGuestNightlyCents * nights;
 
-  const taxableBase = nightlySubtotalCents - losDiscountCents + extraGuestFeeCents;
-  const taxCents = config.taxPercent > 0 ? roundCents((taxableBase * config.taxPercent) / 100) : 0;
+  // Optional per-stay charges (issue #58) — only the enabled, non-zero ones.
+  const fees = quoteFees(config);
+  const feesCents = feesTotalCents(config);
 
-  const totalCents = taxableBase + config.cleaningFeeCents + taxCents;
+  const taxableBase = nightlySubtotalCents - losDiscountCents + extraGuestFeeCents;
+  const taxCents =
+    config.taxPercent > 0
+      ? roundCents(((taxableBase + taxableFeesCents(config)) * config.taxPercent) / 100)
+      : 0;
+
+  const totalCents = taxableBase + feesCents + taxCents;
 
   return {
     propertySlug: config.propertySlug,
@@ -147,7 +155,8 @@ export function buildQuote(config: RateConfig, req: QuoteRequest, now: IsoDate =
     nightlySubtotalCents,
     lengthOfStayDiscount,
     extraGuestFeeCents,
-    cleaningFeeCents: config.cleaningFeeCents,
+    fees,
+    feesCents,
     taxCents,
     totalCents: rangeValid ? totalCents : 0,
     minNights,

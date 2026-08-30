@@ -8,12 +8,13 @@ import { track } from "@/lib/analytics";
 import { getCheckoutStrings } from "@/i18n/checkout";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { CouponField, type CouponState } from "@/components/booking/CouponField";
+import { feeLabel } from "@/domains/pricing/fees";
 import { useRouter, usePathname } from "next/navigation";
 
 interface QuoteData {
   nights: number;
   nightlySubtotalCents: number;
-  cleaningFeeCents: number;
+  fees: { key: string; label: string; amountCents: number; description?: string }[];
   extraGuestFeeCents: number;
   taxCents: number;
   totalCents: number;
@@ -373,7 +374,9 @@ export function CheckoutFlow(props: Props) {
             {q.extraGuestFeeCents > 0 && (
               <Line label={t.extraGuests} value={formatMoney(q.extraGuestFeeCents)} />
             )}
-            <Line label={t.cleaning} value={formatMoney(q.cleaningFeeCents)} />
+            {q.fees.map((f) => (
+              <Line key={f.key} label={feeLabel(f, locale === "en" ? "en" : "es")} value={formatMoney(f.amountCents)} />
+            ))}
             {q.taxCents > 0 && <Line label={t.taxes} value={formatMoney(q.taxCents)} />}
             {q.coupon?.applied && (
               <Line

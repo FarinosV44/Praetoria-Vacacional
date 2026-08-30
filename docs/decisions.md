@@ -251,3 +251,65 @@ replaces that directory, wiping it (the owner had to re-enter it every deploy).
   los redespliegues)" and the DEMO banner now tells the owner to set the env var.
 - `.env.example` documents the four vars. 4 unit tests.
 - The real fix remains connecting Supabase; this is the durable floor until then.
+
+## D-017 — Issue #59: public calendar honours the half-open stay model
+**Date:** 2026-08-30
+The booking engine, the pricing engine's min-nights (`nights = nightsBetween`),
+the iCal parser (DTEND exclusive) and the Postgres exclusion constraints
+(`daterange(..., '[)')`) were ALL already correct half-open `[check-in,
+check-out)`. The bug reported in #59 lived only in the public
+`AvailabilityCalendar` component: it disabled every `busy` day, so a day that is
+`busy` only because another guest ARRIVES then (its previous night free) could
+not be picked as a check-out.
+- New pure module `src/domains/booking/calendar-select.ts` (`isDaySelectable`,
+  `applyDayClick`, `dayRole`, `nightsClear`, `stayNights`) — 15 unit tests
+  covering the 8 mandatory cases from the issue. The check-out day's own state
+  is irrelevant; only the nights strictly between check-in and check-out must be
+  free.
+- `AvailabilityCalendar` rewritten onto that module. A departure-only day
+  (`data-role="exit-only"`) stays clickable and is drawn with a diagonal
+  half-fill + explicit `aria-label` ("disponible solo como fecha de salida");
+  a legend explains libre / solo salida / no disponible. Min-stay is shown by
+  real nights and turns red when the selected range is below `minNightsHint`.
+- `e2e/calendar-checkout.spec.ts`: seeds a hold, then verifies its arrival day
+  is `exit-only`, enabled, and completes a 3-night range as the check-out.
+- Fixed a latent `tsc` error in `e2e/home-faq-spacing.spec.ts` (pre-existing,
+  non-null assertion on `rows[rows.length - 1]`).
+
+## D-018 — Issue #58: optional configurable per-stay charges (`fees`)
+**Date:** 2026-08-30
+The single always-on `cleaningFeeCents` is replaced by a configurable list of
+`StayFee` (`key`, `label`, `enabled`, `amountCents`, optional `description` /
+`taxable`) on `RateConfig.fees`. Only `enabled && amountCents > 0` charges are
+resolved (`src/domains/pricing/fees.ts`, pure, 24 tests incl. the engine). A
+disabled charge is invisible everywhere: no checkout line, no "0 €", nothing in
+emails, invoices or Stripe (Stripe already bills a single line at
+`reservation.totalCents`; the invoice draft is a single stay line at the total).
+- **Default = OFF.** `src/content/rates/index.ts` ships
+  `fees: [{ key: "cleaning", …, enabled: false }]` and `cleaningFeeCents: 0` for
+  both properties. The owner turns cleaning on (and sets the amount) from
+  **Admin → Precios y reglas → Cargos opcionales** — no redeploy.
+- **Legacy fallback:** a stored override with `cleaningFeeCents > 0` and no
+  `fees` still bills one "cleaning" charge, so old data never silently changes.
+- **Snapshot:** the applied `fees` land in the reservation's `priceBreakdown`
+  JSON, so the amount charged at booking time is preserved even if the config
+  changes later.
+- **i18n:** `feeLabel()` maps the built-in keys to English for the EN checkout;
+  unknown keys show their configured label.
+- Consumers updated: `BookingWidget`, `CheckoutFlow`, `CheckoutPageView`,
+  `RatesForm` + `updateRatesAction`. `Quote.cleaningFeeCents` removed in favour
+  of `Quote.fees` / `Quote.feesCents` — no stale 0 € rendering possible.
+- Public "precio con limpieza incluida" copy softened to "precio total, sin
+  cargos ocultos / todos los cargos desglosados" (`site.ts`, `legal.ts`,
+  `landings/index.ts`, ES+EN) since cleaning is no longer folded in by default.
+- `e2e/cleaning-fee.spec.ts`: both properties show no "Limpieza" line at checkout
+  with the default config.
+
+## D-019 — Valencia rate `maxGuests` raised 4 → 6 (aligns with D-013)
+**Date:** 2026-08-30
+`src/content/rates/index.ts` still capped Valencia at `maxGuests: 4` while
+issue #57 / D-013 set the property to 6 guests. The pricing engine's
+`max_guests` violation and the widget's guest selector derive from the rate
+config, so a 5–6-guest Valencia booking was being rejected despite the property
+page advertising 6. Raised to 6; `includedGuests` stays 2 (guests 3–6 pay the
+existing per-night surcharge). The owner can tune both from the admin.
