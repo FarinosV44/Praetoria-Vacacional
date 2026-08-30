@@ -31,18 +31,23 @@ export default async function AlojamientosPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {rows.map(({ p, rate }) => {
           const fees = resolveStayFees(rate);
+          const base = `/admin/alojamientos/${p.slug}`;
           const links: [string, string][] = [
-            ["/admin/calendario", "Calendario y precios"],
-            ["/admin/precios", "Precios y reglas"],
-            ["/admin/contenido", "Contenido y SEO"],
-            ["/admin/sincronizacion", "Integraciones (iCal)"],
-            ["/admin/configuracion", "Configuración"],
+            [`${base}?tab=general`, "Ficha completa"],
+            [`${base}?tab=precios`, "Precios y cargos"],
+            [`${base}?tab=calendario`, "Calendario"],
+            [`${base}?tab=contenido`, "Contenido y SEO"],
+            [`${base}?tab=integraciones`, "Integraciones (iCal)"],
           ];
           return (
             <section key={p.slug} className="admin-card p-4" data-experience={p.experience}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold">{p.name}</h2>
+                  <h2 className="text-base font-semibold">
+                    <Link href={`${base}?tab=general`} className="hover:underline">
+                      {p.name}
+                    </Link>
+                  </h2>
                   <p className="admin-muted text-xs">
                     {p.location.area} · {p.location.region}
                   </p>

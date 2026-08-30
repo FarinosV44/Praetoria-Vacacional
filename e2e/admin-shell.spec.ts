@@ -82,4 +82,17 @@ test.describe("admin V2 shell", () => {
     await expect(page.getByRole("heading", { name: "Valencia Frente al Mar" })).toBeVisible();
     await expect(page.getByText("6 huéspedes").first()).toBeVisible();
   });
+
+  test("the per-property tabbed fiche navigates and embeds the price form", async ({ page }) => {
+    await login(page);
+    await page.goto("/admin/alojamientos/javalambre?tab=general");
+    const tabs = page.getByRole("navigation", { name: "Secciones del alojamiento" });
+    for (const t of ["General", "Precios y cargos", "Calendario", "Contenido y SEO", "Políticas", "Integraciones"]) {
+      await expect(tabs.getByRole("link", { name: t, exact: true })).toBeVisible();
+    }
+    await tabs.getByRole("link", { name: "Precios y cargos", exact: true }).click();
+    await expect(page).toHaveURL(/tab=precios/);
+    await expect(page.getByRole("button", { name: /guardar precios/i })).toBeVisible();
+    await expect(page.getByText(/Vender huecos exactos por debajo de la estancia mínima/)).toBeVisible();
+  });
 });
