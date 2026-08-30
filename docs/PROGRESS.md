@@ -167,17 +167,43 @@ Booking extranet). Now 142 unit + 83 chromium e2e.
 |-------|-------|--------|
 | #59 · Calendario checkout | The half-open `[check-in, check-out)` model was already correct in the engine, pricing min-nights, iCal parser and Postgres exclusion constraints. Only the public `AvailabilityCalendar` was wrong: it disabled every `busy` day, blocking a check-out on a day another guest arrives (the 21→24 case). New pure `src/domains/booking/calendar-select.ts` (15 tests, all 8 mandatory cases); calendar rebuilt on it — departure-only days stay clickable, drawn as a diagonal half-cell + `data-role="exit-only"` + legend; min-stay by real nights, red below the minimum. `e2e/calendar-checkout.spec.ts`. D-017 | ✅ on `develop` |
 | #58 · Limpieza opcional | `RateConfig.cleaningFeeCents` → configurable `fees: StayFee[]` (enabled/amount/description/taxable). Pure `fees.ts` (24 tests w/ engine). Default OFF both properties; owner toggles from Admin → Precios y reglas → "Cargos opcionales", no redeploy. Legacy fallback preserved. `Quote.cleaningFeeCents` → `fees`/`feesCents` (no 0 € line possible). Stripe/invoice already bill the exact total. Valencia `maxGuests` 4→6 (D-019). D-018. `e2e/cleaning-fee.spec.ts` | ✅ on `develop` |
-| #60 · Admin Panel V2 | Premium redesign epic — pragmatic in-code build (no design handoff, per user), on branch `feat/60-admin-v2`. **60-A done:** bespoke admin design system (`src/app/admin/(panel)/admin.css`, scoped `.admin-shell` tokens), compact left sidebar with the exact 11-item IA (`AdminNav`), "Acciones" quick menu + page-context topbar (`AdminTopbar`), responsive drawer, `/admin/alojamientos` hub, public header/footer suppressed under `/admin` (`SiteChrome`). D-020. | 🟡 60-A/8 |
+| #60 · Admin Panel V2 | Premium redesign epic — pragmatic in-code build (no design handoff, per user), branch `feat/60-admin-v2`. **60-A/B/C/D/G done** (see below). D-020. | 🟡 5 of 8 sprints |
 
 **#58 + #59:** merged to `main` (commit d66a91a). `tsc` + `next lint` + `next
 build` clean · **199 unit** · **full chromium e2e 89 green**. Owner redeploys
 `main` (no migration).
 
-**#60 remaining sprints:** 60-B dashboard V2 · 60-C calendar as PMS (both
-properties, context panel) · 60-D price editing V2 (range/weekday/season/%/preview)
-· 60-E stay rules + gap exceptions · 60-F per-property tabbed fiche · 60-G
-reservations V2 table + detail timeline · 60-H mobile + undo + optimistic UI.
-Per-page visual pass to `.admin-*` primitives happens inside each sprint.
+**#60 — branch `feat/60-admin-v2` (204 unit, admin e2e green):**
+- ✅ 60-A shell: `admin.css` (scoped `.admin-shell` system), `AdminNav`
+  (11-item IA + "Más"), `AdminTopbar` ("Acciones" menu), responsive drawer,
+  `/admin/alojamientos` hub, `SiteChrome` (no public chrome under `/admin`).
+- ✅ 60-B dashboard: entradas/salidas 7d, alojados ahora, ocupación 30/60/90,
+  huecos difíciles de vender (`src/domains/calendar/gaps.ts`), pagos con
+  incidencia, canal con barras. All onto `.admin-*`.
+- ✅ 60-C/D calendar + price editing: `CalendarMonth` rebuilt; selection helpers
+  (mes / entre semana / fin de semana / semana); price modes fixed € **or**
+  percentage (`applyDayPricePercentAction`); **preview** (N noches · media
+  actual → media nueva). `e2e/admin-calendar.spec.ts`.
+- ✅ 60-G reservations: `.admin-table`, quick-filter chips (Hoy / Próximas /
+  Este mes / JV / VLC / Directa / Booking / Pagada / Pendiente / Canceladas),
+  columns incl. noches + estado estancia.
+- ⬜ 60-E stay rules + **gap exceptions** (2-night hole sellable under a 3-night
+  rule; must respect #59 check-in/check-out).
+- ⬜ 60-F per-property tabbed fiche `/admin/alojamientos/[slug]` (General /
+  Capacidad / Contenido / Precios / **Cargos** / Políticas / Calendarios / SEO /
+  Integraciones) — folds in `/admin/precios` (incl. a real season editor to
+  replace the JSON textareas), `/admin/contenido`, `/admin/configuracion`,
+  `/admin/sincronizacion`. Cargos tab uses the #58 `fees` model.
+- ⬜ 60-G-detail: reservation detail page timeline + clean action layout.
+- ⬜ 60-H mobile per-page polish · confirmación visual al guardar · undo en
+  disponibilidad/precio · avisar si un cambio afecta a muchas fechas ·
+  optimistic UI.
+
+**Definición de terminado (issue #60)** — run before merging `develop → main`:
+admin → próximas reservas de ambos → calendario → seleccionar 10 días → cambiar
+precio del rango → precio distinto fin de semana → cambiar mín. noches → bloquear
+2 fechas → reabrirlas → abrir una reserva y ver su detalle → una operación desde
+móvil. Todo sin tocar código.
 
 ## Exact position
 

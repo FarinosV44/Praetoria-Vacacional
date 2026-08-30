@@ -333,3 +333,20 @@ merged `develop → main` only on the user's explicit instruction when the
   gate in the root layout that drops the public `SiteHeader`/`SiteFooter` (and
   the `<main id="contenido">` wrapper) under `/admin`, so the admin is no longer
   wrapped in public chrome. `e2e/admin-shell.spec.ts`.
+- **60-B (dashboard):** `src/app/admin/(panel)/page.tsx` rebuilt onto `.admin-*`
+  with the §2 widgets — entradas/salidas 7d, alojados ahora, ocupación
+  30/60/90, huecos difíciles de vender (new pure `src/domains/calendar/gaps.ts`
+  `findHardGaps`, 5 tests), pagos con incidencia, canal con mini-barras.
+- **60-C/D (calendar + price editing):** `CalendarMonth` rebuilt. Selection:
+  mes / entre semana (dom–jue) / fin de semana (vie–sáb) / semana / narrow.
+  Price modes: fixed € **or** percentage — `applyDayPricePercentAction` scales
+  each day's effective price (`resolveRateConfig` + `nightlyRateCents`).
+  **Preview** from the grid cells (N noches · media actual → media nueva).
+  `e2e/admin-calendar.spec.ts`. Season/discount editing stays JSON until 60-F.
+- **60-G (reservations):** `.admin-table`, quick-filter chips (Hoy / Próximas /
+  Este mes / JV / VLC / Directa / Booking / Pagada / Pendiente / Canceladas —
+  toggle + merge onto the query; date chips → repo `from`/`to`), columns incl.
+  noches + estado estancia.
+- ⬜ 60-E (stay rules + gap exceptions), 60-F (per-property tabbed fiche +
+  season editor), 60-G-detail (reservation timeline), 60-H (mobile polish,
+  undo, "afecta a N fechas" warnings, optimistic UI) — pending.
