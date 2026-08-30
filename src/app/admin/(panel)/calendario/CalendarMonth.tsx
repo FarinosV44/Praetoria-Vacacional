@@ -165,6 +165,10 @@ export function CalendarMonth({
                   onClick={() => toggle(c.date, selectable)}
                   disabled={!selectable}
                   aria-pressed={isSel}
+                  data-date={c.date}
+                  data-cell-state={
+                    c.reservation ? "reservation" : c.block ? "block" : c.past ? "past" : "free"
+                  }
                   className={`min-h-[60px] rounded-[var(--a-radius-sm)] border p-1 text-left text-[11px] transition ${
                     !c.inMonth
                       ? "border-transparent opacity-30"
