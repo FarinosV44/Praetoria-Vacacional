@@ -15,6 +15,14 @@ import {
 } from "@/domains/booking/calendar-select";
 
 const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
+
+/**
+ * "Solo salida" marker — a single thin line crossing the cell corner to corner.
+ * Deliberately understated: ~1.2px, a soft neutral at low opacity, no fill. It
+ * reads as "half a day" without looking like a broken or struck-through cell.
+ */
+const EXIT_ONLY_HAIRLINE =
+  "linear-gradient(45deg, transparent calc(50% - 0.6px), color-mix(in oklch, var(--color-ink-soft), transparent 55%) calc(50% - 0.6px), color-mix(in oklch, var(--color-ink-soft), transparent 55%) calc(50% + 0.6px), transparent calc(50% + 0.6px))";
 const MONTHS = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
@@ -158,21 +166,18 @@ export function AvailabilityCalendar({
                     : "hover:bg-[var(--accent-50)]",
                   isIn || isOut ? "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-600)]" : "",
                   inRange ? "bg-[var(--accent-50)] text-[var(--accent-700)]" : "",
-                  exitOnly && !isIn && !isOut
+                  exitOnly && !isIn && !isOut && !inRange
                     ? choosingCheckout
-                      ? "text-[var(--color-ink)]"
+                      ? "bg-[var(--accent-50)] font-medium text-[var(--color-ink)]"
                       : "text-[var(--color-ink-soft)]"
                     : "",
                 ].join(" ")}
               >
-                {exitOnly && !isIn && !isOut && (
+                {exitOnly && !isIn && !isOut && !inRange && (
                   <span
                     aria-hidden
                     className="pointer-events-none absolute inset-0"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, transparent 0 50%, var(--color-line) 50% 100%)",
-                    }}
+                    style={{ background: EXIT_ONLY_HAIRLINE }}
                   />
                 )}
                 <span className="relative">{Number(date.slice(8, 10))}</span>
@@ -230,16 +235,12 @@ export function AvailabilityCalendar({
         <span className="inline-flex items-center gap-1">
           <span
             className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)]"
-            style={{
-              background: "linear-gradient(135deg, transparent 0 50%, var(--color-line) 50% 100%)",
-            }}
+            style={{ background: EXIT_ONLY_HAIRLINE }}
           />
           Solo salida
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-sm text-[var(--color-line)] line-through">
-            —
-          </span>
+          <span className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)] bg-[var(--color-line)] opacity-50" />
           No disponible
         </span>
       </div>
