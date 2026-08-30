@@ -347,6 +347,24 @@ merged `develop → main` only on the user's explicit instruction when the
   Este mes / JV / VLC / Directa / Booking / Pagada / Pendiente / Canceladas —
   toggle + merge onto the query; date chips → repo `from`/`to`), columns incl.
   noches + estado estancia.
-- ⬜ 60-E (stay rules + gap exceptions), 60-F (per-property tabbed fiche +
-  season editor), 60-G-detail (reservation timeline), 60-H (mobile polish,
-  undo, "afecta a N fechas" warnings, optimistic UI) — pending.
+- **60-E (stay rules):** `RateConfig.sellExactGaps` (default on). Pure
+  `src/domains/booking/gap-fill.ts` `fillsGapExactly` (7 tests); `buildQuote`
+  gains `opts.skipMinNights`; `service.ts` computes it from `getBusyRanges`.
+  A stay that exactly fills a gap between two occupied spans is now bookable
+  below the season/base minimum. Toggle in RatesForm "Reglas de estancia".
+  `e2e/gap-fill.spec.ts`.
+- **60-F (per-property fiche):** `/admin/alojamientos/[slug]?tab=…` with tabs
+  General (capacidad read-only per D-013 + operative summary), Precios y cargos
+  (embedded `RatesForm`), Calendario, Contenido y SEO, Políticas, Integraciones
+  (per-property iCal forms via `getImportFeedStatus` + `ImportFeedForm`). Hub
+  cards link into it.
+- **60-G-detail:** `reservas/[id]/page.tsx` restyled + status timeline.
+- **60-H:** calendar "✓ Guardado" + "afecta a muchas fechas" (>14 días);
+  whole-admin harmonisation by remapping the public tokens (`--color-line`,
+  `--accent-*`, `--radius-card`, …) on `.admin-shell` so the ~11 legacy pages
+  pick up the V2 look with zero per-file edits. Undo / deeper optimistic UI /
+  per-page mobile audit deferred as follow-ups (not in the issue's DoD).
+- **`e2e/admin-dod.spec.ts`** drives the issue's whole "definición de terminado"
+  flow end to end (no manual steps) — passes. Merged `feat/60-admin-v2` →
+  `develop` → `main` on the user's standing instruction ("when finish push to
+  main").
