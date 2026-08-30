@@ -15,7 +15,8 @@ type EventName =
   | "coupon_field_open"
   | "checkout_step"
   | "checkout_abandoned"
-  | "contact_click";
+  | "contact_click"
+  | "select_alternative_dates";
 
 type Params = Record<string, string | number | boolean | undefined>;
 

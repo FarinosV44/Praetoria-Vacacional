@@ -8,6 +8,7 @@ import { checkCoupon, describeRejection, normalizeCode } from "@/domains/pricing
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
 import { buildCalendar, isRangeAvailable, occupancy } from "./availability";
 import { fillsGapExactly } from "./gap-fill";
+import { rescueAlternatives, type AlternativeStay } from "./alternatives";
 import type { CalendarDay } from "./types";
 
 /**
@@ -30,6 +31,12 @@ export interface PricedQuote extends Quote {
   coupon: CouponResult | null;
 }
 
+/** A nearby free window for an unavailable request, already priced (issue #92). */
+export interface PricedAlternative extends AlternativeStay {
+  totalCents: number;
+  nightlyFromCents: number;
+}
+
 export interface AvailabilityResult {
   propertySlug: string;
   propertyName: string;
@@ -37,6 +44,8 @@ export interface AvailabilityResult {
   available: boolean;
   quote: PricedQuote | null;
   reason: string | null;
+  /** Real nearby availability when `available` is false — never invented. */
+  alternatives: PricedAlternative[];
 }
 
 /**
@@ -129,13 +138,21 @@ export async function checkProperty(
       available: false,
       quote: null,
       reason: "Alojamiento no encontrado",
+      alternatives: [],
     };
   }
 
   const repo = getRepository();
   const now = todayIso();
+
+  // One busy-range read covers both the gap-fill check and the alternatives
+  // search when the request turns out to be unavailable.
+  const ranges = await repo
+    .getBusyRanges(property.id, addDays(now, -2), addDays(checkOut, 45))
+    .catch(() => [] as Awaited<ReturnType<typeof repo.getBusyRanges>>);
+
   const free = await repo.isStayAvailable(property.id, checkIn, checkOut);
-  const skipMinNights = await allowGapFill(repo, property.id, rate, checkIn, checkOut);
+  const skipMinNights = rate.sellExactGaps !== false && fillsGapExactly(ranges, checkIn, checkOut);
   const rawQuote = buildQuote(
     rate,
     { propertySlug: slug, checkIn, checkOut, guests },
@@ -143,18 +160,35 @@ export async function checkProperty(
     { skipMinNights },
   );
   const quote = await applyCoupon(rawQuote, slug, couponCode, now);
+  const available = free && quote.valid;
 
   let reason: string | null = null;
   if (!free) reason = "No disponible para estas fechas";
   else if (!quote.valid) reason = "Las fechas no cumplen las condiciones de reserva";
 
+  const alternatives: PricedAlternative[] = available
+    ? []
+    : rescueAlternatives(ranges, checkIn, checkOut, { now, leadDays: rate.leadTimeDays, limit: 3 })
+        .map((alt) => {
+          const q = buildQuote(rate, { propertySlug: slug, checkIn: alt.checkIn, checkOut: alt.checkOut, guests }, now);
+          return q.valid && q.totalCents > 0
+            ? {
+                ...alt,
+                totalCents: q.totalCents,
+                nightlyFromCents: Math.round(q.nightlySubtotalCents / Math.max(1, q.nights)),
+              }
+            : null;
+        })
+        .filter((a): a is PricedAlternative => a !== null);
+
   return {
     propertySlug: slug,
     propertyName: property.name,
     experience: property.experience,
-    available: free && quote.valid,
+    available,
     quote,
     reason,
+    alternatives,
   };
 }
 

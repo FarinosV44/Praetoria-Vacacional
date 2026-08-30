@@ -21,6 +21,8 @@ const STR = {
     seeProperty: "Ver alojamiento",
     notAvailable: "No disponible para estas fechas",
     minStay: (n: number) => ` · estancia mínima ${n} noches`,
+    tryTheseInstead: "Fechas cercanas libres",
+    chooseTheseDates: "Elegir estas fechas",
     connError: "Problema de conexión. Inténtalo de nuevo.",
     genericError: "No se pudo comprobar la disponibilidad",
     summary: (nights: number, guests: number, nl: (n: number) => string) =>
@@ -39,6 +41,8 @@ const STR = {
     seeProperty: "View property",
     notAvailable: "Not available for these dates",
     minStay: (n: number) => ` · minimum stay ${n} nights`,
+    tryTheseInstead: "Nearby free dates",
+    chooseTheseDates: "Choose these dates",
     connError: "Connection problem. Please try again.",
     genericError: "Could not check availability",
     summary: (nights: number, guests: number, nl: (n: number) => string) =>
@@ -56,6 +60,13 @@ interface QuoteLite {
   nights: number;
   minNights: number;
 }
+interface AlternativeLite {
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  kind: "shift-earlier" | "shift-later" | "weekend";
+  totalCents: number;
+}
 interface ResultRow {
   propertySlug: string;
   propertyName: string;
@@ -63,6 +74,7 @@ interface ResultRow {
   available: boolean;
   quote: QuoteLite | null;
   reason: string | null;
+  alternatives: AlternativeLite[];
 }
 
 function todayPlus(days: number): string {
@@ -121,7 +133,15 @@ export function AvailabilitySearch({
 
   const query = new URLSearchParams({ checkIn, checkOut, guests: String(guests) }).toString();
   const reservePath = (slug: string) => localizedPath(locale, `/reservar/${slug}`) + `?${query}`;
+  const reservePathFor = (slug: string, ci: string, co: string) =>
+    localizedPath(locale, `/reservar/${slug}`) +
+    `?${new URLSearchParams({ checkIn: ci, checkOut: co, guests: String(guests) }).toString()}`;
   const propertyPath = (slug: string) => localizedPath(locale, `/${slug}`);
+  const fmtShort = (iso: string) =>
+    new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+      day: "numeric",
+      month: "short",
+    }).format(new Date(`${iso}T00:00:00Z`));
 
   return (
     <div className={compact ? "" : "rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6"}>
@@ -227,36 +247,75 @@ export function AvailabilitySearch({
             <li
               key={r.propertySlug}
               data-experience={r.experience}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-line)] p-4"
+              className="rounded-xl border border-[var(--color-line)] p-4"
             >
-              <div>
-                <p className="font-display text-lg">{r.propertyName}</p>
-                {r.available && r.quote ? (
-                  <p className="text-sm text-[var(--color-ink-soft)]">
-                    {formatMoney(r.quote.totalCents)} · {nightsLabel(r.quote.nights)} · {t.priceTotal}
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-display text-lg">{r.propertyName}</p>
+                  {r.available && r.quote ? (
+                    <p className="text-sm text-[var(--color-ink-soft)]">
+                      {formatMoney(r.quote.totalCents)} · {nightsLabel(r.quote.nights)} · {t.priceTotal}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-[var(--color-ink-soft)]">
+                      {r.reason ?? t.notAvailable}
+                      {r.quote && r.quote.minNights > r.quote.nights ? t.minStay(r.quote.minNights) : ""}
+                    </p>
+                  )}
+                </div>
+                {r.available ? (
+                  <Link
+                    href={reservePath(r.propertySlug)}
+                    onClick={() => track("select_property", { property_slug: r.propertySlug })}
+                    className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+                  >
+                    {t.book}
+                  </Link>
                 ) : (
-                  <p className="text-sm text-[var(--color-ink-soft)]">
-                    {r.reason ?? t.notAvailable}
-                    {r.quote && r.quote.minNights > r.quote.nights ? t.minStay(r.quote.minNights) : ""}
-                  </p>
+                  <Link
+                    href={propertyPath(r.propertySlug)}
+                    className="inline-flex h-11 items-center rounded-full px-4 text-sm font-medium text-[var(--accent-700)] ring-1 ring-[var(--color-line)]"
+                  >
+                    {t.seeProperty}
+                  </Link>
                 )}
               </div>
-              {r.available ? (
-                <Link
-                  href={reservePath(r.propertySlug)}
-                  onClick={() => track("select_property", { property_slug: r.propertySlug })}
-                  className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-                >
-                  {t.book}
-                </Link>
-              ) : (
-                <Link
-                  href={propertyPath(r.propertySlug)}
-                  className="inline-flex h-11 items-center rounded-full px-4 text-sm font-medium text-[var(--accent-700)] ring-1 ring-[var(--color-line)]"
-                >
-                  {t.seeProperty}
-                </Link>
+
+              {!r.available && r.alternatives.length > 0 && (
+                <div className="mt-3 border-t border-[var(--color-line)] pt-3">
+                  <p className="text-xs font-medium text-[var(--color-ink-soft)]">
+                    {t.tryTheseInstead}
+                  </p>
+                  <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {r.alternatives.map((a) => (
+                      <li
+                        key={`${a.checkIn}-${a.checkOut}`}
+                        className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-paper)] px-3 py-2 text-sm"
+                      >
+                        <span>
+                          <span className="font-medium">
+                            {fmtShort(a.checkIn)} – {fmtShort(a.checkOut)}
+                          </span>
+                          <span className="block text-xs text-[var(--color-ink-soft)]">
+                            {formatMoney(a.totalCents)} · {t.priceTotal}
+                          </span>
+                        </span>
+                        <Link
+                          href={reservePathFor(r.propertySlug, a.checkIn, a.checkOut)}
+                          onClick={() =>
+                            track("select_alternative_dates", {
+                              property_slug: r.propertySlug,
+                              kind: a.kind,
+                            })
+                          }
+                          className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+                        >
+                          {t.chooseTheseDates}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </li>
           ))}
