@@ -65,6 +65,28 @@ export function RatesForm({
         ))}
       </div>
 
+      <fieldset className="rounded-lg border border-[var(--a-line)] p-3">
+        <legend className="px-1 text-xs font-medium text-[var(--a-text-soft)]">
+          Reglas de estancia
+        </legend>
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="sellExactGaps"
+            defaultChecked={config.sellExactGaps !== false}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span>
+            Vender huecos exactos por debajo de la estancia mínima
+            <span className="admin-muted block text-xs">
+              Si entre dos reservas queda un hueco que un huésped puede cubrir justo (entra el día
+              que sale el anterior y sale el día que entra el siguiente), se permite reservarlo
+              aunque sea más corto que el mínimo.
+            </span>
+          </span>
+        </label>
+      </fieldset>
+
       <fieldset className="rounded-lg border border-[var(--color-line)] p-3">
         <legend className="px-1 text-xs font-medium text-[var(--color-ink-soft)]">
           Cargos opcionales

@@ -10,6 +10,23 @@ Last sweep: 2026-08-30
 
 ## In progress (on `develop`, not yet on `main`)
 
+### #60 · Admin Panel V2 — ✅ code, merged to `main`
+
+Premium admin redesign, built in-code (no design handoff — D-020). Sprints:
+60-A shell (`admin.css` design system scoped to `.admin-shell`, `AdminNav`
+11-item IA, `AdminTopbar` "Acciones" menu, responsive drawer, `/admin/
+alojamientos` hub, `SiteChrome` removes public chrome under `/admin`) ·
+60-B dashboard V2 (entradas/salidas, alojados ahora, ocupación 30/60/90, huecos
+difíciles `calendar/gaps.ts`, pagos con incidencia) · 60-C/D calendar + price
+editing (weekday/weekend/month selection, fixed € or %, preview, save
+confirmation) · 60-E `sellExactGaps` (gap-fill below minimum stay, pure
+`booking/gap-fill.ts`) · 60-F per-property tabbed fiche
+`/admin/alojamientos/[slug]` · 60-G reservations V2 table + quick-filter chips +
+detail timeline · 60-H whole-admin harmonisation via token remapping.
+`e2e/admin-dod.spec.ts` drives the issue's full "definición de terminado" flow.
+Verification: `tsc`+`lint`+`build` clean · 212 unit · 17 admin e2e · 78 public
+e2e. D-018…D-020. **Post-merge (owner):** redeploy `main`; close on GitHub.
+
 ### #58 · Limpieza opcional y configurable — ✅ code on `develop`
 
 **Resolution:** `RateConfig.cleaningFeeCents` → configurable `fees: StayFee[]`

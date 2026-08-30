@@ -41,6 +41,7 @@ export const rateConfigSchema: z.ZodType<RateConfig> = z.object({
   weekendNightlyCents: z.number().int().positive().optional(),
   minNights: z.number().int().positive(),
   maxNights: z.number().int().nonnegative(),
+  sellExactGaps: z.boolean().optional(),
   cleaningFeeCents: z.number().int().nonnegative(),
   fees: z.array(stayFeeSchema).optional(),
   includedGuests: z.number().int().positive(),

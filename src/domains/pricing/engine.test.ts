@@ -92,6 +92,23 @@ describe("buildQuote — fees, discounts, guests", () => {
   });
 });
 
+describe("skipMinNights (issue #60 gap-fill exception)", () => {
+  it("drops the min_nights violation when told to", () => {
+    // 2026-07-10..12 is 2 nights in a season with a 4-night minimum.
+    const req = { propertySlug: "test", checkIn: "2026-07-10", checkOut: "2026-07-12", guests: 2 };
+    expect(buildQuote(base, req, NOW).violations).toContainEqual({
+      code: "min_nights",
+      required: 4,
+      got: 2,
+    });
+    const relaxed = buildQuote(base, req, NOW, { skipMinNights: true });
+    expect(relaxed.violations).not.toContainEqual(
+      expect.objectContaining({ code: "min_nights" }),
+    );
+    expect(relaxed.valid).toBe(true);
+  });
+});
+
 describe("independent configs", () => {
   it("produces different totals for the same dates under different configs", () => {
     const cfgA = { ...base, baseNightlyCents: 10000 };

@@ -72,6 +72,43 @@ export async function applyDayPriceAction(_prev: unknown, formData: FormData): P
   return { ok: true };
 }
 
+const percentSchema = z.coerce.number().min(-90).max(300);
+
+/** Adjust the effective nightly price of the selected days by ±percent (issue #60 §4E). */
+export async function applyDayPricePercentAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  await assertAdmin();
+  guard();
+  const property = await propertyFromForm(formData);
+  const dates = selectedDates(formData);
+  if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
+  const parsed = percentSchema.safeParse(formData.get("percent"));
+  if (!parsed.success) return { ok: false, error: "Porcentaje no válido" };
+
+  const { resolveRateConfig } = await import("@/domains/pricing/resolve");
+  const { nightlyRateCents } = await import("@/domains/pricing/engine");
+  const config = await resolveRateConfig(property.slug);
+  if (!config) return { ok: false, error: "Sin tarifa configurada" };
+
+  const factor = 1 + parsed.data / 100;
+  const repo = getRepository();
+  for (const date of dates) {
+    const current = nightlyRateCents(config, date);
+    await repo.setDailyRates(property.id, [date], {
+      nightlyCents: Math.max(0, Math.round(current * factor)),
+    });
+  }
+  await logAction("calendar.price_percent", {
+    entity: "property",
+    entityId: property.id,
+    meta: { dates: dates.length, percent: parsed.data },
+  });
+  revalidateFor(property.slug);
+  return { ok: true };
+}
+
 export async function applyDayMinNightsAction(
   _prev: unknown,
   formData: FormData,

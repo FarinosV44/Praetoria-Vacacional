@@ -68,6 +68,11 @@ export interface RateConfig {
   /** Maximum nights a single direct booking may span (0 = unlimited). */
   maxNights: number;
   /**
+   * Sell a stay that EXACTLY fills the gap between two occupied spans even when
+   * it is shorter than the minimum stay (issue #60 §5). Default: on.
+   */
+  sellExactGaps?: boolean;
+  /**
    * @deprecated Legacy single cleaning fee. Kept for stored configs that predate
    * `fees`. When `fees` is absent and this is > 0 it is treated as one enabled
    * "cleaning" charge; when `fees` is present this is ignored. New configs set

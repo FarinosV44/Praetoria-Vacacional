@@ -44,27 +44,21 @@ export default async function AdminCalendarioPage({
   const nav = monthNav(year, month);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl">Calendario y precios</h1>
+        <h1>Calendario y precios</h1>
         <div className="flex items-center gap-2 text-sm">
-          <Link
-            href={`/admin/calendario?m=${nav.prevMonth}`}
-            className="rounded-lg border border-[var(--color-line)] px-3 py-1.5"
-          >
+          <Link href={`/admin/calendario?m=${nav.prevMonth}`} className="admin-btn" data-variant="outline">
             ← {nav.prevMonth}
           </Link>
           <span className="min-w-[9rem] text-center font-medium capitalize">{nav.label}</span>
-          <Link
-            href={`/admin/calendario?m=${nav.nextMonth}`}
-            className="rounded-lg border border-[var(--color-line)] px-3 py-1.5"
-          >
+          <Link href={`/admin/calendario?m=${nav.nextMonth}`} className="admin-btn" data-variant="outline">
             {nav.nextMonth} →
           </Link>
         </div>
       </div>
 
-      <p className="flex flex-wrap gap-3 text-xs text-[var(--color-ink-soft)]">
+      <p className="flex flex-wrap gap-3 text-xs text-[var(--a-text-faint)]">
         {Object.entries({
           direct: "Directa",
           booking: "Booking",
@@ -72,22 +66,19 @@ export default async function AdminCalendarioPage({
           manual: "Cierre manual",
         }).map(([k, label]) => (
           <span key={k} className="flex items-center gap-1">
-            <span
-              className="inline-block h-3 w-3 rounded"
-              style={{ background: CHANNEL_COLOR[k] }}
-            />
+            <span className="inline-block h-3 w-3 rounded" style={{ background: CHANNEL_COLOR[k] }} />
             {label}
           </span>
         ))}
         <span className="flex items-center gap-1">
-          <span className="text-[var(--accent-700)]">●</span> precio ajustado
+          <span className="text-[var(--a-accent-strong)]">●</span> precio ajustado
         </span>
       </p>
 
       {perProperty.map(({ property, config, reservations, blocks, dayRates }) => {
         if (!config) {
           return (
-            <p key={property.id} className="text-sm text-[var(--color-ink-soft)]">
+            <p key={property.id} className="admin-muted text-sm">
               {property.name}: sin tarifa configurada.
             </p>
           );
@@ -111,11 +102,11 @@ export default async function AdminCalendarioPage({
         );
       })}
 
-      <p className="text-xs text-[var(--color-ink-soft)]">
+      <p className="admin-muted text-xs">
         Los cambios de precio y estancia mínima se aplican de inmediato en la web pública y en el
-        checkout. «Cerrar fechas» crea un bloqueo manual (equivale a la pestaña anterior de
-        bloqueos). Las reservas y bloqueos importados de Booking/Airbnb se gestionan en
-        «Sincronización».
+        checkout. El ajuste porcentual parte del precio efectivo actual de cada día. «Cerrar
+        fechas» crea un bloqueo manual. Las reservas y bloqueos importados de Booking/Airbnb se
+        gestionan en «Integraciones».
       </p>
     </div>
   );

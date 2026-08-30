@@ -7,6 +7,7 @@ import type { Quote } from "@/domains/pricing/types";
 import { checkCoupon, describeRejection, normalizeCode } from "@/domains/pricing/coupons";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
 import { buildCalendar, isRangeAvailable, occupancy } from "./availability";
+import { fillsGapExactly } from "./gap-fill";
 import type { CalendarDay } from "./types";
 
 /**
@@ -36,6 +37,26 @@ export interface AvailabilityResult {
   available: boolean;
   quote: PricedQuote | null;
   reason: string | null;
+}
+
+/**
+ * True when this stay exactly fills a gap between two occupied spans and the
+ * property allows selling such gaps below the minimum stay (issue #60 §5).
+ */
+async function allowGapFill(
+  repo: ReturnType<typeof getRepository>,
+  propertyId: string,
+  rate: { sellExactGaps?: boolean },
+  checkIn: IsoDate,
+  checkOut: IsoDate,
+): Promise<boolean> {
+  if (rate.sellExactGaps === false) return false;
+  try {
+    const ranges = await repo.getBusyRanges(propertyId, addDays(checkIn, -2), addDays(checkOut, 2));
+    return fillsGapExactly(ranges, checkIn, checkOut);
+  } catch {
+    return false;
+  }
 }
 
 async function applyCoupon(
@@ -114,7 +135,13 @@ export async function checkProperty(
   const repo = getRepository();
   const now = todayIso();
   const free = await repo.isStayAvailable(property.id, checkIn, checkOut);
-  const rawQuote = buildQuote(rate, { propertySlug: slug, checkIn, checkOut, guests }, now);
+  const skipMinNights = await allowGapFill(repo, property.id, rate, checkIn, checkOut);
+  const rawQuote = buildQuote(
+    rate,
+    { propertySlug: slug, checkIn, checkOut, guests },
+    now,
+    { skipMinNights },
+  );
   const quote = await applyCoupon(rawQuote, slug, couponCode, now);
 
   let reason: string | null = null;
@@ -158,10 +185,16 @@ export async function quoteForCheckout(
   if (!property || !rate) return { ok: false, error: "Alojamiento no encontrado" };
 
   const now = todayIso();
-  const rawQuote = buildQuote(rate, { propertySlug: slug, checkIn, checkOut, guests }, now);
+  const repo = getRepository();
+  const skipMinNights = await allowGapFill(repo, property.id, rate, checkIn, checkOut);
+  const rawQuote = buildQuote(
+    rate,
+    { propertySlug: slug, checkIn, checkOut, guests },
+    now,
+    { skipMinNights },
+  );
   if (!rawQuote.valid) return { ok: false, error: "Las fechas no cumplen las condiciones de reserva" };
 
-  const repo = getRepository();
   const free = await repo.isStayAvailable(property.id, checkIn, checkOut);
   if (!free) return { ok: false, error: "Las fechas ya no están disponibles" };
 
