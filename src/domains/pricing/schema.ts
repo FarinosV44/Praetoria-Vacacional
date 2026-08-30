@@ -19,6 +19,15 @@ export const discountSchema = z.object({
   label: z.string().min(1),
 });
 
+export const stayFeeSchema = z.object({
+  key: z.string().min(1).regex(/^[a-z0-9_-]+$/, "Solo minúsculas, números, - y _"),
+  label: z.string().min(1),
+  enabled: z.boolean(),
+  amountCents: z.number().int().nonnegative(),
+  description: z.string().max(200).optional(),
+  taxable: z.boolean().optional(),
+});
+
 export const dayRateSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato YYYY-MM-DD"),
   nightlyCents: z.number().int().nonnegative().optional(),
@@ -33,6 +42,7 @@ export const rateConfigSchema: z.ZodType<RateConfig> = z.object({
   minNights: z.number().int().positive(),
   maxNights: z.number().int().nonnegative(),
   cleaningFeeCents: z.number().int().nonnegative(),
+  fees: z.array(stayFeeSchema).optional(),
   includedGuests: z.number().int().positive(),
   extraGuestNightlyCents: z.number().int().nonnegative(),
   maxGuests: z.number().int().positive(),

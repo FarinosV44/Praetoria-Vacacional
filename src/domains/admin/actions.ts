@@ -95,6 +95,21 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
     return { ok: false, error: "El JSON de temporadas o descuentos no es válido" };
   }
 
+  // Optional per-stay charges (issue #58). One row per `fee_<i>_*` group.
+  const feeCount = Math.min(20, Math.max(0, num(formData, "feeCount") || 0));
+  const fees = Array.from({ length: feeCount }, (_, i) => {
+    const key = String(formData.get(`fee_${i}_key`) ?? "").trim();
+    const label = String(formData.get(`fee_${i}_label`) ?? "").trim();
+    const description = String(formData.get(`fee_${i}_description`) ?? "").trim();
+    return {
+      key,
+      label: label || key,
+      enabled: formData.get(`fee_${i}_enabled`) != null,
+      amountCents: Math.max(0, Math.round(num(formData, `fee_${i}_amount`) || 0)),
+      ...(description ? { description } : {}),
+    };
+  }).filter((f) => f.key);
+
   const candidate = {
     ...current,
     propertySlug: slug,
@@ -103,7 +118,8 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
     weekendNightlyCents: num(formData, "weekendNightlyCents") || undefined,
     minNights: num(formData, "minNights"),
     maxNights: num(formData, "maxNights"),
-    cleaningFeeCents: num(formData, "cleaningFeeCents"),
+    cleaningFeeCents: 0, // superseded by `fees`
+    fees,
     includedGuests: num(formData, "includedGuests"),
     extraGuestNightlyCents: num(formData, "extraGuestNightlyCents"),
     maxGuests: num(formData, "maxGuests"),

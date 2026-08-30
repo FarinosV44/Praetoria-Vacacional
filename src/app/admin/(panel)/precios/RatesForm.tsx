@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import type { RateConfig } from "@/domains/pricing/types";
+import type { RateConfig, StayFee } from "@/domains/pricing/types";
+import { resolveStayFees } from "@/domains/pricing/fees";
 
 type Result = { ok: true } | { ok: false; error: string } | null;
 
@@ -10,7 +11,6 @@ const FIELDS: { name: keyof RateConfig; label: string }[] = [
   { name: "weekendNightlyCents", label: "Precio finde/noche (¢)" },
   { name: "minNights", label: "Estancia mínima" },
   { name: "maxNights", label: "Estancia máxima (0 = sin límite)" },
-  { name: "cleaningFeeCents", label: "Limpieza (¢)" },
   { name: "includedGuests", label: "Huéspedes incluidos" },
   { name: "extraGuestNightlyCents", label: "Suplemento huésped/noche (¢)" },
   { name: "maxGuests", label: "Huéspedes máx." },
@@ -18,6 +18,20 @@ const FIELDS: { name: keyof RateConfig; label: string }[] = [
   { name: "bookingWindowDays", label: "Ventana de reserva (días)" },
   { name: "leadTimeDays", label: "Antelación mínima (días)" },
 ];
+
+/** The charges shown in the form: the configured `fees`, or a disabled cleaning row. */
+function formFees(config: RateConfig): StayFee[] {
+  if (config.fees && config.fees.length) return config.fees;
+  const legacy = resolveStayFees(config)[0];
+  return [
+    legacy ?? {
+      key: "cleaning",
+      label: "Limpieza",
+      enabled: false,
+      amountCents: 0,
+    },
+  ];
+}
 
 export function RatesForm({
   propertySlug,
@@ -32,9 +46,10 @@ export function RatesForm({
     (prev, fd) => action(prev, fd),
     null,
   );
+  const fees = formFees(config);
 
   return (
-    <form action={formAction} className="mt-4 space-y-4 text-sm">
+    <form action={formAction} className="mt-4 space-y-5 text-sm">
       <input type="hidden" name="propertySlug" value={propertySlug} />
       <div className="grid gap-3 sm:grid-cols-3">
         {FIELDS.map((f) => (
@@ -49,6 +64,63 @@ export function RatesForm({
           </label>
         ))}
       </div>
+
+      <fieldset className="rounded-lg border border-[var(--color-line)] p-3">
+        <legend className="px-1 text-xs font-medium text-[var(--color-ink-soft)]">
+          Cargos opcionales
+        </legend>
+        <p className="mb-3 text-xs text-[var(--color-ink-soft)]">
+          Si un cargo no está activado, el huésped no lo ve: no aparece ninguna línea ni en el
+          checkout, ni en los correos, ni en las facturas.
+        </p>
+        <input type="hidden" name="feeCount" value={fees.length} />
+        <div className="space-y-3">
+          {fees.map((fee, i) => (
+            <div
+              key={fee.key}
+              className="grid items-end gap-2 sm:grid-cols-[auto_1fr_8rem_1fr]"
+            >
+              <input type="hidden" name={`fee_${i}_key`} value={fee.key} />
+              <label className="flex items-center gap-2 pb-2">
+                <input
+                  type="checkbox"
+                  name={`fee_${i}_enabled`}
+                  defaultChecked={fee.enabled}
+                  className="h-4 w-4"
+                />
+                <span className="text-xs">Activado</span>
+              </label>
+              <label>
+                <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">Concepto</span>
+                <input
+                  name={`fee_${i}_label`}
+                  defaultValue={fee.label}
+                  className="h-10 w-full rounded-lg border border-[var(--color-line)] px-2"
+                />
+              </label>
+              <label>
+                <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">Importe (¢)</span>
+                <input
+                  type="number"
+                  name={`fee_${i}_amount`}
+                  defaultValue={fee.amountCents}
+                  className="h-10 w-full rounded-lg border border-[var(--color-line)] px-2"
+                />
+              </label>
+              <label>
+                <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">
+                  Descripción (opcional)
+                </span>
+                <input
+                  name={`fee_${i}_description`}
+                  defaultValue={fee.description ?? ""}
+                  className="h-10 w-full rounded-lg border border-[var(--color-line)] px-2"
+                />
+              </label>
+            </div>
+          ))}
+        </div>
+      </fieldset>
 
       <label className="block">
         <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">Temporadas (JSON)</span>

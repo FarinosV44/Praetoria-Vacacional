@@ -20,8 +20,9 @@ export default async function AdminPreciosPage() {
       <h1 className="font-display text-2xl">Precios y reglas por alojamiento</h1>
       <p className="text-sm text-[var(--color-ink-soft)]">
         Los cambios se guardan como override y se reflejan en la web pública (precio del buscador,
-        ficha y checkout) de inmediato. Importes en céntimos de euro. Las temporadas y descuentos se
-        editan como JSON.
+        ficha y checkout) de inmediato. Importes en céntimos de euro. Los cargos opcionales (limpieza,
+        etc.) solo se muestran al huésped si están activados. Las temporadas y descuentos se editan
+        como JSON.
       </p>
 
       {configs.map(({ property, effective }) => (

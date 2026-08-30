@@ -154,7 +154,7 @@ export const legalDocs: Record<string, LegalDoc> = {
       {
         heading: "Precio y pago",
         body: [
-          "El precio mostrado antes del pago es el precio total de la estancia, con la limpieza incluida y sin comisiones de intermediarios.",
+          "El precio mostrado antes del pago es el precio total de la estancia, con todos los cargos aplicables desglosados y sin comisiones de intermediarios.",
           "El pago se realiza con tarjeta a través de Stripe. La reserva solo queda confirmada cuando el pago se ha completado correctamente.",
         ],
       },

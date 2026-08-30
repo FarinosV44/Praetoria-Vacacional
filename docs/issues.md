@@ -10,7 +10,22 @@ Last sweep: 2026-08-30
 
 ## In progress (on `develop`, not yet on `main`)
 
-### #58 · Limpieza opcional y configurable — _pending_
+### #58 · Limpieza opcional y configurable — ✅ code on `develop`
+
+**Resolution:** `RateConfig.cleaningFeeCents` → configurable `fees: StayFee[]`
+(`key`/`label`/`enabled`/`amountCents`/opt. `description`/`taxable`). Pure
+`src/domains/pricing/fees.ts` resolves only `enabled && amountCents > 0` charges;
+the engine adds them and taxes the taxable ones. **Default OFF** for both
+properties (`src/content/rates/index.ts`); owner enables from Admin → Precios y
+reglas → "Cargos opcionales" (no redeploy). Legacy `cleaningFeeCents > 0`
+overrides still bill one cleaning charge (no silent change). Applied `fees` are
+snapshotted in the reservation breakdown. `Quote.cleaningFeeCents` removed
+(→ `fees` / `feesCents`) so no "0 €" line can render. Stripe already bills one
+line at the total; invoice draft is one stay line at the total → both reflect
+only applied concepts. Public "limpieza incluida" copy softened. Also raised
+Valencia `maxGuests` 4 → 6 to match D-013 (D-019). D-018.
+`e2e/cleaning-fee.spec.ts` (2). 24 fee/engine unit tests.
+
 ### #59 · Calendario: checkout en día ocupado + estancia mínima por noches — ✅ code on `develop`
 
 **Diagnosis:** the half-open `[check-in, check-out)` model was already correct in
@@ -29,11 +44,12 @@ red below the minimum. `e2e/calendar-checkout.spec.ts` seeds a hold and verifies
 its arrival day is `exit-only`, enabled and completes a 3-night range. D-017.
 Also fixed a latent pre-existing `tsc` error in `e2e/home-faq-spacing.spec.ts`.
 
-**Verification:** `tsc` + `next lint` + `next build` clean · 187 unit · e2e sweep
-(calendar-checkout, booking-flow, property-cta, coupons, accessibility, mobile) —
-60 green.
+**Verification (#58 + #59 together):** `tsc` + `next lint` + `next build` clean ·
+**199 unit** · **full chromium e2e suite 89 green** (fresh server, `--workers=1`).
 
-**Post-merge (owner):** redeploy `main` (nothing else — no migration).
+**Post-merge (owner):** redeploy `main` — no migration. To start charging for
+cleaning again, open Admin → Precios y reglas, tick "Activado" on the Limpieza
+row for each property and set the amount.
 
 ---
 

@@ -275,3 +275,41 @@ not be picked as a check-out.
   is `exit-only`, enabled, and completes a 3-night range as the check-out.
 - Fixed a latent `tsc` error in `e2e/home-faq-spacing.spec.ts` (pre-existing,
   non-null assertion on `rows[rows.length - 1]`).
+
+## D-018 — Issue #58: optional configurable per-stay charges (`fees`)
+**Date:** 2026-08-30
+The single always-on `cleaningFeeCents` is replaced by a configurable list of
+`StayFee` (`key`, `label`, `enabled`, `amountCents`, optional `description` /
+`taxable`) on `RateConfig.fees`. Only `enabled && amountCents > 0` charges are
+resolved (`src/domains/pricing/fees.ts`, pure, 24 tests incl. the engine). A
+disabled charge is invisible everywhere: no checkout line, no "0 €", nothing in
+emails, invoices or Stripe (Stripe already bills a single line at
+`reservation.totalCents`; the invoice draft is a single stay line at the total).
+- **Default = OFF.** `src/content/rates/index.ts` ships
+  `fees: [{ key: "cleaning", …, enabled: false }]` and `cleaningFeeCents: 0` for
+  both properties. The owner turns cleaning on (and sets the amount) from
+  **Admin → Precios y reglas → Cargos opcionales** — no redeploy.
+- **Legacy fallback:** a stored override with `cleaningFeeCents > 0` and no
+  `fees` still bills one "cleaning" charge, so old data never silently changes.
+- **Snapshot:** the applied `fees` land in the reservation's `priceBreakdown`
+  JSON, so the amount charged at booking time is preserved even if the config
+  changes later.
+- **i18n:** `feeLabel()` maps the built-in keys to English for the EN checkout;
+  unknown keys show their configured label.
+- Consumers updated: `BookingWidget`, `CheckoutFlow`, `CheckoutPageView`,
+  `RatesForm` + `updateRatesAction`. `Quote.cleaningFeeCents` removed in favour
+  of `Quote.fees` / `Quote.feesCents` — no stale 0 € rendering possible.
+- Public "precio con limpieza incluida" copy softened to "precio total, sin
+  cargos ocultos / todos los cargos desglosados" (`site.ts`, `legal.ts`,
+  `landings/index.ts`, ES+EN) since cleaning is no longer folded in by default.
+- `e2e/cleaning-fee.spec.ts`: both properties show no "Limpieza" line at checkout
+  with the default config.
+
+## D-019 — Valencia rate `maxGuests` raised 4 → 6 (aligns with D-013)
+**Date:** 2026-08-30
+`src/content/rates/index.ts` still capped Valencia at `maxGuests: 4` while
+issue #57 / D-013 set the property to 6 guests. The pricing engine's
+`max_guests` violation and the widget's guest selector derive from the rate
+config, so a 5–6-guest Valencia booking was being rejected despite the property
+page advertising 6. Raised to 6; `includedGuests` stays 2 (guests 3–6 pay the
+existing per-night surcharge). The owner can tune both from the admin.
