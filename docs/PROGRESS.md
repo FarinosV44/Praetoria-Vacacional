@@ -161,6 +161,23 @@ Booking extranet). Now 142 unit + 83 chromium e2e.
 
 `tsc` + `lint` + `build` limpios · **172 unit** · **86 chromium e2e**.
 
+### Build fix (2026-08-31) — Supabase `property_busy_ranges` + prerender decoupling — on `main`
+
+`next build` failed with `property_busy_ranges` "not found in the schema cache".
+Two faults: (1) the booking RPCs were **never deployed** to production Supabase;
+(2) `<AvailabilityNote>` was an async server component so the ISR property-page
+prerender read live availability. Fix (D-021): idempotent migration
+`20260831120000_availability_rpc.sql` (hardened `property_busy_ranges` /
+`is_stay_available` — `security definer`, pinned `search_path`, half-open
+`[check_in, check_out)`, consolidates reservations + all blocks, PII-free
+`execute` to anon, mutating RPCs `service_role` only, `notify pgrst`);
+`<AvailabilityNote>` → client component fetching new `force-dynamic`
+`/api/properties/[property]/availability-insight`; new Supabase publishable/secret
+key names accepted (legacy still works); DEMO repo + SQL share the pure
+`src/domains/booking/busy-ranges.ts`. `busy-ranges.test.ts` (14) +
+`supabase/tests/property_busy_ranges.test.sql`. Build verified in DEMO **and**
+with Supabase configured against an unreachable DB. 226 unit · full e2e green.
+
 ### V6 batch — issues #58, #59, #60
 
 | Issue | Scope | Status |

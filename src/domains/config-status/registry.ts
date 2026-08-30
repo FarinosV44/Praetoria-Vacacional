@@ -39,10 +39,10 @@ export function getConfigFeatures(): ConfigFeature[] {
       "Sin Supabase la web funciona en modo demostración: los datos viven en memoria y no persisten entre despliegues.",
     envVars: [
       "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-      "SUPABASE_SERVICE_ROLE_KEY",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (o NEXT_PUBLIC_SUPABASE_ANON_KEY)",
+      "SUPABASE_SECRET_KEY (o SUPABASE_SERVICE_ROLE_KEY)",
     ],
-    where: "Supabase → Project Settings → API",
+    where: "Supabase → Project Settings → API Keys",
     state: env.supabaseConfigured ? "configured" : "not_configured",
     statusLine: env.supabaseConfigured
       ? "Conectada. Reservas y bloqueos persisten en Postgres."

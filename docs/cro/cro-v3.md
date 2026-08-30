@@ -25,9 +25,13 @@ ranges (reservations + blocks) and computes true occupancy:
 | 45–69% | "El N% de las noches de las próximas 6 semanas ya está reservado." |
 | < 45% | nothing shown |
 
-Rendered by `<AvailabilityNote>` in the property page header. Property routes are
-ISR (`revalidate = 3600`) so the number stays honest between deploys. Pure logic
-(`occupancy()` in `availability.ts`) is unit-tested.
+Rendered by `<AvailabilityNote>` in the property page header. It is a **client**
+component (D-021): the property page stays static/ISR with no DB dependency and
+the note fetches `/api/properties/[slug]/availability-insight` (`force-dynamic`)
+after hydration, so the number is always live — not up to an hour stale — and
+the note simply doesn't appear if occupancy is low or the request fails. Pure
+logic (`occupancy()` in `availability.ts`, `consolidateBusyRanges` in
+`busy-ranges.ts`) is unit-tested.
 
 ## Funnel events (GA4, PII-stripped by `track()`)
 

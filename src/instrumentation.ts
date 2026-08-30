@@ -27,7 +27,7 @@ export async function register() {
   if (env.NODE_ENV === "production") {
     if (DEMO_MODE) {
       console.warn(
-        "⚠ Running in production WITHOUT Supabase — bookings will not persist. Set NEXT_PUBLIC_SUPABASE_URL / _ANON_KEY / SUPABASE_SERVICE_ROLE_KEY.",
+        "⚠ Running in production WITHOUT Supabase — bookings will not persist. Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or _ANON_KEY) and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY).",
       );
     }
     if (errored.length) {

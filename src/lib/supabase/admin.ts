@@ -12,7 +12,7 @@ export function supabaseAdmin(): SupabaseClient {
     throw new Error("Supabase is not configured (running in DEMO mode).");
   }
   if (!cached) {
-    cached = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {
+    cached = createClient(env.supabaseUrl!, env.supabaseSecretKey!, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
   }
