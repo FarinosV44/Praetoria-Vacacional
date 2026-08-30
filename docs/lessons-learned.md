@@ -29,6 +29,18 @@ returned 404 / "Página no encontrada" — nothing to do with the code change.
 `E2E_BASE_URL=http://localhost:3100 npx playwright test --project=chromium`
 (setting `E2E_BASE_URL` also disables the config's `webServer`).
 
+## L-005 — The full e2e suite needs `--workers=1` against one DEMO server
+**When:** 2026-08-30 (issue #57). Running the whole Playwright suite against a
+single `next start` DEMO server with the default 2 workers fails a different
+test each run (`booking-flow` gets a 409 on a hold another spec just made,
+`admin-ical-feeds` sees stale feed state). Every spec passes in isolation.
+**How to apply:** for a full-suite run use a **freshly started** server (new
+process → fresh in-memory store) and `--workers=1`:
+`npx next start -p <port>` then
+`E2E_BASE_URL=… npx playwright test --project=chromium --workers=1`.
+Deleting `.data/` under a running server does *not* reset it — the store lives in
+`globalThis.__pvStore`; restart the process.
+
 ## L-003 — Pricing/availability tests must pin `now`
 **When:** 2026-08-27. `buildQuote` rejects past check-in dates via `leadTimeDays`,
 so fixture dates silently became invalid as real "today" moved. All time-sensitive
