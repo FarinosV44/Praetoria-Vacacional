@@ -313,3 +313,23 @@ issue #57 / D-013 set the property to 6 guests. The pricing engine's
 config, so a 5–6-guest Valencia booking was being rejected despite the property
 page advertising 6. Raised to 6; `includedGuests` stays 2 (guests 3–6 pay the
 existing per-night surcharge). The owner can tune both from the admin.
+
+## D-020 — Issue #60: Admin V2 built in-code, own visual system, no design handoff
+**Date:** 2026-08-30 · user choice (batched question on #58/#59/#60)
+Issue #60 (premium admin redesign) is built directly in code — no Keel Phase 3
+design handoff — consistent with D-002 (the issues are the spec) and the rest of
+the project. Worked as an epic on branch `feat/60-admin-v2`, sprints 60-A…60-H;
+merged `develop → main` only on the user's explicit instruction when the
+"definición de terminado" flow in the issue passes end to end.
+- **60-A (shell):** `src/app/admin/(panel)/admin.css` — a self-contained visual
+  system scoped to `.admin-shell` (own neutral palette, denser scale, one
+  restrained accent, `@layer components` so Tailwind utilities always win;
+  heading font override unlayered to beat the site's `@layer base` serif rule).
+  `AdminNav` (compact left sidebar, the issue's exact 11-item IA + a "Más" group,
+  active state, mobile drawer + scrim). `AdminTopbar` (page-context label, the
+  "Acciones" quick menu → nueva reserva / bloquear fechas / cambiar precios /
+  crear promoción / sincronizar, "Ver web"). New `/admin/alojamientos` hub (the
+  tabbed per-property fiche of §6 lands in 60-F). `SiteChrome` — a thin client
+  gate in the root layout that drops the public `SiteHeader`/`SiteFooter` (and
+  the `<main id="contenido">` wrapper) under `/admin`, so the admin is no longer
+  wrapped in public chrome. `e2e/admin-shell.spec.ts`.

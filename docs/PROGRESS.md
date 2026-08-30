@@ -167,10 +167,17 @@ Booking extranet). Now 142 unit + 83 chromium e2e.
 |-------|-------|--------|
 | #59 · Calendario checkout | The half-open `[check-in, check-out)` model was already correct in the engine, pricing min-nights, iCal parser and Postgres exclusion constraints. Only the public `AvailabilityCalendar` was wrong: it disabled every `busy` day, blocking a check-out on a day another guest arrives (the 21→24 case). New pure `src/domains/booking/calendar-select.ts` (15 tests, all 8 mandatory cases); calendar rebuilt on it — departure-only days stay clickable, drawn as a diagonal half-cell + `data-role="exit-only"` + legend; min-stay by real nights, red below the minimum. `e2e/calendar-checkout.spec.ts`. D-017 | ✅ on `develop` |
 | #58 · Limpieza opcional | `RateConfig.cleaningFeeCents` → configurable `fees: StayFee[]` (enabled/amount/description/taxable). Pure `fees.ts` (24 tests w/ engine). Default OFF both properties; owner toggles from Admin → Precios y reglas → "Cargos opcionales", no redeploy. Legacy fallback preserved. `Quote.cleaningFeeCents` → `fees`/`feesCents` (no 0 € line possible). Stripe/invoice already bill the exact total. Valencia `maxGuests` 4→6 (D-019). D-018. `e2e/cleaning-fee.spec.ts` | ✅ on `develop` |
-| #60 · Admin Panel V2 | Premium redesign epic — pragmatic in-code build (no design handoff, per user). Not started. | ⬜ |
+| #60 · Admin Panel V2 | Premium redesign epic — pragmatic in-code build (no design handoff, per user), on branch `feat/60-admin-v2`. **60-A done:** bespoke admin design system (`src/app/admin/(panel)/admin.css`, scoped `.admin-shell` tokens), compact left sidebar with the exact 11-item IA (`AdminNav`), "Acciones" quick menu + page-context topbar (`AdminTopbar`), responsive drawer, `/admin/alojamientos` hub, public header/footer suppressed under `/admin` (`SiteChrome`). D-020. | 🟡 60-A/8 |
 
-**#58 + #59:** `tsc` + `next lint` + `next build` clean · **199 unit** · **full
-chromium e2e 89 green**. Ready for `main` (no migration; owner redeploys).
+**#58 + #59:** merged to `main` (commit d66a91a). `tsc` + `next lint` + `next
+build` clean · **199 unit** · **full chromium e2e 89 green**. Owner redeploys
+`main` (no migration).
+
+**#60 remaining sprints:** 60-B dashboard V2 · 60-C calendar as PMS (both
+properties, context panel) · 60-D price editing V2 (range/weekday/season/%/preview)
+· 60-E stay rules + gap exceptions · 60-F per-property tabbed fiche · 60-G
+reservations V2 table + detail timeline · 60-H mobile + undo + optimistic UI.
+Per-page visual pass to `.admin-*` primitives happens inside each sprint.
 
 ## Exact position
 
