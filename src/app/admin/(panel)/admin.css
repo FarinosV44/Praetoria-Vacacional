@@ -47,6 +47,23 @@
     background: var(--a-bg);
     color: var(--a-text);
     font-feature-settings: "tnum" 1;
+
+    /* Remap the public-site design tokens to the admin palette so the pages that
+     * still use `var(--color-line)` / `var(--accent-600)` / `--radius-card`
+     * pick up the admin look without touching every file (60-H). */
+    --color-ink: var(--a-text);
+    --color-ink-soft: var(--a-text-soft);
+    --color-line: var(--a-line);
+    --color-paper: var(--a-bg);
+    --color-paper-warm: var(--a-surface-2);
+    --accent-50: var(--a-accent-soft);
+    --accent-200: var(--a-accent-soft);
+    --accent-400: var(--a-accent);
+    --accent-500: var(--a-accent);
+    --accent-600: var(--a-accent);
+    --accent-700: var(--a-accent-strong);
+    --radius-card: var(--a-radius);
+    --shadow-card: var(--a-shadow);
   }
 
   /* ---- primitives ------------------------------------------------------- */
