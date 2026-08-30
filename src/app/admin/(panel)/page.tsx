@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getRepository } from "@/lib/repository";
 import { getAllProperties, getPropertyById } from "@/domains/properties/registry";
 import { addDays, nightsBetween, todayIso } from "@/lib/dates";
-import { formatMoney, formatRange, guestsLabel } from "@/lib/format";
+import { formatDateShort, formatMoney, formatRange, guestsLabel } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { getConfigFeatures } from "@/domains/config-status/registry";
 import { monthNav } from "@/domains/calendar/month";
@@ -192,7 +192,7 @@ export default async function AdminDashboard({
                   <span className="truncate">{r.guestName ?? r.code}</span>
                   <span className="admin-muted text-xs">
                     {getPropertyById(r.propertyId)?.name?.split(" ")[0]} · sale{" "}
-                    {formatRange(r.checkIn, r.checkOut).split("–")[1]?.trim()}
+                    {formatDateShort(r.checkOut)}
                   </span>
                 </li>
               ))}

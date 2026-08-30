@@ -64,6 +64,17 @@ test.describe("admin V2 shell", () => {
     }
   });
 
+  test("reservations V2 has quick-filter chips that drive the query", async ({ page }) => {
+    await login(page);
+    await page.goto("/admin/reservas");
+    await expect(page.getByRole("columnheader", { name: "Noches" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Estancia" })).toBeVisible();
+    await page.getByRole("link", { name: "Booking", exact: true }).click();
+    await expect(page).toHaveURL(/channel=booking/);
+    await page.getByRole("link", { name: "Próximas", exact: true }).click();
+    await expect(page).toHaveURL(/range=upcoming/);
+  });
+
   test("the Alojamientos hub shows both properties with operational shortcuts", async ({ page }) => {
     await login(page);
     await page.goto("/admin/alojamientos");
