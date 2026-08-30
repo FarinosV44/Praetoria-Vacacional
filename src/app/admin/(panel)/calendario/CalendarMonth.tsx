@@ -232,7 +232,14 @@ export function CalendarMonth({
       {selected.size > 0 && (
         <div className="mt-4 space-y-3 rounded-[var(--a-radius)] border border-[var(--a-accent-soft)] bg-[var(--a-accent-soft)] p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-medium">{selected.size} día(s) seleccionados</p>
+            <p className="font-medium">
+              {selected.size} día(s) seleccionados
+              {selected.size > 14 && (
+                <span className="admin-chip ml-2" data-tone="warn">
+                  afecta a muchas fechas
+                </span>
+              )}
+            </p>
             <div className="flex gap-1.5 text-xs">
               <button type="button" className="admin-btn" data-variant="ghost" onClick={() => keepOnly((d) => !isWeekendDate(d))}>
                 Solo entre semana
@@ -274,7 +281,10 @@ export function CalendarMonth({
                 Aplicar
               </button>
               {(priceState && !priceState.ok && <span className="text-[var(--a-danger)]">{priceState.error}</span>) ||
-                (pctState && !pctState.ok && <span className="text-[var(--a-danger)]">{pctState.error}</span>)}
+                (pctState && !pctState.ok && <span className="text-[var(--a-danger)]">{pctState.error}</span>) ||
+                ((priceState?.ok || pctState?.ok) && (
+                  <span className="text-[var(--a-ok)]">✓ Guardado, ya está activo en la web</span>
+                ))}
             </form>
 
             {preview && (
@@ -308,6 +318,7 @@ export function CalendarMonth({
               Aplicar estancia mínima
             </button>
             {minState && !minState.ok && <span className="text-[var(--a-danger)]">{minState.error}</span>}
+            {minState?.ok && <span className="text-[var(--a-ok)]">✓ Guardado</span>}
           </form>
 
           <div className="flex flex-wrap gap-2">
