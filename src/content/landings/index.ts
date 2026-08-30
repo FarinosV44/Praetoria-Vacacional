@@ -60,7 +60,7 @@ export const landings: Landing[] = [
       {
         heading: "Reserva directa y confirmación inmediata",
         body: [
-          "Consulta tus fechas, comprueba la disponibilidad real y reserva en tres pasos. El precio que ves incluye la limpieza. Tras el pago recibirás el email de confirmación con tu localizador.",
+          "Consulta tus fechas, comprueba la disponibilidad real y reserva en tres pasos. El precio que ves antes de pagar es el precio total, sin comisiones ni cargos ocultos. Tras el pago recibirás el email de confirmación con tu localizador.",
         ],
       },
     ],
@@ -201,7 +201,7 @@ export const landings: Landing[] = [
       {
         heading: "Reserva directa",
         body: [
-          "Consulta disponibilidad, comprueba el precio final con limpieza incluida y reserva en tres pasos. Recibirás el email de confirmación con el localizador.",
+          "Consulta disponibilidad, comprueba el precio final —total, sin cargos ocultos— y reserva en tres pasos. Recibirás el email de confirmación con el localizador.",
         ],
       },
     ],

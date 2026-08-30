@@ -3,12 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { SkeletonCalendar } from "@/components/ui/Skeleton";
 import { monthCells } from "@/lib/calendar-cells";
-
-type DayState = "free" | "busy" | "past" | "checkout-only";
-interface CalendarDay {
-  date: string;
-  state: DayState;
-}
+import {
+  applyDayClick,
+  dayRole,
+  isDaySelectable,
+  nightsClear,
+  selectionPhase,
+  stayNights,
+  type PublicDayState,
+  type RangeSelection,
+} from "@/domains/booking/calendar-select";
 
 const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 const MONTHS = [
@@ -16,26 +20,24 @@ const MONTHS = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
 
+interface CalendarDay {
+  date: string;
+  state: PublicDayState;
+}
+
 /** Today's date as YYYY-MM-DD in UTC — matches the server's `todayIso()`. */
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
-/** Step a YYYY-MM-DD string by one day, timezone-free. */
-function nextDay(date: string) {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
 
-export interface RangeSelection {
-  checkIn: string | null;
-  checkOut: string | null;
-}
+export type { RangeSelection };
 
 /**
- * Touch-friendly availability calendar (issues #7, #23). Shows real free/busy
- * days from the property calendar API and enforces valid ranges client-side
- * (server re-validates). Two months visible; paginates forward.
+ * Touch-friendly availability calendar (issues #7, #23, #59). Shows real
+ * free/busy days from the property calendar API and enforces valid ranges
+ * client-side (server re-validates). A stay is `[check-in, check-out)`: a day
+ * occupied by another guest's arrival can still be picked as a check-OUT date,
+ * and it is drawn as a departure-only half-cell so that is clear.
  */
 export function AvailabilityCalendar({
   propertySlug,
@@ -48,7 +50,7 @@ export function AvailabilityCalendar({
   onChange: (r: RangeSelection) => void;
   minNightsHint?: number;
 }) {
-  const [days, setDays] = useState<Map<string, DayState>>(new Map());
+  const [days, setDays] = useState<Map<string, PublicDayState>>(new Map());
   const [loading, setLoading] = useState(true);
   const [monthOffset, setMonthOffset] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
@@ -76,42 +78,19 @@ export function AvailabilityCalendar({
     return d;
   }, [monthOffset]);
 
-  function stateOf(date: string): DayState {
+  function stateOf(date: string): PublicDayState {
     return days.get(date) ?? (date < todayStr() ? "past" : "free");
   }
 
-  /** Is every night in [a,b) free? */
-  function rangeClear(a: string, b: string): boolean {
-    let cur = a;
-    while (cur < b) {
-      const s = stateOf(cur);
-      if (s === "busy" || s === "past") return false;
-      cur = nextDay(cur);
-    }
-    return true;
-  }
-
   function pick(date: string) {
-    const s = stateOf(date);
-    if (s === "past") return;
-
-    if (!value.checkIn || (value.checkIn && value.checkOut)) {
-      if (s === "busy") return;
-      onChange({ checkIn: date, checkOut: null });
-      return;
-    }
-    // choosing checkout
-    if (date <= value.checkIn) {
-      onChange({ checkIn: date, checkOut: null });
-      return;
-    }
-    if (!rangeClear(value.checkIn, date)) {
-      // Restart the selection at the new date.
-      onChange({ checkIn: date, checkOut: null });
-      return;
-    }
-    onChange({ checkIn: value.checkIn, checkOut: date });
+    const next = applyDayClick(date, value, stateOf);
+    if (next) onChange(next);
   }
+
+  const selectedNights =
+    value.checkIn && value.checkOut ? stayNights(value.checkIn, value.checkOut) : 0;
+  const belowMin =
+    !!minNightsHint && minNightsHint > 1 && selectedNights > 0 && selectedNights < minNightsHint;
 
   function renderMonth(offset: number) {
     const d = new Date(base);
@@ -121,6 +100,7 @@ export function AvailabilityCalendar({
     const cells = monthCells(year, month + 1);
 
     const previewEnd = value.checkIn && !value.checkOut && hover ? hover : value.checkOut;
+    const choosingCheckout = selectionPhase(value) === "checkout";
 
     return (
       <div key={offset} className="flex-1">
@@ -136,6 +116,7 @@ export function AvailabilityCalendar({
           {cells.map((date, i) => {
             if (!date) return <span key={i} />;
             const s = stateOf(date);
+            const role = dayRole(date, stateOf);
             const isIn = date === value.checkIn;
             const isOut = date === value.checkOut;
             const inRange =
@@ -143,30 +124,58 @@ export function AvailabilityCalendar({
               previewEnd &&
               date > value.checkIn &&
               date < previewEnd &&
-              rangeClear(value.checkIn, previewEnd);
-            const disabled = s === "past" || (s === "busy" && !isOut);
+              nightsClear(value.checkIn, previewEnd, stateOf);
+            const selectable = isDaySelectable(date, value, stateOf);
+            const disabled = !selectable && !isIn && !isOut;
+            // A departure-only day: occupied by someone's arrival, still valid
+            // as a check-out endpoint while we are choosing one.
+            const exitOnly = role === "exit-only";
+            const label =
+              s === "past"
+                ? `${date} pasado`
+                : role === "blocked"
+                  ? `${date} no disponible`
+                  : exitOnly
+                    ? `${date} disponible solo como fecha de salida`
+                    : date;
 
             return (
               <button
                 key={date}
                 type="button"
                 disabled={disabled}
+                data-state={s}
+                data-role={role}
                 onMouseEnter={() => setHover(date)}
                 onFocus={() => setHover(date)}
                 onClick={() => pick(date)}
-                aria-label={`${date}${s === "busy" ? " no disponible" : ""}`}
+                aria-label={label}
                 aria-pressed={isIn || isOut}
                 className={[
-                  "relative h-10 rounded-lg text-sm transition-colors",
+                  "relative h-10 overflow-hidden rounded-lg text-sm transition-colors",
                   disabled
                     ? "cursor-not-allowed text-[var(--color-line)] line-through"
                     : "hover:bg-[var(--accent-50)]",
                   isIn || isOut ? "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-600)]" : "",
                   inRange ? "bg-[var(--accent-50)] text-[var(--accent-700)]" : "",
-                  s === "checkout-only" && !isIn && !isOut && !inRange ? "text-[var(--color-ink-soft)]" : "",
+                  exitOnly && !isIn && !isOut
+                    ? choosingCheckout
+                      ? "text-[var(--color-ink)]"
+                      : "text-[var(--color-ink-soft)]"
+                    : "",
                 ].join(" ")}
               >
-                {Number(date.slice(8, 10))}
+                {exitOnly && !isIn && !isOut && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, transparent 0 50%, var(--color-line) 50% 100%)",
+                    }}
+                  />
+                )}
+                <span className="relative">{Number(date.slice(8, 10))}</span>
               </button>
             );
           })}
@@ -192,7 +201,11 @@ export function AvailabilityCalendar({
           ‹
         </button>
         <span className="text-xs text-[var(--color-ink-soft)]">
-          {loading ? "Cargando disponibilidad…" : "Selecciona entrada y salida"}
+          {loading
+            ? "Cargando disponibilidad…"
+            : selectionPhase(value) === "checkout"
+              ? "Elige la fecha de salida"
+              : "Selecciona entrada y salida"}
         </span>
         <button
           type="button"
@@ -209,9 +222,38 @@ export function AvailabilityCalendar({
         <div className="hidden sm:block">{renderMonth(1)}</div>
       </div>
 
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-ink-soft)]">
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)]" />
+          Libre
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span
+            className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)]"
+            style={{
+              background: "linear-gradient(135deg, transparent 0 50%, var(--color-line) 50% 100%)",
+            }}
+          />
+          Solo salida
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-block h-3 w-3 rounded-sm text-[var(--color-line)] line-through">
+            —
+          </span>
+          No disponible
+        </span>
+      </div>
+
       {minNightsHint && minNightsHint > 1 && (
-        <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
-          Estancia mínima habitual: {minNightsHint} noches.
+        <p
+          className={[
+            "mt-2 text-xs",
+            belowMin ? "font-medium text-red-600" : "text-[var(--color-ink-soft)]",
+          ].join(" ")}
+        >
+          {belowMin
+            ? `Esta estancia son ${selectedNights} noche(s); la mínima para estas fechas es de ${minNightsHint}.`
+            : `Estancia mínima habitual: ${minNightsHint} noches.`}
         </p>
       )}
       {value.checkIn && !value.checkOut && (

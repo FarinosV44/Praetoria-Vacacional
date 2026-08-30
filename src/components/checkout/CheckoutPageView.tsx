@@ -58,7 +58,7 @@ export async function CheckoutPageView({
           quote={{
             nights: result.quote.nights,
             nightlySubtotalCents: result.quote.nightlySubtotalCents,
-            cleaningFeeCents: result.quote.cleaningFeeCents,
+            fees: result.quote.fees,
             extraGuestFeeCents: result.quote.extraGuestFeeCents,
             taxCents: result.quote.taxCents,
             totalCents: result.quote.totalCents,
