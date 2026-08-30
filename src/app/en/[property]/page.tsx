@@ -5,7 +5,9 @@ import { resolveProperty } from "@/domains/properties/content";
 import { pageMetadata } from "@/lib/seo";
 import { PropertyPageView } from "@/components/property/PropertyPageView";
 
-export const dynamicParams = false;
+// See the ES route: known slugs are prerendered, a valid-but-missing slug renders
+// on demand rather than being baked as a permanent 404 (issue #57).
+export const dynamicParams = true;
 export const revalidate = 3600;
 
 export function generateStaticParams() {

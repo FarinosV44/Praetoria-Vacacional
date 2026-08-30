@@ -6,7 +6,9 @@ const csp = [
   // scripts are still restricted to the allow-list below.
   "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "img-src 'self' data: blob: https://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
+  // `https:` (any host) so blog featured images (issue #57) can be pasted as a
+  // URL without an upload pipeline. Scripts/styles/connect stay locked down.
+  "img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://api.stripe.com",
   "frame-src https://js.stripe.com https://hooks.stripe.com",

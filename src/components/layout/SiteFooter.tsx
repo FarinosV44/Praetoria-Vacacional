@@ -49,6 +49,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link className="block py-1.5 hover:text-[var(--accent-700)]" href="/blog">
+                Blog y actualidad
+              </Link>
+            </li>
+            <li>
               <Link className="block py-1.5 hover:text-[var(--accent-700)]" href="/ventajas-reserva-directa">
                 Ventajas de reservar directo
               </Link>

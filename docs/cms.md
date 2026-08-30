@@ -11,6 +11,34 @@ A single key/value table, `content_overrides` (memory store in DEMO mode):
 |---|---|---|
 | `property:<slug>` | `{ metaTitle?, metaDescription?, h1?, tagline?, shortIntro?, highlights?, nearby?, faq? }` | `resolveProperty()` / `resolvePropertiesForHome()` |
 | `guide:<propertySlug>:<slug>` | `{ title?, description?, lead?, status?, order? }` | `resolveGuides()` and friends |
+| `blog:post:<id>` | a full `BlogPost` document (issue #57) | `src/domains/blog/store.ts` |
+
+## Blog / Actualidad (issue #57)
+
+Full article CMS at **`/admin/blog`** — create / edit / draft / publish /
+schedule / delete, no deploy. Each post is one `blog:post:<id>` document in the
+same `content_overrides` table (no new migration; works in DEMO and Supabase
+alike). Public surface: **`/blog`** (index, `revalidate=3600`) and
+**`/blog/[slug]`** (`dynamicParams`, SSG from published posts).
+
+- **Fields:** title, slug (immutable-by-convention once published), status,
+  excerpt, Markdown body, featured image URL + ALT, category, tags, destination
+  (`javalambre` / `valencia` / `ambos` / `general`), related property for the
+  CTA, author, `publishedAt` (future date = scheduled), and the full SEO block
+  (SEO title, meta description, canonical, OG title/description/image).
+- **Visibility:** `isPubliclyVisible` = `status === "published"` AND
+  `publishedAt <= now`. Drafts and scheduled posts 404 publicly, stay out of the
+  sitemap and are unlinked.
+- **SEO per article:** SSG, clean URL, unique title/meta, single h1, canonical,
+  `Article` + `BreadcrumbList` JSON-LD, image ALT, visible publish/update dates,
+  auto-added to `sitemap.xml` via `getIndexableRoutes()`, a contextual
+  non-aggressive booking CTA to the related property, and a "sigue leyendo"
+  block. Home shows the 3 latest posts (ES).
+- **Markdown:** a small, safe in-house renderer (`src/domains/blog/markdown.ts`)
+  — closed tag set (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr),
+  every link URL validated, all other HTML escaped. No new dependency (D-014).
+- **No canibalization with `/guias`:** guides stay the evergreen destination
+  hubs; the blog is dated news / seasonal / editorial. Cross-links both ways.
 
 Pure merge logic is in `src/domains/properties/merge.ts` and
 `src/content/guides/merge.ts` (both unit-tested). The repo read lives in

@@ -139,10 +139,23 @@ HTTPS URL. `e2e/ical-export.spec.ts` (6 tests) + `curl` verify 200/no-redirect/
 headers/RFC. **Owner must confirm Booking accepts both URLs** (no access to the
 Booking extranet). Now 142 unit + 83 chromium e2e.
 
+### V5 batch (issue #57) — capacidad correcta + blog/CMS SEO — ✅ MERGED TO `main` (2026-08-30)
+
+| Part | Scope | Status |
+|------|-------|--------|
+| 57 · Capacidad | Valencia Frente al Mar: `capacity.guests` 4 → **6**; `bedrooms` **3** (owner confirmó 3 habitaciones, no 2 — D-013); `bedConfig` reescrito; toda la copia ES+EN "4 personas/huéspedes" → 6 (`valencia.ts`, `landings/index.ts`). JSON-LD `occupancy`/`numberOfRooms`, tabla de datos y `BookingWidget maxGuests` derivan de `capacity.*`. Javalambre ya 6 / 2 — confirmado | ✅ |
+| 57 · Blog CMS | `src/domains/blog/*` (types · zod schema · renderer Markdown propio y seguro, 10 tests · helpers, 9 tests · store sobre `content_overrides`, sin migración · acciones server). `/admin/blog` lista + `/nuevo` + `/[id]`: crear/editar/borrador/publicar/programar/eliminar; campos: slug, extracto, contenido, imagen destacada+ALT, categoría, etiquetas, destino, alojamiento CTA, autor, fechas, SEO/OG. Capacidad `content.write` (admin+gestión). 2 borradores semilla en DEMO | ✅ |
+| 57 · Blog público | `/blog` (índice, ISR 1h) + `/blog/[slug]` (`dynamicParams`, SSG desde publicados). `Article`+`BreadcrumbList` JSON-LD, breadcrumbs, canonical, sitemap automático (`getIndexableRoutes`), CTA contextual a la ficha, "sigue leyendo", 3 últimos en la home. `Blog` en header + menú móvil + footer. Sin canibalización con `/guias` | ✅ |
+| 57 · Fix 404 `/valencia` | `/[property]` + `/en/[property]`: `dynamicParams = false` → **`true`**. Slugs conocidos siguen pre-generados; un slug válido omitido por un build se renderiza bajo demanda en vez de 404 permanente. El 404 de producción solo se reproduce en el sitio desplegado (Hostinger) — **requiere redespliegue limpio de `main`** | ✅ (código) |
+
+`tsc` + `next lint` + `next build` limpios · **161 unit** · **86 chromium e2e**
+(`e2e/blog.spec.ts` + `/blog` en `accessibility.spec.ts`). Merged `develop → main`
+2026-08-30 por instrucción explícita del usuario.
+
 ## Exact position
 
-**Issue #56 (management intranet) merged to `main`** (2026-08-29). `develop` and
-`main` level. The public site + booking funnel are unchanged from the V3 batch;
+**Issue #57 (capacidad + blog/CMS) merged to `main`** (2026-08-30). Before it,
+issue #56 (management intranet) merged 2026-08-29. `develop` and `main` level. The public site + booking funnel are unchanged from the V3 batch;
 the intranet under `/admin` is new: reservas (manual + all channels), CRM with
 dedup/merge, invoicing with per-property series + immutable issued invoices +
 print-to-PDF document, operational calendar with per-date pricing, marketing
@@ -168,10 +181,13 @@ Remaining before V1 "done" (issue #22):
 ## Branches
 
 Both `develop` and `main` are on origin and level. `main` history: `b5ee968`
-(V1+V2) → issue #53 → #54 → #55 → FAQ-spacing polish → **issue #56 (intranet)**,
-each merged from `develop` at the user's explicit request. Ongoing work continues
-on `develop`. The Vercel deploy itself is still the user's to trigger; production
-also needs `supabase/migrations/20260829*.sql` applied for the intranet.
+(V1+V2) → issue #53 → #54 → #55 → FAQ-spacing polish → issue #56 (intranet) →
+iCal persistence + export fixes → **issue #57 (capacidad + blog)**, each merged
+from `develop` at the user's explicit request. Ongoing work continues on
+`develop`. Production runs on Hostinger in DEMO mode (`/api/health` →
+`demoMode: true`); it needs `supabase/migrations/*` applied for the intranet
+**and** a clean redeploy of `main` for the `/valencia` 404 fix + the blog to
+appear.
 
 ## Open items / blocks
 

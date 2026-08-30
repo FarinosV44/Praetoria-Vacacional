@@ -166,3 +166,55 @@ downloaded a working `.ics`. Fixes:
 403/404, legacy path) + a raw `curl` inspection. **Not** verified inside
 Booking's own extranet — no access to the owner's Booking account; the owner
 must add both URLs and confirm acceptance.
+
+## D-013 — Issue #57: Valencia Frente al Mar capacity = 6 guests / 3 bedrooms
+**Date:** 2026-08-30 · user clarification on issue #57
+Issue #57 asked to correct Valencia's capacity to "6 plazas, mantener 2
+habitaciones". Asked to confirm the bed layout, the owner clarified in
+conversation: **"son 3 habitaciones, una con cama doble y dos con literas"** —
+so it is **3 bedrooms**, not 2. This supersedes the "2 habitaciones" line in the
+issue. Applied: `valencia.ts` `capacity.guests` 4 → **6**, `bedrooms` stays
+**3**, `bedConfig` → "1 dormitorio con cama doble extragrande · 2 dormitorios
+con literas". All ES + EN copy that said "hasta 4 personas" / "up to 4 people"
+updated to 6 (property file highlights/sections/FAQ, `landings/index.ts` FAQ +
+body). JSON-LD (`occupancy.maxValue`, `numberOfRooms`), the quick-facts table
+and `BookingWidget maxGuests` all derive from `capacity.*` so they follow
+automatically. Javalambre was already 6 / 2 everywhere — confirmed, no change.
+Capacity is not persisted in the DB (`properties` has no capacity columns), so
+this is a content-file change only.
+
+## D-014 — Issue #57: blog architecture (KV-backed, in-house Markdown, no migration)
+**Date:** 2026-08-30 · user request (issue #57)
+The blog/Actualidad CMS stores each article as a `blog:post:<id>` document in
+the existing `content_overrides` KV rather than a dedicated `blog_posts` table.
+- **Why:** reuses the whole light-CMS persistence (memory + Supabase +
+  DEMO-safe, issue #50), needs **no migration**, and therefore works on the
+  current production deployment, which runs in DEMO mode with no Supabase
+  (`/api/health` → `demoMode: true`). A vacation-rental blog is dozens of posts,
+  not thousands — DB indexes/constraints are not needed. `src/domains/blog/store.ts`
+  validates every document with zod on read and ignores malformed ones.
+- **Markdown:** a small in-house renderer (`src/domains/blog/markdown.ts`) — a
+  fixed subset (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr), every
+  link URL validated (`safeHref`), all other HTML escaped. No `marked`/`remark`
+  dependency added.
+- **Featured images:** pasted as a URL (no upload pipeline). `img-src` in the
+  CSP widened from `https://*.supabase.co` to `https:` so external images load;
+  script/style/connect stay locked to the allow-list.
+- **Public architecture:** `/blog` + `/blog/[slug]` (`dynamicParams`, SSG from
+  published posts, ISR 1h). `/guias` stays the evergreen hub; the blog is dated
+  news/editorial. Both link to each other. Draft + scheduled posts (future
+  `publishedAt`) 404 publicly and stay out of the sitemap.
+- **Route resilience:** `/[property]` and `/en/[property]` switched from
+  `dynamicParams = false` to `true`. Known slugs still prerender; a valid slug a
+  build somehow omits now renders on demand instead of being baked as a
+  permanent 404 (unknown slugs still 404 via the `getPropertyBySlug` guard).
+  This is the durable fix for the production `/valencia` 404 (see below).
+- **Seed:** two real starter articles seeded in DEMO mode as **drafts**
+  (Camarena de la Sierra; arroces cerca de la playa de la Llastra) — nothing
+  auto-publishes; the owner edits and publishes them.
+**Production `/valencia` 404 (praetoriavacacional.es):** reproduced only on the
+deployed site (Hostinger), never in a clean local build of `main`. `/javalambre`
+and `/valencia/<landing>` work; only `/valencia` and `/en/valencia` return a
+prerendered 404 — consistent with a build where the property route baked those
+paths as 404 under `dynamicParams = false`. Fixed structurally by the route
+change above; needs a fresh redeploy of `main` (clean `.next`) to take effect.

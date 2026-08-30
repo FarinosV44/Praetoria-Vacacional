@@ -164,6 +164,36 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   };
 }
 
+export function articleJsonLd(input: {
+  headline: string;
+  description: string;
+  path: string;
+  image?: string | null;
+  datePublished?: string | null;
+  dateModified?: string | null;
+  author?: string;
+}) {
+  const image = input.image
+    ? [input.image.startsWith("http") ? input.image : absoluteUrl(input.image)]
+    : [absoluteUrl("/images/og/default.svg")];
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: input.headline,
+    description: input.description,
+    mainEntityOfPage: absoluteUrl(input.path),
+    image,
+    ...(input.datePublished ? { datePublished: input.datePublished } : {}),
+    ...(input.dateModified ? { dateModified: input.dateModified } : {}),
+    author: { "@type": "Organization", name: input.author || SITE },
+    publisher: {
+      "@type": "Organization",
+      name: SITE,
+      logo: { "@type": "ImageObject", url: absoluteUrl("/icon.svg") },
+    },
+  };
+}
+
 export function faqJsonLd(items: { question: string; answer: string }[]) {
   return {
     "@context": "https://schema.org",
