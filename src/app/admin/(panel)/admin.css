@@ -1,0 +1,231 @@
+/*
+ * Admin V2 visual system (issue #60).
+ *
+ * The admin is a working tool, not a marketing surface: its own tokens — a
+ * denser scale, a cooler neutral palette, a single restrained accent — scoped to
+ * `.admin-shell` so nothing here leaks into the public site (and vice versa).
+ *
+ * Everything lives in `@layer components` so Tailwind utility classes
+ * (`hidden`, `sm:hidden`, `md:inline-flex`, …) always override these component
+ * defaults regardless of stylesheet import order.
+ */
+
+/* Unlayered so it beats the site's `@layer base` serif heading rule. */
+.admin-shell :is(h1, h2, h3, h4, h5) {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.011em;
+  line-height: 1.25;
+}
+.admin-shell :is(h1, h2) { font-weight: 650; }
+.admin-shell :is(h3, h4, h5) { font-weight: 600; }
+.admin-main > h1:first-child { font-size: 1.15rem; margin-bottom: 0.35rem; }
+
+@layer components {
+  .admin-shell {
+    --a-bg: oklch(0.985 0.003 260);
+    --a-surface: oklch(1 0 0);
+    --a-surface-2: oklch(0.975 0.004 260);
+    --a-line: oklch(0.912 0.006 260);
+    --a-line-soft: oklch(0.945 0.005 260);
+    --a-text: oklch(0.24 0.02 260);
+    --a-text-soft: oklch(0.48 0.016 260);
+    --a-text-faint: oklch(0.62 0.014 260);
+    --a-accent: oklch(0.55 0.13 250);
+    --a-accent-strong: oklch(0.47 0.14 250);
+    --a-accent-soft: oklch(0.955 0.02 250);
+    --a-ok: oklch(0.62 0.13 155);
+    --a-ok-soft: oklch(0.955 0.03 155);
+    --a-warn: oklch(0.72 0.13 75);
+    --a-warn-soft: oklch(0.96 0.04 80);
+    --a-danger: oklch(0.58 0.17 25);
+    --a-danger-soft: oklch(0.96 0.03 25);
+    --a-radius: 0.625rem;
+    --a-radius-sm: 0.4rem;
+    --a-shadow: 0 1px 2px oklch(0.2 0.02 260 / 0.06), 0 4px 16px oklch(0.2 0.02 260 / 0.06);
+    --a-shadow-panel: 0 8px 40px oklch(0.2 0.02 260 / 0.16);
+
+    background: var(--a-bg);
+    color: var(--a-text);
+    font-feature-settings: "tnum" 1;
+
+    /* Remap the public-site design tokens to the admin palette so the pages that
+     * still use `var(--color-line)` / `var(--accent-600)` / `--radius-card`
+     * pick up the admin look without touching every file (60-H). */
+    --color-ink: var(--a-text);
+    --color-ink-soft: var(--a-text-soft);
+    --color-line: var(--a-line);
+    --color-paper: var(--a-bg);
+    --color-paper-warm: var(--a-surface-2);
+    --accent-50: var(--a-accent-soft);
+    --accent-200: var(--a-accent-soft);
+    --accent-400: var(--a-accent);
+    --accent-500: var(--a-accent);
+    --accent-600: var(--a-accent);
+    --accent-700: var(--a-accent-strong);
+    --radius-card: var(--a-radius);
+    --shadow-card: var(--a-shadow);
+  }
+
+  /* ---- primitives ------------------------------------------------------- */
+
+  .admin-card {
+    background: var(--a-surface);
+    border: 1px solid var(--a-line);
+    border-radius: var(--a-radius);
+    box-shadow: var(--a-shadow);
+  }
+
+  .admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .admin-chip[data-tone="neutral"] { background: var(--a-surface-2); color: var(--a-text-soft); }
+  .admin-chip[data-tone="accent"] { background: var(--a-accent-soft); color: var(--a-accent-strong); }
+  .admin-chip[data-tone="ok"] { background: var(--a-ok-soft); color: var(--a-ok); }
+  .admin-chip[data-tone="warn"] { background: var(--a-warn-soft); color: oklch(0.42 0.09 70); }
+  .admin-chip[data-tone="danger"] { background: var(--a-danger-soft); color: var(--a-danger); }
+
+  .admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 2.25rem;
+    padding: 0 0.85rem;
+    border-radius: var(--a-radius-sm);
+    font-size: 0.83rem;
+    font-weight: 550;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .admin-btn[data-variant="primary"] { background: var(--a-accent); color: oklch(0.99 0 0); }
+  .admin-btn[data-variant="primary"]:hover { background: var(--a-accent-strong); }
+  .admin-btn[data-variant="ghost"] { color: var(--a-text-soft); }
+  .admin-btn[data-variant="ghost"]:hover { background: var(--a-surface-2); color: var(--a-text); }
+  .admin-btn[data-variant="outline"] { border-color: var(--a-line); color: var(--a-text); background: var(--a-surface); }
+  .admin-btn[data-variant="outline"]:hover { border-color: var(--a-accent); color: var(--a-accent-strong); }
+
+  /* ---- shell layout ------------------------------------------------------ */
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+  @media (max-width: 900px) {
+    .admin-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100dvh;
+    overflow-y: auto;
+    background: var(--a-surface);
+    border-right: 1px solid var(--a-line);
+    padding: 0.9rem 0.7rem;
+  }
+  @media (max-width: 900px) {
+    .admin-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
+      width: 16rem;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      box-shadow: var(--a-shadow-panel);
+    }
+    .admin-sidebar[data-open="true"] { transform: translateX(0); }
+  }
+
+  .admin-navgroup + .admin-navgroup { margin-top: 0.9rem; }
+  .admin-navgroup-label {
+    padding: 0 0.6rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.66rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--a-text-faint);
+  }
+
+  .admin-navlink {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.44rem 0.6rem;
+    border-radius: var(--a-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--a-text-soft);
+    line-height: 1.2;
+  }
+  .admin-navlink:hover { background: var(--a-surface-2); color: var(--a-text); }
+  .admin-navlink[aria-current="page"] {
+    background: var(--a-accent-soft);
+    color: var(--a-accent-strong);
+    font-weight: 600;
+  }
+  .admin-navlink svg { width: 1rem; height: 1rem; flex: none; opacity: 0.85; }
+
+  .admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.5rem 1rem;
+    background: color-mix(in oklch, var(--a-bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--a-line);
+  }
+
+  .admin-main {
+    padding: 1.25rem clamp(1rem, 3vw, 1.75rem) 4rem;
+    width: 100%;
+    max-width: 90rem;
+    margin-inline: auto;
+  }
+
+  .admin-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: oklch(0.2 0.02 260 / 0.4);
+  }
+  .admin-menu-btn { display: inline-flex; }
+  @media (min-width: 901px) {
+    .admin-scrim { display: none; }
+    .admin-menu-btn { display: none; }
+  }
+
+  /* ---- data density ---------------------------------------------------------- */
+
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  .admin-table th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--a-text-faint);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--a-line);
+  }
+  .admin-table td { padding: 0.6rem; border-bottom: 1px solid var(--a-line-soft); }
+  .admin-table tr:hover td { background: var(--a-surface-2); }
+
+  .admin-h1 { font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; }
+  .admin-muted { color: var(--a-text-soft); }
+}

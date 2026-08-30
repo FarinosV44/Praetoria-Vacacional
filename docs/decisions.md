@@ -313,3 +313,58 @@ issue #57 / D-013 set the property to 6 guests. The pricing engine's
 config, so a 5–6-guest Valencia booking was being rejected despite the property
 page advertising 6. Raised to 6; `includedGuests` stays 2 (guests 3–6 pay the
 existing per-night surcharge). The owner can tune both from the admin.
+
+## D-020 — Issue #60: Admin V2 built in-code, own visual system, no design handoff
+**Date:** 2026-08-30 · user choice (batched question on #58/#59/#60)
+Issue #60 (premium admin redesign) is built directly in code — no Keel Phase 3
+design handoff — consistent with D-002 (the issues are the spec) and the rest of
+the project. Worked as an epic on branch `feat/60-admin-v2`, sprints 60-A…60-H;
+merged `develop → main` only on the user's explicit instruction when the
+"definición de terminado" flow in the issue passes end to end.
+- **60-A (shell):** `src/app/admin/(panel)/admin.css` — a self-contained visual
+  system scoped to `.admin-shell` (own neutral palette, denser scale, one
+  restrained accent, `@layer components` so Tailwind utilities always win;
+  heading font override unlayered to beat the site's `@layer base` serif rule).
+  `AdminNav` (compact left sidebar, the issue's exact 11-item IA + a "Más" group,
+  active state, mobile drawer + scrim). `AdminTopbar` (page-context label, the
+  "Acciones" quick menu → nueva reserva / bloquear fechas / cambiar precios /
+  crear promoción / sincronizar, "Ver web"). New `/admin/alojamientos` hub (the
+  tabbed per-property fiche of §6 lands in 60-F). `SiteChrome` — a thin client
+  gate in the root layout that drops the public `SiteHeader`/`SiteFooter` (and
+  the `<main id="contenido">` wrapper) under `/admin`, so the admin is no longer
+  wrapped in public chrome. `e2e/admin-shell.spec.ts`.
+- **60-B (dashboard):** `src/app/admin/(panel)/page.tsx` rebuilt onto `.admin-*`
+  with the §2 widgets — entradas/salidas 7d, alojados ahora, ocupación
+  30/60/90, huecos difíciles de vender (new pure `src/domains/calendar/gaps.ts`
+  `findHardGaps`, 5 tests), pagos con incidencia, canal con mini-barras.
+- **60-C/D (calendar + price editing):** `CalendarMonth` rebuilt. Selection:
+  mes / entre semana (dom–jue) / fin de semana (vie–sáb) / semana / narrow.
+  Price modes: fixed € **or** percentage — `applyDayPricePercentAction` scales
+  each day's effective price (`resolveRateConfig` + `nightlyRateCents`).
+  **Preview** from the grid cells (N noches · media actual → media nueva).
+  `e2e/admin-calendar.spec.ts`. Season/discount editing stays JSON until 60-F.
+- **60-G (reservations):** `.admin-table`, quick-filter chips (Hoy / Próximas /
+  Este mes / JV / VLC / Directa / Booking / Pagada / Pendiente / Canceladas —
+  toggle + merge onto the query; date chips → repo `from`/`to`), columns incl.
+  noches + estado estancia.
+- **60-E (stay rules):** `RateConfig.sellExactGaps` (default on). Pure
+  `src/domains/booking/gap-fill.ts` `fillsGapExactly` (7 tests); `buildQuote`
+  gains `opts.skipMinNights`; `service.ts` computes it from `getBusyRanges`.
+  A stay that exactly fills a gap between two occupied spans is now bookable
+  below the season/base minimum. Toggle in RatesForm "Reglas de estancia".
+  `e2e/gap-fill.spec.ts`.
+- **60-F (per-property fiche):** `/admin/alojamientos/[slug]?tab=…` with tabs
+  General (capacidad read-only per D-013 + operative summary), Precios y cargos
+  (embedded `RatesForm`), Calendario, Contenido y SEO, Políticas, Integraciones
+  (per-property iCal forms via `getImportFeedStatus` + `ImportFeedForm`). Hub
+  cards link into it.
+- **60-G-detail:** `reservas/[id]/page.tsx` restyled + status timeline.
+- **60-H:** calendar "✓ Guardado" + "afecta a muchas fechas" (>14 días);
+  whole-admin harmonisation by remapping the public tokens (`--color-line`,
+  `--accent-*`, `--radius-card`, …) on `.admin-shell` so the ~11 legacy pages
+  pick up the V2 look with zero per-file edits. Undo / deeper optimistic UI /
+  per-page mobile audit deferred as follow-ups (not in the issue's DoD).
+- **`e2e/admin-dod.spec.ts`** drives the issue's whole "definición de terminado"
+  flow end to end (no manual steps) — passes. Merged `feat/60-admin-v2` →
+  `develop` → `main` on the user's standing instruction ("when finish push to
+  main").

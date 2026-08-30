@@ -82,7 +82,12 @@ function roundCents(n: number): number {
   return Math.round(n);
 }
 
-export function buildQuote(config: RateConfig, req: QuoteRequest, now: IsoDate = todayIso()): Quote {
+export function buildQuote(
+  config: RateConfig,
+  req: QuoteRequest,
+  now: IsoDate = todayIso(),
+  opts: { skipMinNights?: boolean } = {},
+): Quote {
   const violations: QuoteViolation[] = [];
   const rangeValid =
     /^\d{4}-\d{2}-\d{2}$/.test(req.checkIn) &&
@@ -103,7 +108,7 @@ export function buildQuote(config: RateConfig, req: QuoteRequest, now: IsoDate =
   const nightlySubtotalCents = perNight.reduce((sum, n) => sum + n.cents, 0);
 
   const minNights = rangeValid ? effectiveMinNights(config, req.checkIn, req.checkOut) : config.minNights;
-  if (rangeValid && nights < minNights)
+  if (rangeValid && nights < minNights && !opts.skipMinNights)
     violations.push({ code: "min_nights", required: minNights, got: nights });
 
   if (rangeValid && config.maxNights > 0 && nights > config.maxNights)

@@ -5,6 +5,7 @@ import { absoluteUrl, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { Analytics } from "@/components/Analytics";
 import { ExperimentTracker } from "@/components/ExperimentTracker";
 import "./globals.css";
@@ -51,15 +52,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="min-h-dvh antialiased">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-        <a
-          href="#contenido"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:shadow"
-        >
-          Saltar al contenido
-        </a>
-        <SiteHeader />
-        <main id="contenido">{children}</main>
-        <SiteFooter />
+        <SiteChrome header={<SiteHeader />} footer={<SiteFooter />}>
+          {children}
+        </SiteChrome>
         <Analytics />
         <ExperimentTracker />
       </body>

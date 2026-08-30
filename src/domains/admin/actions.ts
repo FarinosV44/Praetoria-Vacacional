@@ -118,6 +118,7 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
     weekendNightlyCents: num(formData, "weekendNightlyCents") || undefined,
     minNights: num(formData, "minNights"),
     maxNights: num(formData, "maxNights"),
+    sellExactGaps: formData.get("sellExactGaps") != null,
     cleaningFeeCents: 0, // superseded by `fees`
     fees,
     includedGuests: num(formData, "includedGuests"),
