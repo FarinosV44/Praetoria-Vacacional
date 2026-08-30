@@ -7,6 +7,7 @@ import { Gallery } from "@/components/property/Gallery";
 import { BookingWidget } from "@/components/booking/BookingWidget";
 import { bookingSectionId, bookingSectionHref } from "@/domains/booking/anchor";
 import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
+import { PreferProperty } from "@/components/booking/PreferProperty";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
@@ -108,6 +109,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
   return (
     <div data-experience={p.experience} lang={locale === "en" ? "en" : undefined}>
+      <PreferProperty slug={p.slug} />
       <JsonLd
         data={[
           propertyJsonLd(p, p.rating ? { ratingValue: p.rating.value, reviewCount: p.rating.count } : {}),

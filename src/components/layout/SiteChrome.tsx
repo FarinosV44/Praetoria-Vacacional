@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { BookingBar } from "@/components/booking/BookingBar";
 
 /**
  * Renders the public site header / footer around the page — except under
@@ -17,8 +18,9 @@ export function SiteChrome({
   footer: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const bare = pathname?.startsWith("/admin") ?? false;
+  const pathname = usePathname() ?? "/";
+  const bare = pathname.startsWith("/admin");
+  const locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "es";
 
   if (bare) return <>{children}</>;
 
@@ -33,6 +35,7 @@ export function SiteChrome({
       {header}
       <main id="contenido">{children}</main>
       {footer}
+      <BookingBar locale={locale} />
     </>
   );
 }
