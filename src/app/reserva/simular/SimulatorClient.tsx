@@ -43,9 +43,9 @@ export function SimulatorClient({
       className="mx-auto max-w-md pv-card !p-6"
       lang={locale === "en" ? "en" : undefined}
     >
-      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{t.simDemoNote}</p>
+      <p className="pv-note pv-note--warn !text-xs">{t.simDemoNote}</p>
       <h1 className="mt-4 font-display text-xl">{t.simHeading}</h1>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="pv-error">{error}</p>}
       <div className="mt-5 space-y-2">
         <Button className="w-full" size="lg" disabled={busy} onClick={() => run("success")}>
           {t.simOk}
