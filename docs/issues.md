@@ -68,7 +68,7 @@ metric — direct-booking conversion**. Visible product first; invisible infra
 | #74 | Revenue management: explainable dynamic pricing, guardrails | Pricing strategy decisions |
 | #79 | Privacy lifecycle / GDPR operational (retention, rights, consent, deletion) | Legal / DPO |
 | #81 | Media Library (secure uploads, optimisation, ALT, focal point, reuse) | Storage bucket |
-| #82 | Business Intelligence: occupancy, ADR, RevPAR, channel, conversion, profitability | — (buildable once data exists) |
+| #82 | ✅ code — pure `analytics/kpis.ts` (occupancy · ADR · RevPAR · channel mix · lead time · cancellation · direct share) + `/admin/analitica` 12-month view, per-property filter, MoM deltas. 12 unit tests. No schema. D-026. |
 | #85 | Complete i18n: ES/EN across SEO content, blog, guides, legal, end-to-end | Translation effort |
 | #98 | MASTER · Sales Machine roadmap | (this triage) |
 

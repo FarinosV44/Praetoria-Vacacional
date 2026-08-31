@@ -232,7 +232,8 @@ Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
 | #61/#63/#64 (infra) | `.github/workflows/ci.yml` (quality · e2e · security) · `strictProductionBlockers()` fail-closed boot under `PRODUCTION_STRICT` · `requireServiceAuth()` on cron + iCal-import endpoints (`CRON_SECRET`, constant-time, never 200 without proof) | ✅ on `main` (0afd32d) |
 | #75 (infra) | `20260831130000_rls_hardening.sql` — RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon stripped of every table/RPC grant, default privileges locked, availability RPCs → service_role. `rls_hardening.test.sql`. D-024 | ✅ on `develop` |
 | #83 (infra) | `repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases) + static memory⇔supabase method-parity check. D-025 | ✅ on `develop` |
-| #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `develop` |
+| #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `main` (141ff1d) |
+| #82 (product) | pure `analytics/kpis.ts` + `/admin/analitica` — 12-month occupancy/ADR/RevPAR/channel-mix/lead-time/cancellation view, per-property, MoM deltas. 12 tests. D-026 | ✅ on `develop` |
 
 **Content-accuracy constraint (user, 2026-08-31, L-008):** the `10PRAETORIA10`
 code is **campaign-only — never shown on the public site** (it still works when a
