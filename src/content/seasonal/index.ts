@@ -49,7 +49,7 @@ export const seasonalPages: SeasonalPage[] = [
       {
         heading: "El apartamento en fechas de frío",
         body: [
-          "Salón con chimenea de pellets además de calefacción, cocina completa para cenas en casa y parking privado gratuito en el edificio para no depender de la calle con nieve. Guardaesquís y punto de forfaits en el mismo bloque.",
+          "Salón con chimenea de pellets además de calefacción, cocina completa para cenas en casa y parking privado gratuito en el edificio para no depender de la calle con nieve. Habitación guardaesquís en el mismo bloque.",
         ],
       },
       {
@@ -137,6 +137,98 @@ export const seasonalPages: SeasonalPage[] = [
       },
     ],
     updated: "2026-08-27",
+  },
+
+  // --- Ofertas y escapadas (issue #96) -------------------------------------
+  {
+    slug: "escapada-fin-de-semana-nieve-desde-valencia",
+    propertySlug: "javalambre",
+    status: "published",
+    keyword: "escapada de fin de semana a la nieve desde Valencia",
+    period: "Fines de semana de temporada de esquí",
+    title: "Escapada de fin de semana a la nieve desde Valencia | Javalambre",
+    description:
+      "Fin de semana de esquí sin complicaciones: apartamento en Camarena de la Sierra, a ~10 min de Javalambre, a poco más de una hora de Valencia. Chimenea, parking, guardaesquís. Reserva directa.",
+    h1: "Escapada de fin de semana a la nieve desde Valencia",
+    lead: "Javalambre es la estación de esquí más cómoda para ir y volver el mismo fin de semana desde Valencia. Este apartamento en Camarena de la Sierra es la base: llegas el viernes por la tarde y madrugas el sábado con las pistas a diez minutos.",
+    blocks: [
+      {
+        heading: "Cómo cunde un fin de semana",
+        body: [
+          "Viernes: llegada por la tarde, chimenea de pellets y el material al guardaesquís. Sábado: día completo de pistas, comida en la estación y sobremesa larga en el apartamento. Domingo: media mañana de nieve o un paseo por la sierra y salida sin prisa.",
+          "Camarena queda a poco más de una hora de Valencia, así que no hace falta pedir días libres ni organizar un gran viaje de montaña.",
+        ],
+      },
+      {
+        heading: "Por qué esta base",
+        body: [
+          "Apartamento nuevo de 70 m², dos dormitorios para hasta 6 personas, cocina completa, parking privado gratuito y habitación guardaesquís en el edificio. El forfait y el alquiler de equipo se gestionan en la propia estación.",
+        ],
+      },
+      {
+        heading: "Reserva directa",
+        body: [
+          "Disponibilidad real, precio total antes de pagar y confirmación inmediata. Si tus fechas no están libres, te proponemos el fin de semana más cercano con disponibilidad.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Cuánto se tarda de Valencia a Camarena de la Sierra?",
+        answer: "Algo más de una hora en coche.",
+      },
+      {
+        question: "¿Y si el fin de semana que quiero está completo?",
+        answer:
+          "El buscador te ofrece automáticamente los fines de semana libres más cercanos, con el precio total y un clic para elegirlos.",
+      },
+    ],
+    updated: "2026-08-31",
+  },
+  {
+    slug: "escapada-de-ultima-hora-a-la-playa-de-valencia",
+    propertySlug: "valencia",
+    status: "published",
+    keyword: "escapada de última hora a la playa de Valencia",
+    period: "Reservas de última hora, todo el año",
+    title: "Escapada de última hora a la playa de Valencia | Apartamento en la Llastra",
+    description:
+      "¿Fechas próximas libres? Apartamento a pie de la playa de la Llastra, primera línea de mar, hasta 6 huéspedes, parking gratis. Precio total y confirmación inmediata. Reserva directa.",
+    h1: "Escapada de última hora a la playa de Valencia",
+    lead: "Si buscas playa para dentro de poco, aquí ves la disponibilidad real de los próximos días y el precio total en el mismo paso. El apartamento está a pie de la playa de la Llastra, en primera línea de mar.",
+    blocks: [
+      {
+        heading: "Disponibilidad real, ahora",
+        body: [
+          "Comprueba tus fechas en el buscador: si están libres, reservas en tres pasos con confirmación inmediata. Si no, te proponemos las fechas cercanas disponibles con su precio total y un clic para elegirlas.",
+        ],
+      },
+      {
+        heading: "Qué encuentras al llegar",
+        body: [
+          "75 m² a pie de arena, balcón con vistas frontales al Mediterráneo, tres dormitorios para hasta 6 personas y plaza de aparcamiento gratuita. Arroces en El Perelló, la Albufera al lado y Valencia a media hora.",
+        ],
+      },
+      {
+        heading: "Reserva directa",
+        body: [
+          "Precio total sin comisiones ni cargos ocultos, trato directo con quien gestiona el apartamento y confirmación inmediata.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Puedo reservar para esta misma semana?",
+        answer:
+          "Si hay disponibilidad, sí. El buscador muestra las fechas libres reales y confirma la reserva al instante tras el pago.",
+      },
+      {
+        question: "¿Hay una estancia mínima?",
+        answer:
+          "Sí, según la temporada. El calendario te indica si tus fechas alcanzan el mínimo y, si queda un hueco exacto entre reservas, puede venderse por debajo del mínimo habitual.",
+      },
+    ],
+    updated: "2026-08-31",
   },
 ];
 

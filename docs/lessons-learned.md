@@ -51,6 +51,20 @@ process → fresh in-memory store) and `--workers=1`:
 Deleting `.data/` under a running server does *not* reset it — the store lives in
 `globalThis.__pvStore`; restart the process.
 
+## L-008 — Do not invent property amenities or advertise discount codes publicly
+**When:** 2026-08-31. The Javalambre content claimed the building had a "punto de
+venta de forfaits" and "alquiler de material" — invented; only the guardaesquís
+(ski-storage room) is real, and forfait/rental are at the station. It had
+propagated into 4 landings + 2 seasonal pages. Also: the 10PRAETORIA10 code was
+being shown on the public site in the direct-booking blocks and new landing
+copy — the owner runs it as a **campaign / targeted** code, never a public
+always-on offer. **How to apply:** every amenity, distance, service and figure
+in `src/content/**` must be verifiable against what the owner actually has —
+when unsure, ask or omit (D-004). Discount codes are never rendered on the
+public site: `directBooking.promo` stays `null`, `<DirectBookingSaving>`
+self-hides, and coupon copy only ever appears where the guest has entered a code
+(`CouponField`). The coupon still *works* when entered (campaigns need it).
+
 ## L-007 — Never read live DB / call an RPC from a prerendered route
 **When:** 2026-08-31. `<AvailabilityNote>` was an async server component on the
 ISR-prerendered `/[property]` page; `next build` therefore called the

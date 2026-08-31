@@ -1,42 +1,45 @@
 import type { FaqItem } from "@/domains/properties/types";
-import { PRAETORIA10_CODE } from "@/domains/pricing/coupons";
 
 /**
  * Direct-booking value proposition (issue #91). Configurable, all REAL — never a
  * false price comparison or invented benefit. Rendered near every decision point:
  * home search, property booking card, checkout, SEO landings.
+ *
+ * NOTE: discount codes (10PRAETORIA10, etc.) are NEVER shown on the public site —
+ * they are for campaigns and specific guests. `promo` stays `null` here;
+ * `<DirectBookingSaving>` renders nothing while it is null.
  */
 export const directBooking = {
-  /** The active exclusive promo shown alongside the CTA. `null` = none. */
-  promo: { code: PRAETORIA10_CODE, percent: 10 } as { code: string; percent: number } | null,
+  /** An always-on public promo, or `null` (the default). Codes are campaign-only. */
+  promo: null as { code: string; percent: number } | null,
   /** "Reservando aquí" vs "Reservando en una plataforma" — factual, no brand attacks. */
   compare: {
     here: {
       es: [
         "Trato directo con quien gestiona el alojamiento",
         "Precio total desde el primer paso, sin cargos de gestión del canal",
-        "Código 10PRAETORIA10: 10% de descuento en reserva directa",
         "Confirmación inmediata y soporte local durante la estancia",
+        "Cualquier duda se resuelve directamente, sin intermediarios",
       ],
       en: [
         "You deal directly with the person who runs the apartment",
         "Full price from the first step, with no channel booking fee",
-        "Code 10PRAETORIA10: 10% off when you book direct",
         "Instant confirmation and local support during your stay",
+        "Any question is answered directly, with no middleman",
       ],
     },
     platform: {
       es: [
         "Intermediario entre tú y el alojamiento",
         "Posibles cargos de gestión del canal sobre el precio",
-        "Sin descuento de reserva directa",
         "Atención a través de la plataforma",
+        "Las condiciones las fija el canal",
       ],
       en: [
         "A middleman between you and the apartment",
         "Possible channel service fees on top of the price",
-        "No direct-booking discount",
         "Support routed through the platform",
+        "Terms set by the channel",
       ],
     },
   },
