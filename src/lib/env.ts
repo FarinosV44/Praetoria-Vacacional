@@ -69,17 +69,23 @@ const schema = z.object({
   RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(30),
 
   /**
-   * Fail-closed production (issue #63). When `true` and NODE_ENV=production, the
+   * Fail-closed production (issue #63). When truthy and NODE_ENV=production, the
    * server refuses to boot if a critical integration is missing (no Supabase =
    * DEMO mode, no Stripe, no admin session secret, no CRON_SECRET). Default off
    * so a staging / preview deploy can still run degraded; the owner flips it on
    * for the real launch (see docs/launch-checklist.md).
+   *
+   * Accepts any common spelling (`true`/`1`/`yes`/`on`, case-insensitive); any
+   * other value — including a typo — is treated as OFF and never crashes the
+   * boot, so a mistyped flag can't take the whole site down.
    */
-  PRODUCTION_STRICT: z
-    .enum(["true", "false", "1", "0"])
-    .optional()
-    .transform((v) => v === "true" || v === "1"),
+  PRODUCTION_STRICT: z.string().optional(),
 });
+
+/** True only for an explicit truthy flag; a typo or unknown value → false. */
+function isFlagOn(v: string | undefined): boolean {
+  return /^(1|true|yes|on)$/i.test((v ?? "").trim());
+}
 
 const parsed = schema.safeParse(process.env);
 
@@ -124,6 +130,8 @@ export const env = {
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
+  /** Resolved boolean — see `isFlagOn`. Overrides the raw string from `...raw`. */
+  PRODUCTION_STRICT: isFlagOn(raw.PRODUCTION_STRICT),
 } as const;
 
 /** DEMO mode: no database — the in-memory repository backs every read/write. */
