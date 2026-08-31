@@ -39,6 +39,14 @@ test.describe("visual · design system", () => {
         await page.waitForTimeout(300);
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.waitForTimeout(150);
+        // every <img> fully decoded before the snapshot (avoids a cold-capture flake)
+        await page
+          .waitForFunction(
+            () => Array.from(document.images).every((img) => img.complete && img.naturalWidth > 0),
+            null,
+            { timeout: 10_000 },
+          )
+          .catch(() => {});
         await expect(page).toHaveScreenshot(`${name}-${width}.png`, {
           fullPage: true,
         });

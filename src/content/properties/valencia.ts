@@ -22,7 +22,7 @@ export const valencia: PropertyContent = {
   currency: "EUR",
   tagline: "Apartamento a pie de la playa de la Llastra, litoral sur de Valencia",
   shortIntro:
-    "Un apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo desde el balcón, zona privada de playa y parking gratis. Un tramo de costa valenciana tranquilo, junto a la Albufera y a media hora de la ciudad de Valencia.",
+    "Un apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo desde el salón y la terraza, zona privada de playa y parking gratis. Un tramo de costa valenciana tranquilo, junto a la Albufera y a media hora de la ciudad de Valencia.",
 
   idealFor: [
     "Familias con niños",
@@ -35,7 +35,7 @@ export const valencia: PropertyContent = {
   highlights: [
     {
       title: "A pie de la playa de la Llastra, a unos 5 metros de la arena",
-      body: "Bajas del edificio y estás sobre la arena. El apartamento está en primera línea, con vistas frontales al mar desde el balcón: te duermes y te despiertas con el Mediterráneo delante.",
+      body: "Bajas del edificio y estás sobre la arena. El apartamento está en primera línea, con vistas frontales al mar desde el salón y la terraza: las mañanas empiezan con la playa delante y el primer baño, descalzo, sin coger el coche.",
     },
     {
       title: "Una playa de carácter local, poco masificada",
@@ -90,8 +90,7 @@ export const valencia: PropertyContent = {
       items: [
         "A pie de la playa de la Llastra",
         "Zona privada de playa",
-        "Balcón con vistas frontales al mar",
-        "Terraza",
+        "Terraza con vistas frontales al mar",
       ],
     },
     {
@@ -139,10 +138,10 @@ export const valencia: PropertyContent = {
 
   sections: [
     {
-      heading: "Dormir prácticamente sobre el Mediterráneo",
+      heading: "En primera línea de la playa de la Llastra",
       body: [
         "El apartamento está a pie de la playa de la Llastra, en el litoral sur de Valencia, entre Les Palmeres y El Perelló. A unos cinco metros de la arena: no hay carretera de por medio ni un paseo largo, bajas del portal y ya estás en la playa.",
-        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y un balcón con vistas frontales al mar. Desayunar frente al agua, bajar descalzo a primera hora y volver a mediodía sin coger el coche es el plan que permite la ubicación. El alojamiento cuenta con zona privada de playa y recepción 24 horas.",
+        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y una terraza con vistas frontales al mar. La mesa del salón está junto al ventanal: se desayuna con la playa delante, se baja descalzo a primera hora y se vuelve a mediodía sin coger el coche. El alojamiento cuenta con zona privada de playa y recepción 24 horas.",
         "A las parejas les encanta la ubicación —Booking la valora con un 9,4 para viajes de dos personas— y el barrio es especialmente tranquilo, con un horario sin ruido de 22:00 a 9:00.",
       ],
     },
@@ -172,7 +171,7 @@ export const valencia: PropertyContent = {
     {
       question: "¿El apartamento está realmente frente a la playa?",
       answer:
-        "Sí. Está a pie de la playa de la Llastra, a unos cinco metros de la arena, en primera línea y con vistas frontales al mar desde el balcón. También tiene zona privada de playa.",
+        "Sí. Está a pie de la playa de la Llastra, a unos cinco metros de la arena, en primera línea y con vistas frontales al mar desde el salón y la terraza. También tiene zona privada de playa.",
     },
     {
       question: "¿Dónde está exactamente?",
@@ -288,7 +287,7 @@ export const valencia: PropertyContent = {
   en: {
     tagline: "Apartment right on la Llastra beach, southern Valencia coast",
     shortIntro:
-      "A 75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, with head-on Mediterranean views from the balcony, a private beach area and free parking. A quiet stretch of the Valencian coast, next to the Albufera and half an hour from the city of Valencia.",
+      "A 75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, with head-on Mediterranean views from the living room and terrace, a private beach area and free parking. A quiet stretch of the Valencian coast, next to the Albufera and half an hour from the city of Valencia.",
     seo: {
       metaTitle: "Beachfront apartment on la Llastra beach (Valencia) | Praetoria Vacacional",
       metaDescription:
@@ -298,10 +297,10 @@ export const valencia: PropertyContent = {
     },
     sections: [
       {
-        heading: "Sleeping almost on top of the Mediterranean",
+        heading: "Front line to la Llastra beach",
         body: [
           "The apartment sits right on la Llastra beach, on the southern Valencia coast between Les Palmeres and El Perelló — about five metres from the sand. No road to cross, no long walk: you step out of the door and you are on the beach.",
-          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a balcony with head-on sea views. Breakfast facing the water, an early barefoot walk down to the sand, back at midday without touching the car — that is the plan the location makes possible. The property has a private beach area and 24-hour reception.",
+          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a terrace with head-on sea views. The table sits by the window: breakfast with the beach in front of you, an early barefoot walk down to the sand, back at midday without touching the car. The property has a private beach area and 24-hour reception.",
           "Couples love the location — Booking rates it 9.4 for two-person trips — and the neighbourhood is especially quiet, with a no-noise window from 22:00 to 9:00.",
         ],
       },
@@ -325,7 +324,7 @@ export const valencia: PropertyContent = {
     highlights: [
       {
         title: "Right on la Llastra beach, about 5 metres from the sand",
-        body: "Step out of the building and you are on the sand. The apartment is on the front line, with head-on sea views from the balcony: you fall asleep and wake up with the Mediterranean in front of you.",
+        body: "Step out of the building and you are on the sand. The apartment is on the front line, with head-on sea views from the living room and terrace: mornings start with the beach in front of you and the first swim, barefoot, without touching the car.",
       },
       {
         title: "A local, uncrowded beach",
