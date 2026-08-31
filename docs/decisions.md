@@ -467,3 +467,45 @@ infra #61–#85). The reusable pieces, all real-data / no invented urgency:
   `concurrency` cancels superseded runs.
 - **Owner follow-ups:** set `CRON_SECRET` on the host; decide `PRODUCTION_STRICT`
   (recommended `true` once Supabase + Stripe live keys are in).
+
+## D-024 — Infra #75 — RLS + least-privilege consolidation
+**Date:** 2026-08-31 · issue #75
+Migration `20260831130000_rls_hardening.sql` (idempotent) makes the posture that
+was set table-by-table explicit and closes the gaps:
+- `content_overrides` had no RLS — now enabled.
+- Every application table: RLS `enable` **and** `force` (owner-role connections
+  respect it too) + `revoke all from anon, authenticated`.
+- `alter default privileges in schema public revoke all ... from public, anon,
+  authenticated` for tables/sequences/functions — a future `create table` is
+  locked by default, not open by default.
+- The D-021 availability read functions (`property_busy_ranges`,
+  `is_stay_available`) are tightened to `service_role` only. Nothing connects
+  with the anon key — `supabaseServer()` is unused, reserved for #65. If a
+  public anon read is ever reintroduced, restore the grant in that migration.
+- Model unchanged: RLS on + zero policies ⇒ only the secret/`service_role` key
+  reaches the data, behind the app's own admin auth (D-005).
+`supabase/tests/rls_hardening.test.sql` asserts the posture (RLS forced on all
+tables, zero anon grants, no anon-exposing policy, no anon RPC grants).
+**Owner:** `supabase db push` to apply; no app redeploy needed.
+
+## D-025 — Infra #83 + #84 — repo contract + channel-sync resilience
+**Date:** 2026-08-31 · issues #83, #84
+- **#83** — `src/lib/repository/contract.ts` `runRepositoryContract(harness)`:
+  one behavioural spec (half-open availability, idempotent hold, overlap
+  rejection, hold→confirm, cancel frees, manual block, `expireStaleHolds`) that
+  any `Repository` must satisfy. `contract.memory.test.ts` runs it against the
+  in-memory store + a **static parity check** (`memoryRepository` and
+  `supabaseRepository` expose the identical method surface — catches an
+  accidental `as any`). A Supabase runner can reuse `runRepositoryContract`
+  when a throwaway DB URL exists.
+- **#84** — two pure additions, both unit-tested:
+  - `feed-health.ts` `assessFeedHealth()` → `healthy | stale | failing | never`
+    from `lastRunAt` + `lastStatus` + `lastError` (threshold 26 h = daily cron +
+    margin). Wired into `sync-status.ts` (`ChannelFeedStatus.health` /
+    `needsAttention`) and shown on `/admin/sincronizacion`.
+  - `conflicts.ts` `detectChannelConflicts(feedBlocks, directReservations)` —
+    a feed night that overlaps a `pending`/`confirmed` DIRECT booking (not the
+    block's own mirror). `sync.ts` computes it per import, adds `conflicts` to
+    `ImportReport`, `console.warn`s, and `RunSyncButton` shows "⚠ N choques".
+  - No schema change; `CalendarSyncRow` already carries enough. Adapters were
+    scoped out — two channels with the same iCal shape don't justify the layer.

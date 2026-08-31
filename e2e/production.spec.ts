@@ -25,11 +25,12 @@ test("cron / internal endpoints reject an unauthenticated request (issue #64)", 
   for (const path of ["/api/cron/expire-holds", "/api/ical/import"]) {
     // no auth, a forged Vercel-cron header, and a wrong bearer must ALL be rejected
     // (401 when CRON_SECRET is set, 503 "not configured" otherwise — never 200).
-    for (const headers of [
+    const cases: (Record<string, string> | undefined)[] = [
       undefined,
       { "x-vercel-cron": "1" },
       { authorization: "Bearer nope" },
-    ]) {
+    ];
+    for (const headers of cases) {
       const res = await request.get(path, headers ? { headers } : undefined);
       expect([401, 503]).toContain(res.status());
     }

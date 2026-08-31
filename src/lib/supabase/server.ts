@@ -4,7 +4,11 @@ import { env } from "@/lib/env";
 
 /**
  * Cookie-bound Supabase client for Server Components / Route Handlers / Server
- * Actions. Used for admin authentication only (decision D-005).
+ * Actions. Reserved for Supabase-Auth admin sessions (issue #65) — NOT wired in
+ * today: the admin panel authenticates with its own signed cookie and every
+ * data call goes through `supabaseAdmin()` (the secret key) behind that check
+ * (decision D-005). The anon/publishable key therefore has no live read path,
+ * which is why migration 20260831130000 revokes anon access to every table.
  */
 export async function supabaseServer() {
   if (!env.supabaseConfigured) {
