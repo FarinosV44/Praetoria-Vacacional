@@ -255,8 +255,51 @@ commit. `next build` was unaffected.)
 
 ## Exact position
 
+**2026-08-31 — V4 "Sales Machine" (master #98) + buildable infra, all on `main`:**
+`develop` and `main` level. Merged this session:
+- `0afd32d` — V4 conversion #86–#97 (booking bar, rescue dates, rating badge,
+  direct-booking compare, MAR/NIEVE selector, local SEO landings + seasonal
+  pages, blog→property CTAs, WhatsApp concierge) + infra #61/#63/#64 (CI
+  workflow, fail-closed `PRODUCTION_STRICT`, `CRON_SECRET` service auth).
+- `141ff1d` — infra #75 (RLS hardening migration), #83 (repository behavioural
+  contract + memory⇔supabase parity), #84 (stale-feed + cross-channel conflict
+  detection).
+- `4f2c85f` — #82 BI (`/admin/analitica` — occupancy/ADR/RevPAR/channel mix,
+  12-month, per-property).
+- Content-accuracy sweep held throughout (L-008): no public discount codes;
+  Javalambre building = guardaesquís only, forfait/rental at the resort.
+
+`tsc` + `next lint` + `next build` clean · **269 unit** · targeted chromium e2e
+green (production incl. cron auth, whatsapp, smart-availability, booking-bar,
+intranet incl. `/admin/analitica`, accessibility, audit, admin-dod).
+
+**Owner follow-ups (blocking a real deploy, not code):**
+1. `supabase db push` — apply migrations through `20260831130000` (availability
+   RPCs + RLS hardening).
+2. Set new Supabase key names (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+   `SUPABASE_SECRET_KEY`) or keep legacy; set `CRON_SECRET`; decide
+   `PRODUCTION_STRICT` (recommend `true` once Supabase + Stripe live);
+   optional `NEXT_PUBLIC_WHATSAPP_NUMBER`.
+3. Redeploy `main` on Hostinger (clean build cache).
+
+**"Do all issues ALL" — what is NOT done and why:**
+- **Large, buildable, deferred by #98 (no booking impact):** #76 durable jobs +
+  transactional outbox, #77 design system V4 + visual regression, #62 distributed
+  rate limiting (needs a KV provider choice), #78 Lighthouse CI (needs the
+  deployed URL).
+- **Owner-decision-gated (per the issues.md table) — cannot be built without the
+  owner's input on vendors / legal / credentials:** #65 (Supabase Auth + MFA),
+  #66 (observability vendor), #67 (refund policy + Stripe live), #68 (guest
+  portal), #69 (guest comms provider), #70/#71 (ops workflows), #72 (SES.
+  HOSPEDAJES Guardia Civil creds), #73 (marketing provider), #74 (revenue
+  strategy), #79 (DPO/legal), #81 (storage bucket), #85 (ES/EN translation
+  effort). Phase-1 polish items #86–#88/#93 still 🟡 (need eyes on real photos /
+  a map embed decision).
+
+### (historical) Issue #57 + #56
+
 **Issue #57 (capacidad + blog/CMS) merged to `main`** (2026-08-30). Before it,
-issue #56 (management intranet) merged 2026-08-29. `develop` and `main` level. The public site + booking funnel are unchanged from the V3 batch;
+issue #56 (management intranet) merged 2026-08-29. The public site + booking funnel are unchanged from the V3 batch;
 the intranet under `/admin` is new: reservas (manual + all channels), CRM with
 dedup/merge, invoicing with per-property series + immutable issued invoices +
 print-to-PDF document, operational calendar with per-date pricing, marketing
@@ -282,13 +325,14 @@ Remaining before V1 "done" (issue #22):
 ## Branches
 
 Both `develop` and `main` are on origin and level. `main` history: `b5ee968`
-(V1+V2) → issue #53 → #54 → #55 → FAQ-spacing polish → issue #56 (intranet) →
-iCal persistence + export fixes → **issue #57 (capacidad + blog)**, each merged
-from `develop` at the user's explicit request. Ongoing work continues on
+(V1+V2) → #53 → #54 → #55 → FAQ polish → #56 (intranet) → iCal fixes → #57
+(capacidad + blog) → Supabase build fix → #58/#59 → #60 (admin V2) → calendar
+marker → V4 Phase 1 (#86–#93) → `0afd32d` V4 #94–#97 + infra #61/#63/#64 →
+`141ff1d` infra #75/#83/#84 → `4f2c85f` #82 BI. Each merged from `develop` at the
+user's standing "push to main ALL" instruction. Ongoing work continues on
 `develop`. Production runs on Hostinger in DEMO mode (`/api/health` →
-`demoMode: true`); it needs `supabase/migrations/*` applied for the intranet
-**and** a clean redeploy of `main` for the `/valencia` 404 fix + the blog to
-appear.
+`demoMode: true`); a real deploy needs `supabase/migrations/*` applied + the new
+key names + `CRON_SECRET` + a clean redeploy of `main`.
 
 ## Open items / blocks
 
