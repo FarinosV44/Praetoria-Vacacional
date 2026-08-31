@@ -219,6 +219,34 @@ build` clean · **199 unit** · **full chromium e2e 89 green**. Owner redeploys
 - ✅ **`e2e/admin-dod.spec.ts`** drives the issue's whole "definición de
   terminado" flow end to end, no manual steps — passes.
 
+### V4 conversion batch (master issue #98) — Phases 1–3 + infra #61/#63/#64
+
+Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
+(infra). All on `develop`, ready for `main`.
+
+| Issues | Scope | Status |
+|--------|-------|--------|
+| #86–#93 (Phase 1) | `alternatives.ts` rescue dates (priced, real availability only) · `stay.ts` sessionStorage booking store + `BookingBar` in `SiteChrome` · `RatingBadge` (Booking /10, per-property, renders nothing without data) · `directBooking` factual compare — **no public discount codes, no fake struck prices** · MAR/NIEVE `ExperienceSelector` · `PropertyPageView` impact block + "ideal para" chips + Javalambre weekend itinerary · `ResponsivePhoto.focal` → object-position + lightbox swipe | ✅ code (merged to `main` earlier: 4569ca9 / 8c2d209) |
+| #94/#95/#96 (Phase 2 SEO) | 3 local landings (playa de la Llastra, El Perelló, Camarena de la Sierra) · 2 seasonal offer pages · blog post → property CTA strip + `PreferProperty` · `docs/seo/blog-calendar.md` | ✅ on `develop` (9a18c0a) |
+| #97 (Phase 3) | `WhatsAppButton` — link-based `wa.me` concierge, prefilled with property + dates when known, hidden on `/admin`, `NEXT_PUBLIC_WHATSAPP_NUMBER` gated | ✅ on `develop` (65fccaa) |
+| #61/#63/#64 (infra) | `.github/workflows/ci.yml` (quality · e2e · security) · `strictProductionBlockers()` fail-closed boot under `PRODUCTION_STRICT` · `requireServiceAuth()` on cron + iCal-import endpoints (`CRON_SECRET`, constant-time, never 200 without proof) | ✅ on `develop` (this batch) |
+
+**Content-accuracy constraint (user, 2026-08-31, L-008):** the `10PRAETORIA10`
+code is **campaign-only — never shown on the public site** (it still works when a
+guest types it). Javalambre has **only a guardaesquís room in the building**; the
+forfait and equipment rental are at the resort, not the building. Full sweep done
+across `site.ts`, `DirectBooking.tsx`, `javalambre.ts` (ES+EN), 4 landings, 2
+seasonal pages.
+
+`tsc` + `next lint` + `next build` clean · **239 unit** · targeted chromium e2e
+(production, whatsapp, smart-availability, booking-bar, accessibility, audit) 20
+green.
+
+**Owner follow-ups for this batch:** `supabase db push` (migrations through
+`20260831120000`); set `CRON_SECRET` on Hostinger; decide `PRODUCTION_STRICT`
+(recommended `true` once Supabase + Stripe live keys are set); optional
+`NEXT_PUBLIC_WHATSAPP_NUMBER`; redeploy `main`.
+
 ## Exact position
 
 **Issue #57 (capacidad + blog/CMS) merged to `main`** (2026-08-30). Before it,

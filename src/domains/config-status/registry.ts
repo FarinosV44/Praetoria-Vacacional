@@ -154,7 +154,21 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, campaigns];
+  const whatsapp: ConfigFeature = {
+    key: "whatsapp",
+    label: "WhatsApp concierge",
+    impact:
+      "Un botón flotante que abre WhatsApp con un mensaje ya redactado y el contexto de la página. Sin número configurado, el botón no aparece.",
+    envVars: ["NEXT_PUBLIC_WHATSAPP_NUMBER"],
+    where: "Número de WhatsApp de atención, solo dígitos E.164 (p. ej. 34600111222)",
+    state: env.whatsappConfigured ? "configured" : "not_configured",
+    statusLine: env.whatsappConfigured
+      ? "Activo. El botón flotante abre WhatsApp con el contexto de la reserva."
+      : "Sin número. Añade NEXT_PUBLIC_WHATSAPP_NUMBER para activar el botón.",
+    publicMessage: null,
+  };
+
+  return [database, payments, email, ical, analytics, searchConsole, admin, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

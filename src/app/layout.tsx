@@ -52,7 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="min-h-dvh antialiased">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-        <SiteChrome header={<SiteHeader />} footer={<SiteFooter />}>
+        <SiteChrome
+          header={<SiteHeader />}
+          footer={<SiteFooter />}
+          whatsappNumber={publicEnv.whatsappNumber}
+        >
           {children}
         </SiteChrome>
         <Analytics />

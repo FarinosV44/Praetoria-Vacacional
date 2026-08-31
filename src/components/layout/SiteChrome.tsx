@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { BookingBar } from "@/components/booking/BookingBar";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 /**
  * Renders the public site header / footer around the page — except under
@@ -13,10 +14,12 @@ export function SiteChrome({
   header,
   footer,
   children,
+  whatsappNumber,
 }: {
   header: React.ReactNode;
   footer: React.ReactNode;
   children: React.ReactNode;
+  whatsappNumber?: string;
 }) {
   const pathname = usePathname() ?? "/";
   const bare = pathname.startsWith("/admin");
@@ -36,6 +39,7 @@ export function SiteChrome({
       <main id="contenido">{children}</main>
       {footer}
       <BookingBar locale={locale} />
+      <WhatsAppButton number={whatsappNumber} locale={locale} />
     </>
   );
 }

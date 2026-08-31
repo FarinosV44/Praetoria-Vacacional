@@ -207,6 +207,42 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
             </section>
           )}
 
+          {locale === "es" && p.idealFor && p.idealFor.length > 0 && (
+            <section aria-labelledby="ideal-heading">
+              <h2 id="ideal-heading" className="font-display text-2xl">
+                Ideal para
+              </h2>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {p.idealFor.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-full border border-[var(--color-line)] bg-[var(--accent-50)] px-3 py-1.5 text-sm"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {locale === "es" && p.weekendPlan && p.weekendPlan.length > 0 && (
+            <section aria-labelledby="weekend-heading">
+              <h2 id="weekend-heading" className="font-display text-2xl">
+                Cómo sería tu fin de semana
+              </h2>
+              <ol className="mt-4 space-y-4">
+                {p.weekendPlan.map((d) => (
+                  <li key={d.day} className="flex gap-4">
+                    <span className="w-20 flex-none pt-0.5 text-sm font-semibold text-[var(--accent-700)]">
+                      {d.day}
+                    </span>
+                    <p className="text-sm text-[var(--color-ink-soft)]">{d.text}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
           {p.sections.map((s) => (
             <section key={s.heading}>
               <h2 className="font-display text-2xl">{s.heading}</h2>

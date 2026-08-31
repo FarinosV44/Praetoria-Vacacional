@@ -14,6 +14,8 @@ import {
 } from "@/domains/blog/helpers";
 import { getPropertyBySlug } from "@/domains/properties/registry";
 import { bookingSectionHref } from "@/domains/booking/anchor";
+import { PreferProperty } from "@/components/booking/PreferProperty";
+import { DirectBookingSaving } from "@/components/booking/DirectBooking";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -69,6 +71,7 @@ export default async function BlogPostPage({
 
   return (
     <div data-experience={ctaProperty?.experience}>
+      {ctaProperty && <PreferProperty slug={ctaProperty.slug} />}
       <JsonLd
         data={articleJsonLd({
           headline: post.title,
@@ -112,6 +115,20 @@ export default async function BlogPostPage({
           </figure>
         )}
 
+        {ctaProperty && (
+          <aside className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-between gap-3 rounded-full border border-[var(--color-line)] bg-[var(--accent-50)] px-4 py-2.5 text-sm">
+            <span>
+              ¿Te encaja para una escapada? <strong>{ctaProperty.name}</strong>
+            </span>
+            <Link
+              href={bookingSectionHref(ctaProperty.slug)}
+              className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-4 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+            >
+              Ver fechas y precio
+            </Link>
+          </aside>
+        )}
+
         <div
           className="blog-prose mx-auto mt-8 max-w-2xl"
           dangerouslySetInnerHTML={{ __html: html }}
@@ -137,6 +154,9 @@ export default async function BlogPostPage({
           >
             <h2 className="font-display text-xl">{cta.heading}</h2>
             <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{cta.body}</p>
+            <div className="mt-3">
+              <DirectBookingSaving />
+            </div>
             <div className="mt-4 flex flex-wrap gap-3">
               {ctaProperty ? (
                 <>

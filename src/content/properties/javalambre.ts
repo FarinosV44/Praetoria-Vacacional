@@ -21,14 +21,37 @@ export const javalambre: PropertyContent = {
   shortIntro:
     "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
 
+  idealFor: [
+    "Familias con niños",
+    "Primeras veces en la nieve y principiantes",
+    "Fines de semana y puentes desde Valencia",
+    "Grupos pequeños que esquían juntos",
+    "Escapada de montaña también sin esquís",
+  ],
+
+  weekendPlan: [
+    {
+      day: "Viernes",
+      text: "Llegada por la tarde, se enciende la chimenea de pellets y se deja el material en el guardaesquís. Cena en el pueblo de Camarena de la Sierra.",
+    },
+    {
+      day: "Sábado",
+      text: "Desayuno y a las pistas: en unos 10 minutos estás calzando los esquís en Javalambre. Comida en la estación y tarde de nieve; de vuelta, sobremesa larga en el apartamento.",
+    },
+    {
+      day: "Domingo",
+      text: "Media mañana de pistas o un paseo por la sierra si no esquías, y salida sin prisa. Camarena queda a poco más de una hora de Valencia.",
+    },
+  ],
+
   highlights: [
     {
       title: "A unos 10 minutos en coche de las pistas de Javalambre",
       body: "El apartamento está en Camarena de la Sierra, el pueblo más cercano a la estación. Sales por la mañana y en unos 10 minutos estás calzando los esquís.",
     },
     {
-      title: "Guardaesquís, forfaits y alquiler de material",
-      body: "El edificio tiene habitación guardaesquís, punto de venta de forfaits y servicio de alquiler de equipo: llegas, dejas las botas secándose y no cargas con nada.",
+      title: "Guardaesquís en el edificio",
+      body: "El edificio tiene habitación guardaesquís: llegas, dejas ahí los esquís y las botas secándose y no subes el material al apartamento.",
     },
     {
       title: "Chimenea de pellets y calefacción",
@@ -77,10 +100,9 @@ export const javalambre: PropertyContent = {
     {
       category: "Esquí y montaña",
       items: [
-        "Guardaesquís y habitación guardarropía",
-        "Punto de venta de forfaits",
-        "Servicio de alquiler de equipamiento de esquí",
+        "Guardaesquís en el edificio",
         "Vistas a la montaña desde el apartamento",
+        "A unos 10 minutos en coche de las pistas de Javalambre",
       ],
     },
     {
@@ -138,7 +160,7 @@ export const javalambre: PropertyContent = {
       heading: "Una base a diez minutos de las pistas",
       body: [
         "El apartamento está en el centro de Camarena de la Sierra, a unos 10 minutos en coche de la estación de esquí de Javalambre. Es de las formas más cómodas de esquiar cerca de Valencia: sales, llegas a pistas antes de las colas y vuelves a comer o a descansar al apartamento sin recorrer medio valle.",
-        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. Tiene guardaesquís, punto de forfaits y alquiler de material, así que puedes llegar, dejar el equipo y centrarte en esquiar.",
+        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. El edificio tiene habitación guardaesquís, así que dejas ahí el material y no lo subes a casa. El forfait y el alquiler de equipo se gestionan en la propia estación.",
         "La estación de Javalambre, del grupo Aramón, es una de las más accesibles del este peninsular y especialmente cómoda para familias y para quienes se estrenan en la nieve.",
       ],
     },
@@ -285,7 +307,7 @@ export const javalambre: PropertyContent = {
         heading: "A base ten minutes from the slopes",
         body: [
           "The apartment is in the centre of Camarena de la Sierra, about a 10-minute drive from the Javalambre ski resort. It is one of the most comfortable ways to ski near Valencia: you set off, reach the slopes before the queues, and come back to eat or rest at the apartment without crossing half the valley.",
-          "It is a new 70 m² apartment with two bedrooms, a living room with a pellet stove, a fully equipped kitchen and a balcony with mountain views. It has ski storage, a ski-pass point and equipment rental, so you can arrive, drop your gear and focus on skiing.",
+          "It is a new 70 m² apartment with two bedrooms, a living room with a pellet stove, a fully equipped kitchen and a balcony with mountain views. The building has a ski storage room, so you leave your gear there rather than carrying it upstairs. Ski passes and equipment rental are handled at the resort itself.",
           "The Javalambre resort, part of the Aramón group, is one of the most accessible in eastern Spain and especially comfortable for families and first-timers on snow.",
         ],
       },
@@ -306,8 +328,8 @@ export const javalambre: PropertyContent = {
         body: "The apartment is in Camarena de la Sierra, the closest village to the resort. Leave in the morning and you are clipping into your skis about 10 minutes later.",
       },
       {
-        title: "Ski storage, passes and equipment rental",
-        body: "The building has a ski storage room, a ski-pass point and equipment rental: arrive, leave your boots to dry and carry nothing.",
+        title: "Ski storage in the building",
+        body: "The building has a ski storage room: arrive, leave your skis and boots to dry there and don't carry them up to the apartment.",
       },
       {
         title: "Pellet stove and heating",

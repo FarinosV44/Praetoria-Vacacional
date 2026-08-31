@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodSchema } from "zod";
 import { clientIp, rateLimit } from "./rate-limit";
+import { timingSafeEqual } from "node:crypto";
+import { env } from "./env";
 
 /** Consistent JSON error shape. Never leaks internals (issue #21). */
 export function apiError(message: string, status = 400, extra?: Record<string, unknown>) {
@@ -9,6 +11,42 @@ export function apiError(message: string, status = 400, extra?: Record<string, u
 
 export function apiOk<T>(data: T, status = 200) {
   return NextResponse.json(data, { status });
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
+}
+
+/**
+ * The single service-to-service auth policy (issue #64) for cron / internal
+ * endpoints. The caller must present `Authorization: Bearer <CRON_SECRET>`.
+ *
+ * Vercel Cron sends exactly this header automatically when `CRON_SECRET` is set
+ * on the project, so the same check covers scheduled and manual invocations.
+ * The `x-vercel-cron` header alone is NEVER trusted (it can be forged on a
+ * direct request). In DEMO/dev with no `CRON_SECRET` set, calls from Vercel
+ * Cron are allowed through so local testing works; a real deployment must set
+ * the secret (enforced by the fail-closed check, issue #63).
+ *
+ * Returns an error response to send back, or `null` when the request is authorised.
+ */
+export function requireServiceAuth(req: Request): NextResponse | null {
+  const header = req.headers.get("authorization") ?? "";
+  const bearer = header.startsWith("Bearer ") ? header.slice(7) : "";
+
+  if (env.CRON_SECRET) {
+    return bearer && safeEqual(bearer, env.CRON_SECRET) ? null : apiError("No autorizado", 401);
+  }
+
+  // No secret configured — only allow the platform scheduler, and only when not
+  // in strict production.
+  if (env.NODE_ENV !== "production" && req.headers.get("x-vercel-cron") === "1") return null;
+  return apiError(
+    "Endpoint no configurado: define CRON_SECRET para las tareas programadas.",
+    503,
+  );
 }
 
 export async function parseJson<T>(

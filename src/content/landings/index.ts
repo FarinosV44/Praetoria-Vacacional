@@ -54,7 +54,7 @@ export const landings: Landing[] = [
       {
         heading: "Pensado para días de nieve",
         body: [
-          "Tiene guardaesquís, punto de venta de forfaits y servicio de alquiler de equipo en el propio edificio, además de parking privado gratuito. Los huéspedes destacan lo bien que calienta en invierno, entre la calefacción y la chimenea de pellets.",
+          "Tiene habitación guardaesquís en el edificio y parking privado gratuito. Los huéspedes destacan lo bien que calienta en invierno, entre la calefacción y la chimenea de pellets. El forfait y el alquiler de material se gestionan en la propia estación.",
         ],
       },
       {
@@ -128,19 +128,19 @@ export const landings: Landing[] = [
     intent: "Transaccional local — 'alojamiento cerca estación de esquí Javalambre' / 'Camarena de la Sierra'",
     keyword: "alojamiento cerca de las pistas de Javalambre",
     secondaryKeywords: [
-      "alojamiento Camarena de la Sierra",
+      "apartamento cerca estación esquí Javalambre",
       "apartamento para esquiar en Javalambre",
     ],
     title: "Alojamiento cerca de la estación de esquí de Javalambre",
     description:
-      "Apartamento en Camarena de la Sierra, a unos 10 minutos de la estación de esquí de Javalambre. Parking, guardaesquís y forfaits en el edificio. Reserva directa con precio total.",
+      "Apartamento en Camarena de la Sierra, a unos 10 minutos de la estación de esquí de Javalambre. Parking gratis y guardaesquís en el edificio. Reserva directa con precio total.",
     h1: "Alojamiento cerca de la estación de esquí de Javalambre",
     lead: "Camarena de la Sierra es el pueblo más próximo a la estación de Javalambre. Alojarte aquí reduce los desplazamientos diarios a unos 10 minutos y te permite volver a comer o descansar entre jornadas.",
     blocks: [
       {
         heading: "Ventajas de alojarse en Camarena",
         body: [
-          "Llegar pronto a pistas, comer en el apartamento, no depender del aparcamiento de la estación en días de mucha afluencia y tener guardaesquís y alquiler de material en el propio edificio.",
+          "Llegar pronto a pistas, comer en el apartamento, no depender del aparcamiento de la estación en días de mucha afluencia y dejar el material en la habitación guardaesquís del edificio.",
         ],
       },
       {
@@ -164,7 +164,7 @@ export const landings: Landing[] = [
       {
         question: "¿Hay guardaesquís?",
         answer:
-          "Sí, el edificio dispone de habitación guardaesquís, punto de venta de forfaits y alquiler de material.",
+          "Sí, el edificio dispone de habitación guardaesquís. El forfait y el alquiler de material se gestionan en la estación de Javalambre.",
       },
     ],
     published: true,
@@ -302,6 +302,163 @@ export const landings: Landing[] = [
       {
         question: "¿Cuánto se tarda a la ciudad de Valencia?",
         answer: "Una media hora en coche, o en Cercanías desde las estaciones de Sueca o Cullera.",
+      },
+    ],
+    published: true,
+  },
+
+  // --- Local landings (issue #95) — hyper-specific sub-locations -------------
+  {
+    slug: "apartamento-playa-la-llastra",
+    propertySlug: "valencia",
+    intent: "Transaccional — apartamento en la playa de la Llastra",
+    keyword: "apartamento en la playa de la Llastra",
+    secondaryKeywords: [
+      "alojamiento playa de la Llastra",
+      "apartamento playa Sueca primera línea",
+    ],
+    title: "Apartamento en la playa de la Llastra (Sueca), a pie de arena",
+    description:
+      "Apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo, parking gratis y hasta 6 huéspedes. Reserva directa.",
+    h1: "Apartamento en la playa de la Llastra",
+    lead: "La playa de la Llastra es un tramo tranquilo del litoral de Sueca, entre Les Palmeres y El Perelló, con arena clara y poca masificación. Este apartamento está en primera línea: bajas del edificio y estás sobre la arena.",
+    blocks: [
+      {
+        heading: "Qué es la playa de la Llastra",
+        body: [
+          "Es una playa de arena en el municipio de Sueca, en el sur de la provincia de Valencia, junto al Parque Natural de la Albufera. Queda algo apartada de los núcleos más concurridos, así que mantiene un ambiente de playa local incluso en verano.",
+          "El apartamento da directamente al mar: 75 m², balcón con vistas frontales, zona privada de playa y plaza de aparcamiento gratuita en el mismo edificio. Admite hasta 6 huéspedes en 3 dormitorios.",
+        ],
+      },
+      {
+        heading: "Qué tienes cerca",
+        body: [
+          "Restaurantes de arroz en El Perelló y Les Palmeres, la Albufera y su puesta de sol en barca, Cullera y su faro, y la ciudad de Valencia a una media hora en coche o en Cercanías desde Sueca o Cullera.",
+        ],
+      },
+      {
+        heading: "Reserva directa, precio total desde el principio",
+        body: [
+          "Consulta disponibilidad, comprueba el precio final —total, sin cargos ni comisiones ocultas— y reserva en tres pasos, con confirmación inmediata.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿El apartamento está realmente en primera línea?",
+        answer:
+          "Sí. Está a pie de playa, a unos 5 metros de la arena, con vistas frontales al Mediterráneo desde el balcón.",
+      },
+      {
+        question: "¿Dónde está la playa de la Llastra exactamente?",
+        answer:
+          "En el municipio de Sueca (Valencia), entre Les Palmeres y El Perelló, en el litoral sur de la provincia, junto a la Albufera.",
+      },
+      {
+        question: "¿Hay parking?",
+        answer: "Sí, plaza de aparcamiento gratuita en el mismo edificio.",
+      },
+    ],
+    published: true,
+  },
+  {
+    slug: "alojamiento-cerca-el-perello",
+    propertySlug: "valencia",
+    intent: "Transaccional — alojamiento cerca de El Perelló",
+    keyword: "alojamiento cerca de El Perelló",
+    secondaryKeywords: [
+      "apartamento cerca El Perelló playa",
+      "dónde dormir El Perelló Valencia",
+    ],
+    title: "Alojamiento cerca de El Perelló: apartamento frente al mar en la Llastra",
+    description:
+      "Apartamento a pie de playa junto a El Perelló, en la playa de la Llastra (Sueca). Vistas frontales al mar, parking gratis, hasta 6 huéspedes y arroces a un paso. Reserva directa.",
+    h1: "Alojamiento cerca de El Perelló",
+    lead: "El Perelló es conocido por sus restaurantes de arroz y su ambiente de pueblo costero. Este apartamento está muy cerca, en la playa de la Llastra, en primera línea de mar y con parking gratuito.",
+    blocks: [
+      {
+        heading: "Dónde está y qué distancia hay a El Perelló",
+        body: [
+          "El apartamento está en la playa de la Llastra, en el término de Sueca, contiguo a El Perelló por la costa. Se llega andando por el paseo marítimo o en unos minutos en coche.",
+          "Son 75 m² a pie de arena, con balcón y vistas frontales al Mediterráneo, tres dormitorios para hasta 6 personas y plaza de aparcamiento gratuita.",
+        ],
+      },
+      {
+        heading: "Comer arroz y visitar la Albufera",
+        body: [
+          "El Perelló y Les Palmeres concentran algunos de los mejores arroces de la zona. La Albufera queda al lado: mirador de El Palmar, paseo en barca y atardecer sobre el agua. Cullera y Valencia, a corta distancia.",
+        ],
+      },
+      {
+        heading: "Reserva directa con Praetoria",
+        body: [
+          "Disponibilidad real, precio total antes de pagar y confirmación inmediata. Trato directo con quien gestiona el apartamento, sin intermediarios.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿A qué distancia está de El Perelló?",
+        answer:
+          "El apartamento está en la playa de la Llastra, contigua a El Perelló; se llega andando por la costa o en unos minutos en coche.",
+      },
+      {
+        question: "¿Es buena zona para ir con niños?",
+        answer:
+          "Sí: playa de arena tranquila, poco masificada, con el apartamento a pie de arena y parking en el edificio.",
+      },
+    ],
+    published: true,
+  },
+  {
+    slug: "alojamiento-camarena-de-la-sierra",
+    propertySlug: "javalambre",
+    intent: "Transaccional — alojamiento en Camarena de la Sierra",
+    keyword: "alojamiento en Camarena de la Sierra",
+    secondaryKeywords: [
+      "apartamento Camarena de la Sierra",
+      "dónde dormir Camarena de la Sierra",
+    ],
+    title: "Alojamiento en Camarena de la Sierra: apartamento a 10 min de Javalambre",
+    description:
+      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a unos 10 minutos de las pistas de Javalambre. Chimenea de pellets, guardaesquís, parking gratis. Reserva directa.",
+    h1: "Alojamiento en Camarena de la Sierra",
+    lead: "Camarena de la Sierra es el pueblo más cercano a la estación de Javalambre y una buena base para una escapada de nieve o de montaña. Este apartamento está en el centro del pueblo, con parking y guardaesquís.",
+    blocks: [
+      {
+        heading: "El pueblo y la distancia a las pistas",
+        body: [
+          "Camarena de la Sierra conserva una atmósfera de pueblo serrano: calles de piedra, fuentes y el paisaje de la sierra de Javalambre. La estación de esquí queda a unos 10 minutos en coche.",
+          "El apartamento es un piso nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets y cocina totalmente equipada. El edificio tiene habitación guardaesquís y parking gratuito; el forfait y el alquiler de equipo se gestionan en la estación.",
+        ],
+      },
+      {
+        heading: "También sin esquís",
+        body: [
+          "El entorno es un destino de montaña todo el año: senderismo, BTT, micología y una ruta fluvial por el propio pueblo apta para familias. La comarca Gúdar-Javalambre es Destino Turístico Starlight, con el Observatorio Astrofísico muy cerca.",
+        ],
+      },
+      {
+        heading: "Reserva directa y confirmación inmediata",
+        body: [
+          "Consulta tus fechas, comprueba el precio total —sin comisiones ni cargos ocultos— y reserva en tres pasos, con confirmación inmediata.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿A qué distancia está de la estación de Javalambre?",
+        answer: "A unos 10 minutos en coche desde el centro de Camarena de la Sierra.",
+      },
+      {
+        question: "¿Tiene sitio para el material de esquí?",
+        answer:
+          "Sí: el edificio tiene habitación guardaesquís, además de parking privado gratuito. El forfait y el alquiler de equipo se gestionan en la estación de Javalambre.",
+      },
+      {
+        question: "¿Se puede ir en verano?",
+        answer:
+          "Sí. Camarena y la sierra de Javalambre son un destino de montaña todo el año, con senderismo, BTT y cielo nocturno de los mejores de Europa.",
       },
     ],
     published: true,
