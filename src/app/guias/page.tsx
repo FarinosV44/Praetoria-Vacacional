@@ -36,7 +36,7 @@ export default async function GuiasPage() {
         ]}
       />
       <div className="container-page py-10">
-        <h1 className="font-display text-3xl sm:text-4xl">Guías de destino</h1>
+        <h1 className="display-2">Guías de destino</h1>
         <p className="mt-4 max-w-2xl text-lg text-[var(--color-ink-soft)]">
           Todo lo que necesitas para decidir y preparar tu escapada, por destino: cómo llegar,
           qué hacer y dónde alojarse.
@@ -49,15 +49,12 @@ export default async function GuiasPage() {
               <section
                 key={h.slug}
                 data-experience={h.propertySlug === "javalambre" ? "ski" : "sea"}
-                className="rounded-[var(--radius-card)] border border-[var(--color-line)] p-6"
+                className="pv-card pv-card--pad"
               >
                 <p className="eyebrow">{h.eyebrow}</p>
-                <h2 className="mt-1 font-display text-2xl">{h.title}</h2>
-                <p className="mt-2 text-[var(--color-ink-soft)]">{h.lead}</p>
-                <Link
-                  href={`/guias/${h.slug}`}
-                  className="mt-4 inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-                >
+                <h2 className="mt-1 display-3">{h.title}</h2>
+                <p className="lede mt-2">{h.lead}</p>
+                <Link href={`/guias/${h.slug}`} className="pv-btn pv-btn--primary mt-5">
                   Abrir la guía de destino
                 </Link>
                 {satellites.length > 0 && (

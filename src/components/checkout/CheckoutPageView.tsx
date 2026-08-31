@@ -35,12 +35,12 @@ export async function CheckoutPageView({
         {locale === "en" ? "Book" : "Reservar"} {prop.name}
       </h1>
       {!result.ok ? (
-        <div className="mx-auto max-w-md rounded-xl border border-[var(--color-line)] bg-white p-6 text-center">
+        <div className="pv-card pv-card--soft mx-auto max-w-md !p-6 text-center">
           <p className="font-display text-xl">{t.cannotContinue}</p>
           <p className="mt-2 text-[var(--color-ink-soft)]">{result.error}</p>
           <Link
             href={localizedPath(locale, `/${prop.slug}`)}
-            className="mt-5 inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white"
+            className="pv-btn pv-btn--primary mt-5"
           >
             {t.chooseDates(prop.name)}
           </Link>

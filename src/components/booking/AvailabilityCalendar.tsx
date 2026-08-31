@@ -200,7 +200,7 @@ export function AvailabilityCalendar({
           type="button"
           onClick={() => setMonthOffset((m) => Math.max(0, m - 1))}
           disabled={monthOffset === 0}
-          className="h-9 w-9 rounded-full text-lg disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition-colors hover:bg-[var(--accent-50)] disabled:opacity-30 disabled:hover:bg-transparent"
           aria-label="Mes anterior"
         >
           ‹
@@ -215,7 +215,7 @@ export function AvailabilityCalendar({
         <button
           type="button"
           onClick={() => setMonthOffset((m) => Math.min(10, m + 1))}
-          className="h-9 w-9 rounded-full text-lg disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-lg transition-colors hover:bg-[var(--accent-50)] disabled:opacity-30 disabled:hover:bg-transparent"
           aria-label="Mes siguiente"
         >
           ›
@@ -249,7 +249,7 @@ export function AvailabilityCalendar({
         <p
           className={[
             "mt-2 text-xs",
-            belowMin ? "font-medium text-red-600" : "text-[var(--color-ink-soft)]",
+            belowMin ? "font-medium text-[var(--color-danger)]" : "text-[var(--color-ink-soft)]",
           ].join(" ")}
         >
           {belowMin

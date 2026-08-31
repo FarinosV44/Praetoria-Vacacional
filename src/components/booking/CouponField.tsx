@@ -75,7 +75,7 @@ export function CouponField({
           onChange={(e) => setDraft(e.target.value.toUpperCase())}
           placeholder={t.placeholder}
           aria-label={t.placeholder}
-          className="h-11 flex-1 rounded-xl border border-[var(--color-line)] px-3 font-mono text-sm uppercase tracking-wide disabled:bg-[var(--color-paper)]"
+          className="pv-input flex-1 font-mono text-sm uppercase tracking-wide disabled:bg-[var(--color-mist)]"
         />
         {applied ? (
           <button
@@ -84,7 +84,7 @@ export function CouponField({
               setDraft("");
               onChange("");
             }}
-            className="h-11 rounded-xl px-4 text-sm font-medium ring-1 ring-[var(--color-line)]"
+            className="pv-btn pv-btn--secondary pv-btn--sm !rounded-[var(--radius-md)]"
           >
             {t.remove}
           </button>
@@ -97,19 +97,19 @@ export function CouponField({
                 property_slug: propertySlug,
               });
             }}
-            className="h-11 rounded-xl bg-[var(--accent-600)] px-4 text-sm font-medium text-white"
+            className="pv-btn pv-btn--primary pv-btn--sm !rounded-[var(--radius-md)]"
           >
             {t.apply}
           </button>
         )}
       </div>
       {status && !status.applied && status.message && (
-        <p role="alert" className="mt-1 text-xs text-red-600">
+        <p role="alert" className="pv-error">
           {status.message}
         </p>
       )}
       {applied && (
-        <p className="mt-1 text-xs text-green-700">
+        <p className="mt-1 text-xs font-medium text-[var(--color-success)]">
           {t.applied}: {status?.label}
         </p>
       )}

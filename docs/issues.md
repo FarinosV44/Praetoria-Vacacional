@@ -17,14 +17,14 @@ metric — direct-booking conversion**. Visible product first; invisible infra
 ### Phase 1 · Conversión inmediata — P0
 | # | Status | Notes |
 |---|---|---|
-| #86 | 🟡 | Hero now search-first ("Comprobar fechas" primary → `#buscador`, "Ver apartamentos" secondary). Direct-booking saving nudge + "aquí vs plataforma" compare in the closing section. #92 priced results + trust bar already flow after the hero. **Open:** MAR/NIEVE editorial selector, deeper editorial gallery / seasonal-content blocks. |
-| #87 | 🟡 | Shared `PropertyPageView` gains an impact block (`~5 m a la arena · hasta 6 · 3 hab · 75 m²`), `<RatingBadge>` header, `<DirectBookingCompare>` by the closing CTAs. **Open:** Valencia sea-first hero treatment, "despertarse frente al Mediterráneo" photo blocks, "ideal para", map embed. |
-| #88 | 🟡 | Same shared improvements. **Open:** Javalambre weekend itinerary (viernes→domingo), "para quién es perfecto", "qué hacer si no esquías", dynamic-but-verified season message. |
+| #86 | 🟡 | Search-first hero + MAR/NIEVE `ExperienceSelector` (editorial two-panel, real photo + rating) + direct-booking nudge/compare, all rebuilt on the DS V4 vocabulary. **Open (owner):** a deeper editorial gallery is a photo-selection/ordering task — see #93. |
+| #87 | 🟡 | Impact block, `<RatingBadge>` header, `<DirectBookingCompare>`, **OpenStreetMap location embed** ("zona aproximada", D-027), "Ideal para" chips. **Open (owner):** a Valencia-specific "sea-first" hero + "despertarse frente al Mediterráneo" photo essay needs chosen photos and new marketing copy the owner must approve (content-accuracy rule — not invented autonomously). |
+| #88 | 🟡 | Weekend itinerary (`weekendPlan`), "Ideal para" chips, shared DS improvements. **Open (owner):** "qué hacer si no esquías" is new marketing copy the owner must supply/approve (no invented activities); the dynamic season message already exists as `<AvailabilityNote>` (real occupancy only). |
 | #89 | ✅ | `BookingBar` in `SiteChrome` on every public page (hidden on admin/checkout). `stay.ts` sessionStorage store keeps property/dates/guests across nav. Desktop pill after scroll; mobile bottom bar (suppressed on home + fiches which have their own module) + sheet. `<PreferProperty>` on fiche/landing. `e2e/booking-bar.spec.ts`. |
 | #90 | ✅ | `<RatingBadge>` (real, source-attributed, per-property) in the BookingWidget header, search results, the Booking Bar sheet and the **checkout summary**. `AvailabilityResult.rating`. |
 | #91 | ✅ | `content/site.ts` `directBooking` (promo + factual "aquí vs plataforma", ES/EN). `<DirectBookingCompare>` + `<DirectBookingSaving>` (€ saving when a real total is known). Wired: home, BookingWidget CTA, checkout summary, property closing section. |
 | #92 | ✅ | `alternatives.ts` (nearby windows, weekend fallbacks, real availability only). `checkProperty` returns priced `alternatives`. Cards with total price + "Elegir estas fechas" in `AvailabilitySearch`, `BookingWidget`, the Booking Bar sheet. `e2e/smart-availability.spec.ts`. |
-| #93 | 🟡 | `ResponsivePhoto.focal` / `.category` + `object-position` in `Picture`; swipe in `GalleryLightbox`. **Open:** the commercial re-ordering + category assignment + focal points are a data task on `photo-manifest.json` (needs eyes on the photos). |
+| #93 | 🟡 | Code done — `ResponsivePhoto.focal`/`.category` → `object-position`, `GalleryLightbox` swipe. **Open (owner):** the commercial re-ordering + `category` + `focal` values on `photo-manifest.json` require looking at the real photos — a data task for the owner, no code left. |
 
 ### Phase 2 · Captación orgánica — P0/P1
 | # | Title | Notes |
@@ -49,7 +49,7 @@ metric — direct-booking conversion**. Visible product first; invisible infra
 | #66 | Observability: errors, traces, structured logs, metrics, alerts | Sentry/monitoring vendor |
 | #75 | ✅ code — migration `20260831130000_rls_hardening.sql` + `rls_hardening.test.sql`. RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon/authenticated stripped of every table + RPC grant, default privileges locked, availability RPCs → service_role only. D-024. **Owner:** `supabase db push`. |
 | #76 | Durable jobs + transactional outbox (emails, sync, campaigns) | — (buildable) |
-| #77 | Design system V4 + visual regression | — (buildable; feeds Phase 1) |
+| #77 | ✅ code — `globals.css` rebuilt as a token system + `.pv-*` component vocabulary (buttons/cards/fields/chips/badges/notes/FAQ) + `ui/{Button,Card,Field,SectionHeading}`. Full public-site sweep (~45 ad-hoc strings replaced). `e2e/visual.spec.ts` full-page regression, 10 templates × 2 widths. D-027. |
 | #78 | Performance budgets + Lighthouse CI + real CWV | CI + deployed URL |
 | #80 | Backup, DR, restore drills, RPO/RTO | Supabase plan / ops |
 | #83 | ✅ code — `src/lib/repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases against the in-memory store) + a static method-surface parity check (memory ⇔ supabase). D-025. |

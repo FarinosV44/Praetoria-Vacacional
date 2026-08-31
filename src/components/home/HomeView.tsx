@@ -127,22 +127,16 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
         <div className="container-page relative flex min-h-[68vh] flex-col justify-end py-14 sm:min-h-[80vh] sm:py-24">
           <p className="eyebrow !text-white/75">{c.heroKicker}</p>
-          <h1 className="mt-4 max-w-2xl font-display text-[2rem] leading-[1.1] sm:text-5xl md:text-6xl">
-            {c.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-lg text-base text-white/90 sm:text-lg">{c.heroSub}</p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <a
-              href="#buscador"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--accent-700)] transition hover:shadow-lg"
-            >
+          <h1 className="mt-4 max-w-2xl display-1 text-white">{c.heroTitle}</h1>
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
+            {c.heroSub}
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a href="#buscador" className="pv-btn pv-btn--ondark pv-btn--lg">
               {c.heroCta}
               <span aria-hidden>→</span>
             </a>
-            <a
-              href="#alojamientos"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-medium text-white ring-1 ring-white/40 transition hover:ring-white/80"
-            >
+            <a href="#alojamientos" className="pv-btn pv-btn--ondark-ghost pv-btn--lg">
               {c.heroCta2}
             </a>
           </div>
@@ -164,13 +158,13 @@ export async function HomeView({ locale }: { locale: Locale }) {
       </section>
 
       {/* 3 · Availability module, clearly separated */}
-      <section id="buscador" className="border-b border-[var(--color-line)] bg-white py-14 sm:py-16">
+      <section id="buscador" className="scroll-mt-20 border-b border-[var(--color-line)] bg-white section-y-tight">
         <div className="container-page">
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow">{c.bookHeading}</p>
-            <p className="mt-2 text-[var(--color-ink-soft)]">{c.bookSub}</p>
+            <p className="lede mt-2">{c.bookSub}</p>
           </div>
-          <div className="mx-auto mt-6 max-w-3xl">
+          <div className="mx-auto mt-7 max-w-3xl">
             <AvailabilitySearch locale={locale} />
           </div>
           <div className="mx-auto mt-4 max-w-3xl text-center">
@@ -181,12 +175,12 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
       {/* 4 · Choose your getaway — MAR / NIEVE selector (issue #86 §5) */}
       <div id="alojamientos" className="scroll-mt-24">
-        <div className="container-page pt-16">
+        <div className="container-page pt-16 sm:pt-20">
           <p className="eyebrow">{locale === "en" ? "Two homes" : "Dos casas"}</p>
-          <h2 id="alojamientos-heading" className="mt-2 font-display text-3xl sm:text-4xl">
+          <h2 id="alojamientos-heading" className="mt-2 display-2">
             {dict.home.chooseHeading}
           </h2>
-          <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">{dict.home.chooseSub}</p>
+          <p className="lede mt-3 max-w-2xl">{dict.home.chooseSub}</p>
         </div>
         <ExperienceSelector
           locale={locale}
@@ -215,11 +209,11 @@ export async function HomeView({ locale }: { locale: Locale }) {
             className="reveal border-t border-[var(--color-line)] bg-[var(--accent-50)]"
           >
             <div
-              className={`container-page grid items-start gap-8 py-16 md:grid-cols-2 ${
+              className={`container-page grid items-start gap-8 section-y-tight md:grid-cols-2 md:gap-12 ${
                 i % 2 ? "md:[&>*:first-child]:order-2" : ""
               }`}
             >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)] md:sticky md:top-24">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] md:sticky md:top-24">
                 {shot && (
                   <Picture
                     photo={shot}
@@ -230,10 +224,10 @@ export async function HomeView({ locale }: { locale: Locale }) {
               </div>
               <div>
                 <p className="eyebrow">{s.eyebrow}</p>
-                <h2 className="mt-2 font-display text-3xl sm:text-4xl">{s.h}</h2>
-                <p className="mt-3 text-[var(--color-ink-soft)]">{p.shortIntro}</p>
+                <h2 className="mt-2 display-3">{s.h}</h2>
+                <p className="lede mt-3">{p.shortIntro}</p>
 
-                <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-[var(--color-ink-soft)]">
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-faint)]">
                   {c.bestOf(p.name)}
                 </p>
                 <ul className="mt-3 space-y-3">
@@ -251,17 +245,11 @@ export async function HomeView({ locale }: { locale: Locale }) {
                 </ul>
 
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <Link
-                    href={path(`/${p.slug}`)}
-                    className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-700)]"
-                  >
+                  <Link href={path(`/${p.slug}`)} className="pv-btn pv-btn--primary">
                     {c.discover(p.name)}
                   </Link>
                   {locale === "es" && (
-                    <Link
-                      href={`/guias/${hubFor(p.slug)}`}
-                      className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
-                    >
+                    <Link href={`/guias/${hubFor(p.slug)}`} className="pv-btn pv-btn--secondary">
                       {c.guideCta} →
                     </Link>
                   )}
@@ -274,22 +262,20 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
       {/* 6 · Real reviews */}
       {reviewStrip.length > 0 && (
-        <section className="reveal border-t border-[var(--color-line)] bg-white py-16">
+        <section className="reveal border-t border-[var(--color-line)] bg-white section-y-tight">
           <div className="container-page">
             <p className="eyebrow">{locale === "en" ? "Reviews" : "Opiniones"}</p>
-            <h2 className="mt-2 font-display text-3xl sm:text-4xl">{c.reviewsHeading}</h2>
-            <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">{c.reviewsSub}</p>
+            <h2 className="mt-2 display-2">{c.reviewsHeading}</h2>
+            <p className="lede mt-3 max-w-2xl">{c.reviewsSub}</p>
             <div className="mt-8 grid gap-6 md:grid-cols-2">
               {reviewStrip.map(({ property, review }) => (
                 <figure
                   key={property.slug}
                   data-experience={property.experience}
-                  className="flex h-full flex-col rounded-[var(--radius-card)] border border-[var(--color-line)] p-6"
+                  className="pv-card pv-card--pad flex h-full flex-col"
                 >
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="rounded-full bg-[var(--accent-50)] px-2 py-0.5 font-semibold text-[var(--accent-700)]">
-                      {(review.rating).toFixed(0)}/10
-                    </span>
+                    <span className="pv-badge pv-badge--score">{review.rating.toFixed(1)}</span>
                     {property.rating && (
                       <span className="text-[var(--color-ink-soft)]">
                         {property.rating.value.toFixed(1)} · {property.rating.count}{" "}
@@ -309,7 +295,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
                     </span>
                     <Link
                       href={path(`/${property.slug}#opiniones`)}
-                      className="mt-1 block text-[var(--accent-700)] hover:underline"
+                      className="mt-1 block font-medium text-[var(--accent-700)] hover:underline"
                     >
                       {c.seeAllReviews} →
                     </Link>
@@ -323,17 +309,17 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
       {/* 7 · Featured guides */}
       {locale === "es" && (
-        <section className="reveal border-t border-[var(--color-line)] bg-[var(--color-mist,#f4f6f8)] py-16">
+        <section className="reveal border-t border-[var(--color-line)] bg-[var(--color-mist)] section-y-tight">
           <div className="container-page">
             <p className="eyebrow">{c.guidesHeading}</p>
-            <h2 className="mt-2 font-display text-3xl sm:text-4xl">{c.guidesSub}</h2>
+            <h2 className="mt-2 display-2">{c.guidesSub}</h2>
             <div className="mt-8 grid gap-5 md:grid-cols-2">
               {guideHubs.map((h) => (
                 <Link
                   key={h.slug}
                   href={`/guias/${h.slug}`}
                   data-experience={h.propertySlug === "javalambre" ? "ski" : "sea"}
-                  className="group rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-6 transition hover:border-[var(--accent-500)]"
+                  className="pv-card pv-card--pad pv-card--interactive group"
                 >
                   <p className="eyebrow">{h.eyebrow}</p>
                   <p className="mt-1 font-display text-xl">{h.title}</p>
@@ -350,12 +336,12 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
       {/* 7b · Actualidad — latest blog posts (issue #57) */}
       {recentPosts.length > 0 && (
-        <section className="reveal border-t border-[var(--color-line)] bg-white py-16">
+        <section className="reveal border-t border-[var(--color-line)] bg-white section-y-tight">
           <div className="container-page">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="eyebrow">Actualidad</p>
-                <h2 className="mt-2 font-display text-3xl sm:text-4xl">Del blog</h2>
+                <h2 className="mt-2 display-2">Del blog</h2>
               </div>
               <Link href="/blog" className="text-sm font-medium text-[var(--accent-700)] hover:underline">
                 Ver todo el blog →
@@ -366,7 +352,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
                 <Link
                   key={post.id}
                   href={`/blog/${post.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] transition hover:border-[var(--accent-500)]"
+                  className="pv-card pv-card--interactive group flex h-full flex-col overflow-hidden !p-0"
                 >
                   {post.featuredImageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -393,15 +379,15 @@ export async function HomeView({ locale }: { locale: Locale }) {
       )}
 
       {/* 8 · Closing argument for direct booking + final CTA */}
-      <section aria-labelledby="ventajas-heading" className="bg-white py-20">
+      <section aria-labelledby="ventajas-heading" className="bg-white section-y">
         <div className="container-page reveal">
           <p className="eyebrow">{c.closingEyebrow}</p>
-          <h2 id="ventajas-heading" className="mt-2 font-display text-3xl sm:text-4xl">
+          <h2 id="ventajas-heading" className="mt-2 display-2">
             {c.closingHeading}
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {advantages.map((a) => (
-              <div key={a.title} className="rounded-xl border border-[var(--color-line)] p-5">
+              <div key={a.title} className="pv-card pv-card--pad">
                 <h3 className="font-display text-lg">{a.title}</h3>
                 <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{a.body}</p>
               </div>
@@ -411,16 +397,10 @@ export async function HomeView({ locale }: { locale: Locale }) {
             <DirectBookingCompare locale={locale} />
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
-            <a
-              href="#buscador"
-              className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-            >
+            <a href="#buscador" className="pv-btn pv-btn--primary">
               {dict.nav.seeAvailability}
             </a>
-            <Link
-              href={path("/contacto")}
-              className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
-            >
+            <Link href={path("/contacto")} className="pv-btn pv-btn--secondary">
               {locale === "en" ? "Ask a question" : "Resolver una duda"}
             </Link>
           </div>
@@ -430,10 +410,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
       <FaqBlock items={faq} heading={dict.home.faqHeading} />
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur sm:hidden">
-        <a
-          href="#buscador"
-          className="flex h-12 items-center justify-center rounded-full bg-[var(--accent-600)] font-medium text-white"
-        >
+        <a href="#buscador" className="pv-btn pv-btn--primary pv-btn--block">
           {dict.nav.seeAvailability}
         </a>
       </div>

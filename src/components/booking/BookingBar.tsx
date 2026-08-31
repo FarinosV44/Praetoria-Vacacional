@@ -180,7 +180,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
           scrolled ? "hidden sm:flex" : "hidden"
         }`}
       >
-        <div className="flex items-center gap-3 rounded-full border border-[var(--color-line)] bg-white/95 py-2 pl-5 pr-2 shadow-[var(--shadow-card)] backdrop-blur">
+        <div className="flex items-center gap-3 rounded-full bg-white/95 py-2 pl-5 pr-2 shadow-[var(--shadow-lg)] backdrop-blur">
           <span className="text-sm font-medium">
             {stay.property
               ? PROPERTIES.find((p) => p.slug === stay.property)?.name.split(" ")[0]
@@ -192,7 +192,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="rounded-full bg-[var(--accent-600)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+            className="pv-btn pv-btn--primary pv-btn--sm"
           >
             {hasDates ? t.price : t.open}
           </button>
@@ -208,7 +208,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent-600)] font-medium text-white"
+          className="pv-btn pv-btn--primary pv-btn--block"
         >
           {hasDates ? `${label} · ${t.price}` : t.open}
         </button>
@@ -217,7 +217,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
             aria-hidden
           />
@@ -225,7 +225,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
             role="dialog"
             aria-modal="true"
             aria-label={t.heading}
-            className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
+            className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-[var(--radius-xl)] bg-white p-5 shadow-[var(--shadow-lg)] sm:rounded-[var(--radius-xl)]"
           >
             <div className="flex items-center justify-between">
               <p className="font-display text-lg">{t.heading}</p>
@@ -233,19 +233,19 @@ export function BookingBar({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t.close}
-                className="rounded-full p-1 text-[var(--color-ink-soft)] hover:bg-[var(--color-paper)]"
+                className="rounded-full p-1.5 text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--color-mist)]"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={search} className="mt-4 grid gap-3">
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.property}</span>
+              <label>
+                <span className="pv-label">{t.property}</span>
                 <select
                   value={draft.property}
                   onChange={(e) => setDraft((d) => ({ ...d, property: e.target.value }))}
-                  className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+                  className="pv-select"
                 >
                   <option value="">{t.any}</option>
                   {PROPERTIES.map((p) => (
@@ -256,35 +256,35 @@ export function BookingBar({ locale }: { locale: Locale }) {
                 </select>
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <label className="text-sm">
-                  <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkIn}</span>
+                <label>
+                  <span className="pv-label">{t.checkIn}</span>
                   <input
                     type="date"
                     required
                     value={draft.checkIn}
                     min={todayPlus(0)}
                     onChange={(e) => setDraft((d) => ({ ...d, checkIn: e.target.value }))}
-                    className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+                    className="pv-input"
                   />
                 </label>
-                <label className="text-sm">
-                  <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkOut}</span>
+                <label>
+                  <span className="pv-label">{t.checkOut}</span>
                   <input
                     type="date"
                     required
                     value={draft.checkOut}
                     min={draft.checkIn}
                     onChange={(e) => setDraft((d) => ({ ...d, checkOut: e.target.value }))}
-                    className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+                    className="pv-input"
                   />
                 </label>
               </div>
-              <label className="text-sm">
-                <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.guests}</span>
+              <label>
+                <span className="pv-label">{t.guests}</span>
                 <select
                   value={draft.guests}
                   onChange={(e) => setDraft((d) => ({ ...d, guests: Number(e.target.value) }))}
-                  className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+                  className="pv-select"
                 >
                   {Array.from({ length: 6 }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>
@@ -293,11 +293,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
                   ))}
                 </select>
               </label>
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="h-12 rounded-full bg-[var(--accent-600)] font-medium text-white hover:bg-[var(--accent-700)]"
-              >
+              <button type="submit" disabled={status === "loading"} className="pv-btn pv-btn--primary">
                 {status === "loading" ? t.checking : t.price}
               </button>
             </form>
@@ -305,10 +301,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
             {status === "done" && (
               <ul className="mt-4 grid gap-3">
                 {shown.map((r) => (
-                  <li
-                    key={r.propertySlug}
-                    className="rounded-xl border border-[var(--color-line)] p-3"
-                  >
+                  <li key={r.propertySlug} className="pv-card !p-3">
                     <div className="flex items-center justify-between gap-2">
                       <span>
                         <span className="block font-medium">{r.propertyName}</span>
@@ -318,7 +311,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
                         <button
                           type="button"
                           onClick={() => reserve(r.propertySlug, draft.checkIn, draft.checkOut)}
-                          className="rounded-full bg-[var(--accent-600)] px-4 py-2 text-sm font-medium text-white"
+                          className="pv-btn pv-btn--primary pv-btn--sm"
                         >
                           {formatMoney(r.quote.totalCents)} · {t.book}
                         </button>
@@ -328,7 +321,9 @@ export function BookingBar({ locale }: { locale: Locale }) {
                     </div>
                     {!r.available && r.alternatives.length > 0 && (
                       <div className="mt-2 border-t border-[var(--color-line)] pt-2">
-                        <p className="text-xs font-medium text-[var(--color-ink-soft)]">{t.nearby}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">
+                          {t.nearby}
+                        </p>
                         <ul className="mt-1.5 space-y-1.5">
                           {r.alternatives.map((a) => (
                             <li
@@ -344,7 +339,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
                               <button
                                 type="button"
                                 onClick={() => reserve(r.propertySlug, a.checkIn, a.checkOut)}
-                                className="rounded-full bg-[var(--accent-600)] px-3 py-1 text-xs font-medium text-white"
+                                className="pv-btn pv-btn--primary pv-btn--sm !h-8 !px-3 !text-xs"
                               >
                                 {t.choose}
                               </button>

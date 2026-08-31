@@ -41,8 +41,8 @@ export function ExperienceSelector({
   if (!current) return null;
 
   return (
-    <section aria-label={t.chooseYour} className="container-page py-14 sm:py-16">
-      <div className="mx-auto flex w-fit rounded-full border border-[var(--color-line)] p-1 text-sm">
+    <section aria-label={t.chooseYour} className="container-page section-y-tight">
+      <div className="mx-auto flex w-fit rounded-full bg-[var(--color-mist)] p-1 text-sm shadow-[inset_0_0_0_1px_var(--color-line)]">
         {options.map((o) => (
           <button
             key={o.slug}
@@ -50,9 +50,9 @@ export function ExperienceSelector({
             data-experience={o.experience}
             aria-pressed={active === o.experience}
             onClick={() => setActive(o.experience)}
-            className={`rounded-full px-6 py-2 font-medium transition-colors ${
+            className={`rounded-full px-6 py-2 font-medium transition-all ${
               active === o.experience
-                ? "bg-[var(--accent-600)] text-white"
+                ? "bg-[var(--accent-600)] text-white shadow-[var(--shadow-sm)]"
                 : "text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
             }`}
           >
@@ -67,9 +67,9 @@ export function ExperienceSelector({
       <div
         key={current.slug}
         data-experience={current.experience}
-        className="reveal mt-6 grid items-stretch gap-6 overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] md:grid-cols-2"
+        className="pv-card pv-card--soft reveal mt-6 grid items-stretch gap-0 overflow-hidden !p-0 md:grid-cols-2"
       >
-        <div className="relative min-h-[260px] md:min-h-[380px]">
+        <div className="relative min-h-[260px] md:min-h-[400px]">
           {current.photo && (
             <Picture
               photo={current.photo}
@@ -78,29 +78,26 @@ export function ExperienceSelector({
             />
           )}
         </div>
-        <div className="flex flex-col justify-center p-6 sm:p-8">
+        <div className="flex flex-col justify-center p-7 sm:p-10">
           <p className="eyebrow">
             {current.area} · {current.region}
           </p>
-          <h2 className="mt-2 font-display text-2xl sm:text-3xl">{current.name}</h2>
+          <h2 className="mt-2 display-3">{current.name}</h2>
           <div className="mt-2">
             <RatingBadge rating={current.rating} locale={locale} size="xs" />
           </div>
-          <p className="mt-3 text-[var(--color-ink-soft)]">{current.intro}</p>
+          <p className="lede mt-3">{current.intro}</p>
           <p className="mt-3 text-sm font-medium">
             {current.headline.label} · {current.headline.value}
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href={localizedPath(locale, `/${current.slug}`)}
-              className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+              className="pv-btn pv-btn--primary"
             >
               {t.discover(current.name)}
             </Link>
-            <a
-              href="#buscador"
-              className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
-            >
+            <a href="#buscador" className="pv-btn pv-btn--secondary">
               {locale === "en" ? "Check dates" : "Comprobar fechas"}
             </a>
           </div>

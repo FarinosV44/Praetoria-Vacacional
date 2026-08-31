@@ -84,7 +84,7 @@ export default async function GuidePage({
       />
       <GuideHero propertySlug={g.propertySlug} eyebrow={`Guía · ${h.title}`} title={g.h1} lead={g.lead} />
       {!found.published && (
-        <p className="container-page mt-3 rounded-md bg-amber-100 px-3 py-1 text-sm text-amber-900">
+        <p className="container-page mt-3 pv-note pv-note--warn">
           Borrador — esta guía no está indexada ni enlazada públicamente.
         </p>
       )}
@@ -108,7 +108,7 @@ export default async function GuidePage({
               id={slugifyHeading(s.heading)}
               className="scroll-mt-24 [&:not(:first-child)]:mt-10"
             >
-              <h2 className="font-display text-2xl">{s.heading}</h2>
+              <h2 className="display-3">{s.heading}</h2>
               {s.body.map((p, i) => (
                 <p key={i} className="mt-3 text-[var(--color-ink-soft)]">
                   {p}
@@ -126,11 +126,11 @@ export default async function GuidePage({
 
           {g.faq && g.faq.length > 0 && (
             <section className="mt-12">
-              <h2 className="font-display text-2xl">Preguntas frecuentes</h2>
-              <div className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+              <h2 className="display-3">Preguntas frecuentes</h2>
+              <div className="pv-faq mt-4">
                 {g.faq.map((f) => (
-                  <details key={f.question} className="group py-3">
-                    <summary className="cursor-pointer list-none font-medium">{f.question}</summary>
+                  <details key={f.question}>
+                    <summary>{f.question}<span aria-hidden className="pv-faq__sign">+</span></summary>
                     <p className="mt-2 text-[var(--color-ink-soft)]">{f.answer}</p>
                   </details>
                 ))}
@@ -151,13 +151,13 @@ export default async function GuidePage({
       {siblings.length > 0 && (
         <section className="border-t border-[var(--color-line)] bg-white py-14">
           <div className="container-page">
-            <h2 className="font-display text-2xl">También te puede interesar</h2>
+            <h2 className="display-3">También te puede interesar</h2>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {siblings.slice(0, 6).map((s) => (
                 <li key={s.slug}>
                   <Link
                     href={`/guias/${hub}/${s.slug}`}
-                    className="block h-full rounded-xl border border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                    className="pv-card pv-card--interactive block h-full !p-4 text-sm font-medium"
                   >
                     {s.h1}
                   </Link>

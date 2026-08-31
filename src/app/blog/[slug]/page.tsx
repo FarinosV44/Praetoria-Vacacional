@@ -88,7 +88,7 @@ export default async function BlogPostPage({
       <article className="container-page py-8">
         <header className="mx-auto max-w-2xl">
           <p className="eyebrow">{[post.category, "Blog"].filter(Boolean).join(" · ")}</p>
-          <h1 className="mt-2 font-display text-3xl sm:text-4xl">{post.title}</h1>
+          <h1 className="mt-2 display-2">{post.title}</h1>
           <p className="mt-4 text-sm text-[var(--color-ink-soft)]">
             {post.author} · Publicado el {fmtDate(post.publishedAt)}
             {post.updatedContentAt && post.updatedContentAt !== post.publishedAt && (
@@ -116,13 +116,13 @@ export default async function BlogPostPage({
         )}
 
         {ctaProperty && (
-          <aside className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-between gap-3 rounded-full border border-[var(--color-line)] bg-[var(--accent-50)] px-4 py-2.5 text-sm">
+          <aside className="pv-card pv-card--accent mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-between gap-3 !px-4 !py-2.5 text-sm">
             <span>
               ¿Te encaja para una escapada? <strong>{ctaProperty.name}</strong>
             </span>
             <Link
               href={bookingSectionHref(ctaProperty.slug)}
-              className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-4 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+              className="pv-btn pv-btn--primary pv-btn--sm !h-9 !text-xs"
             >
               Ver fechas y precio
             </Link>
@@ -162,13 +162,13 @@ export default async function BlogPostPage({
                 <>
                   <Link
                     href={`/${ctaProperty.slug}`}
-                    className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+                    className="pv-btn pv-btn--primary"
                   >
                     Ver {ctaProperty.name}
                   </Link>
                   <Link
                     href={bookingSectionHref(ctaProperty.slug)}
-                    className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
+                    className="pv-btn pv-btn--secondary"
                   >
                     Ver fechas y precio
                   </Link>
@@ -176,7 +176,7 @@ export default async function BlogPostPage({
               ) : (
                 <Link
                   href="/#buscador"
-                  className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+                  className="pv-btn pv-btn--primary"
                 >
                   Ver disponibilidad
                 </Link>
@@ -193,7 +193,7 @@ export default async function BlogPostPage({
                 <li key={r.id}>
                   <Link
                     href={`/blog/${r.slug}`}
-                    className="block rounded-xl border border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                    className="pv-card pv-card--interactive block !p-4 text-sm font-medium"
                   >
                     {r.title}
                   </Link>

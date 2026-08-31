@@ -54,7 +54,7 @@ export function AvailabilityNote({
         : `El ${insight.occupancyPct}% de las noches de las próximas ${weeks} semanas ya está reservado.`;
 
   return (
-    <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-[var(--accent-50)] px-3 py-1 text-sm text-[var(--accent-700)]">
+    <p className="pv-chip pv-chip--accent mt-3">
       <span aria-hidden>📅</span>
       {text}
     </p>

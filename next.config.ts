@@ -11,7 +11,8 @@ const csp = [
   "img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://api.stripe.com",
-  "frame-src https://js.stripe.com https://hooks.stripe.com",
+  // Stripe checkout + the OpenStreetMap location embed on property pages (#87).
+  "frame-src https://js.stripe.com https://hooks.stripe.com https://www.openstreetmap.org",
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",

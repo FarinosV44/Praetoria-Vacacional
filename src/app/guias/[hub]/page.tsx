@@ -90,7 +90,7 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
         <article className="max-w-2xl">
           {h.sections.map((s) => (
             <section key={s.heading} id={slugifyHeading(s.heading)} className="scroll-mt-24 [&:not(:first-child)]:mt-10">
-              <h2 className="font-display text-2xl">{s.heading}</h2>
+              <h2 className="display-3">{s.heading}</h2>
               {s.body.map((p, i) => (
                 <p key={i} className="mt-3 text-[var(--color-ink-soft)]">
                   {p}
@@ -108,11 +108,11 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
 
           {h.faq.length > 0 && (
             <section className="mt-12">
-              <h2 className="font-display text-2xl">Preguntas frecuentes</h2>
-              <div className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+              <h2 className="display-3">Preguntas frecuentes</h2>
+              <div className="pv-faq mt-4">
                 {h.faq.map((f) => (
-                  <details key={f.question} className="group py-3">
-                    <summary className="cursor-pointer list-none font-medium">{f.question}</summary>
+                  <details key={f.question}>
+                    <summary>{f.question}<span aria-hidden className="pv-faq__sign">+</span></summary>
                     <p className="mt-2 text-[var(--color-ink-soft)]">{f.answer}</p>
                   </details>
                 ))}
@@ -127,13 +127,13 @@ export default async function GuideHubPage({ params }: { params: Promise<{ hub: 
       {(satellites.length > 0 || landings.length > 0 || seasonal.length > 0) && (
         <section className="border-t border-[var(--color-line)] bg-white py-14">
           <div className="container-page">
-            <h2 className="font-display text-2xl">Guías de {h.propertySlug === "javalambre" ? "Javalambre" : "la costa sur de Valencia"}</h2>
+            <h2 className="display-3">Guías de {h.propertySlug === "javalambre" ? "Javalambre" : "la costa sur de Valencia"}</h2>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {satellites.map((g) => (
                 <li key={g.slug}>
                   <Link
                     href={`/guias/${h.slug}/${g.slug}`}
-                    className="block h-full rounded-xl border border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                    className="pv-card pv-card--interactive block h-full !p-4 text-sm font-medium"
                   >
                     <span className="font-medium">{g.h1}</span>
                     <span className="mt-1 block text-xs text-[var(--color-ink-soft)]">

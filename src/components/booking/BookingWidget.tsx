@@ -175,7 +175,7 @@ export function BookingWidget({
 
   return (
     <div
-      className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-5 shadow-[var(--shadow-card)]"
+      className="pv-card pv-card--soft pv-card--pad"
       lang={locale === "en" ? "en" : undefined}
     >
       <div className="flex items-center justify-between gap-2">
@@ -183,7 +183,7 @@ export function BookingWidget({
         {rating && <RatingBadge rating={rating} locale={locale} size="xs" withSource={false} />}
       </div>
 
-      <div className="mt-3 rounded-xl bg-[var(--color-paper)] p-2 text-center text-sm">
+      <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--color-mist)] p-2 text-center text-sm">
         {checkIn && checkOut
           ? `${formatRange(checkIn, checkOut)}`
           : checkIn
@@ -200,12 +200,12 @@ export function BookingWidget({
         />
       </div>
 
-      <label className="mt-4 block text-sm">
-        <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{s.guests}</span>
+      <label className="mt-4 block">
+        <span className="pv-label">{s.guests}</span>
         <select
           value={guests}
           onChange={(e) => setGuests(Number(e.target.value))}
-          className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+          className="pv-select"
         >
           {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
@@ -217,7 +217,7 @@ export function BookingWidget({
 
       <div aria-live="polite" className="mt-4 min-h-[3rem] text-sm">
         {loading && <p className="text-[var(--color-ink-soft)]">{s.checking}</p>}
-        {error && !loading && <p className="text-red-600">{error}</p>}
+        {error && !loading && <p className="pv-note pv-note--error">{error}</p>}
         {!loading && !error && data && !data.available && (
           <div>
             <p className="text-[var(--color-ink-soft)]">
@@ -226,7 +226,9 @@ export function BookingWidget({
             </p>
             {data.alternatives && data.alternatives.length > 0 && (
               <div className="mt-3 border-t border-[var(--color-line)] pt-3">
-                <p className="text-xs font-medium text-[var(--color-ink-soft)]">{s.nearbyDates}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">
+                  {s.nearbyDates}
+                </p>
                 <ul className="mt-2 space-y-1.5">
                   {data.alternatives.map((a) => (
                     <li key={`${a.checkIn}-${a.checkOut}`} className="flex items-center justify-between gap-2">
@@ -244,7 +246,7 @@ export function BookingWidget({
                           setRange({ checkIn: a.checkIn, checkOut: a.checkOut });
                           track("select_alternative_dates", { property_slug: propertySlug, kind: a.kind });
                         }}
-                        className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+                        className="pv-btn pv-btn--primary pv-btn--sm !h-8 !px-3 !text-xs"
                       >
                         {s.chooseDates}
                       </button>
@@ -305,8 +307,8 @@ export function BookingWidget({
       )}
 
       <Button
-        size="lg"
-        className="mt-3 w-full"
+        block
+        className="mt-3"
         disabled={!data?.available || loading}
         onClick={reserve}
       >

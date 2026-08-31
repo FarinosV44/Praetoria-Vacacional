@@ -1,59 +1,127 @@
 @import "tailwindcss";
 
-/*
- * Praetoria Vacacional design tokens (issues #2, #24).
- * One visual system, two personalities: `sea` (Mediterranean, warm) and
- * `ski` (mountain, cool). Experience theming is applied with data-experience
- * on a wrapper element, which remaps the --accent-* tokens.
- */
+/* =============================================================================
+ * Praetoria Vacacional — Design System V4 (issues #2, #24, #77)
+ *
+ * One visual system, two personalities: `sea` (Mediterranean, warm) and `ski`
+ * (mountain, cool). Experience theming is applied with `data-experience` on a
+ * wrapper element, which remaps the --accent-* tokens.
+ *
+ * Layers:
+ *   @theme        — design tokens exposed as Tailwind utilities
+ *   :root         — runtime CSS custom properties (semantic aliases)
+ *   @layer base   — element defaults
+ *   @utility      — composable helpers (container-page, eyebrow, …)
+ *   @layer components — the component vocabulary (.pv-btn, .pv-card, .pv-field…)
+ *
+ * The component classes are the single source of truth for buttons, cards,
+ * inputs, chips and section rhythm across the public site. Prefer them (or the
+ * React wrappers in src/components/ui/*) over ad-hoc utility strings.
+ * ========================================================================== */
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
 
-  --color-ink: oklch(0.21 0.02 260);
-  --color-ink-soft: oklch(0.40 0.02 260);
-  --color-paper: oklch(0.99 0.005 260);
+  /* Ink & paper --------------------------------------------------------------- */
+  --color-ink: oklch(0.20 0.02 260);
+  /* ink-soft and ink-faint both clear WCAG AA (4.5:1) on white for body/small text. */
+  --color-ink-soft: oklch(0.42 0.02 260);
+  --color-ink-faint: oklch(0.46 0.016 260);
+  --color-paper: oklch(0.994 0.004 250);
   --color-paper-warm: oklch(0.985 0.012 80);
-  --color-line: oklch(0.9 0.01 260);
+  --color-mist: oklch(0.972 0.006 250);
+  --color-line: oklch(0.912 0.008 260);
+  --color-line-soft: oklch(0.948 0.006 260);
 
-  /* 600 is the CTA background: dark enough for white text ≥ 4.5:1 (AA). */
-  --color-sea-50: oklch(0.96 0.03 225);
-  --color-sea-500: oklch(0.60 0.13 235);
-  --color-sea-600: oklch(0.50 0.12 238);
-  --color-sea-700: oklch(0.41 0.10 240);
-  --color-sea-accent: oklch(0.78 0.14 85);
+  /* Sea (Mediterranean) — 600 is the CTA background, ≥ 4.5:1 with white ------- */
+  --color-sea-50: oklch(0.962 0.028 225);
+  --color-sea-100: oklch(0.92 0.045 228);
+  --color-sea-400: oklch(0.66 0.13 233);
+  --color-sea-500: oklch(0.585 0.132 236);
+  --color-sea-600: oklch(0.492 0.118 239);
+  --color-sea-700: oklch(0.405 0.098 241);
+  --color-sea-800: oklch(0.33 0.075 243);
+  --color-sea-accent: oklch(0.80 0.135 84);
 
-  --color-ski-50: oklch(0.96 0.02 250);
-  --color-ski-500: oklch(0.54 0.12 260);
-  --color-ski-600: oklch(0.46 0.11 263);
-  --color-ski-700: oklch(0.39 0.09 266);
-  --color-ski-accent: oklch(0.72 0.12 200);
+  /* Ski (mountain) ---------------------------------------------------------- */
+  --color-ski-50: oklch(0.962 0.02 250);
+  --color-ski-100: oklch(0.92 0.035 255);
+  --color-ski-400: oklch(0.60 0.12 261);
+  --color-ski-500: oklch(0.525 0.118 262);
+  --color-ski-600: oklch(0.45 0.108 264);
+  --color-ski-700: oklch(0.378 0.088 267);
+  --color-ski-800: oklch(0.31 0.07 269);
+  --color-ski-accent: oklch(0.73 0.115 205);
 
-  --radius-card: 1rem;
-  --shadow-card: 0 1px 2px oklch(0.2 0.02 260 / 0.05), 0 12px 32px oklch(0.2 0.02 260 / 0.08);
+  /* Semantic — the base colours double as AA text on white (≥ 4.5:1). */
+  --color-success: oklch(0.47 0.11 155);
+  --color-success-50: oklch(0.96 0.03 155);
+  --color-warning: oklch(0.52 0.11 62);
+  --color-warning-50: oklch(0.965 0.035 78);
+  --color-danger: oklch(0.505 0.17 27);
+  --color-danger-50: oklch(0.96 0.03 25);
+
+  /* Radii ------------------------------------------------------------------- */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-card: 1rem; /* legacy alias, kept */
+  --radius-pill: 999px;
+
+  /* Elevation — soft, layered, tinted with ink ------------------------------ */
+  --shadow-xs: 0 1px 2px oklch(0.2 0.02 260 / 0.06);
+  --shadow-sm: 0 1px 2px oklch(0.2 0.02 260 / 0.06), 0 3px 8px oklch(0.2 0.02 260 / 0.05);
+  --shadow-md: 0 2px 4px oklch(0.2 0.02 260 / 0.05), 0 10px 24px oklch(0.2 0.02 260 / 0.08);
+  --shadow-lg: 0 4px 8px oklch(0.2 0.02 260 / 0.06), 0 20px 48px oklch(0.2 0.02 260 / 0.12);
+  --shadow-card: var(--shadow-md); /* legacy alias, kept */
+
+  /* Motion ---------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 130ms;
+  --dur-mid: 200ms;
+
+  /* Fluid type scale ------------------------------------------------------- */
+  --text-display-1: clamp(2.25rem, 1.4rem + 4.2vw, 4rem);
+  --text-display-2: clamp(1.9rem, 1.35rem + 2.6vw, 3rem);
+  --text-display-3: clamp(1.55rem, 1.25rem + 1.4vw, 2.25rem);
+  --text-title: clamp(1.3rem, 1.15rem + 0.7vw, 1.6rem);
+
+  /* Section vertical rhythm --------------------------------------------------- */
+  --space-section: clamp(3.5rem, 2.5rem + 4vw, 6rem);
+  --space-section-tight: clamp(2.5rem, 2rem + 2.5vw, 4rem);
 }
 
 :root {
   --accent-50: var(--color-sea-50);
+  --accent-100: var(--color-sea-100);
+  --accent-400: var(--color-sea-400);
   --accent-500: var(--color-sea-500);
   --accent-600: var(--color-sea-600);
   --accent-700: var(--color-sea-700);
+  --accent-800: var(--color-sea-800);
   --accent-contrast: oklch(0.99 0 0);
 }
 
 [data-experience="sea"] {
   --accent-50: var(--color-sea-50);
+  --accent-100: var(--color-sea-100);
+  --accent-400: var(--color-sea-400);
   --accent-500: var(--color-sea-500);
   --accent-600: var(--color-sea-600);
   --accent-700: var(--color-sea-700);
+  --accent-800: var(--color-sea-800);
 }
 
 [data-experience="ski"] {
   --accent-50: var(--color-ski-50);
+  --accent-100: var(--color-ski-100);
+  --accent-400: var(--color-ski-400);
   --accent-500: var(--color-ski-500);
   --accent-600: var(--color-ski-600);
   --accent-700: var(--color-ski-700);
+  --accent-800: var(--color-ski-800);
 }
 
 @layer base {
@@ -66,17 +134,29 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 550;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.014em;
     text-wrap: balance;
+    color: var(--color-ink);
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.18em;
+  }
+  ::selection {
+    background: var(--accent-100);
+    color: var(--accent-800);
   }
   :focus-visible {
     outline: 2px solid var(--accent-600);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 3px;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -87,116 +167,372 @@
   }
 }
 
+/* =============================================================================
+ * Utilities
+ * ========================================================================== */
+
 @utility container-page {
   width: 100%;
   max-width: 76rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
 
 @utility eyebrow {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent-700);
 }
 
-/*
- * Subtle scroll-in reveal — progressive enhancement only. Content is always
- * visible by default; the hidden-then-animate behaviour is applied ONLY where
- * scroll-driven timelines are supported AND motion is not reduced, so a browser
- * without support (or a user who prefers reduced motion) simply sees the content.
- */
-@keyframes reveal-in {
-  from {
-    transform: translateY(14px);
+/* Fluid display headings — pair with font-display. */
+@utility display-1 {
+  font-family: var(--font-display);
+  font-size: var(--text-display-1);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  font-weight: 550;
+}
+@utility display-2 {
+  font-family: var(--font-display);
+  font-size: var(--text-display-2);
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+  font-weight: 550;
+}
+@utility display-3 {
+  font-family: var(--font-display);
+  font-size: var(--text-display-3);
+  line-height: 1.16;
+  letter-spacing: -0.014em;
+  font-weight: 550;
+}
+
+/* Lead paragraph under a heading. */
+@utility lede {
+  font-size: 1.0625rem;
+  line-height: 1.62;
+  color: var(--color-ink-soft);
+}
+
+/* Section vertical rhythm — one knob for the whole site. */
+@utility section-y {
+  padding-block: var(--space-section);
+}
+@utility section-y-tight {
+  padding-block: var(--space-section-tight);
+}
+
+/* =============================================================================
+ * Components — the shared vocabulary
+ * ========================================================================== */
+
+@layer components {
+  /* --- Buttons ----------------------------------------------------------- */
+  .pv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-pill);
+    font-weight: 550;
+    line-height: 1;
+    white-space: nowrap;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+    /* md size default */
+    height: 2.75rem;
+    padding-inline: 1.35rem;
+    font-size: 0.9375rem;
   }
-  to {
-    transform: none;
+  .pv-btn:active {
+    transform: scale(0.98);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pv-btn:active { transform: none; }
+  }
+  .pv-btn:disabled,
+  .pv-btn[aria-disabled="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .pv-btn--sm { height: 2.25rem; padding-inline: 1rem; font-size: 0.875rem; }
+  .pv-btn--lg { height: 3.25rem; padding-inline: 1.9rem; font-size: 1rem; }
+  .pv-btn--block { width: 100%; }
+
+  .pv-btn--primary {
+    background: var(--accent-600);
+    color: var(--accent-contrast);
+    box-shadow: var(--shadow-sm);
+  }
+  .pv-btn--primary:hover {
+    background: var(--accent-700);
+    box-shadow: var(--shadow-md);
+  }
+
+  .pv-btn--secondary {
+    background: #fff;
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .pv-btn--secondary:hover {
+    color: var(--accent-700);
+    box-shadow: inset 0 0 0 1px var(--accent-500);
+  }
+
+  /* On dark / photographic backgrounds. */
+  .pv-btn--ondark {
+    background: #fff;
+    color: var(--accent-800);
+    box-shadow: var(--shadow-md);
+  }
+  .pv-btn--ondark:hover { background: #fff; box-shadow: var(--shadow-lg); }
+  .pv-btn--ondark-ghost {
+    background: transparent;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, #fff 45%, transparent);
+  }
+  .pv-btn--ondark-ghost:hover {
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, #fff 85%, transparent);
+  }
+
+  .pv-btn--ghost {
+    background: transparent;
+    color: var(--color-ink-soft);
+  }
+  .pv-btn--ghost:hover {
+    color: var(--accent-700);
+    background: var(--accent-50);
+  }
+
+  /* --- Cards ------------------------------------------------------------- */
+  .pv-card {
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .pv-card--pad { padding: 1.5rem; }
+  .pv-card--soft {
+    box-shadow: var(--shadow-sm);
+  }
+  .pv-card--interactive {
+    transition:
+      box-shadow var(--dur-mid) var(--ease-out),
+      transform var(--dur-mid) var(--ease-out),
+      border-color var(--dur-mid) var(--ease-out);
+  }
+  .pv-card--interactive:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pv-card--interactive:hover { transform: none; }
+  }
+
+  .pv-card--accent {
+    background: var(--accent-50);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent-500) 45%, transparent);
+  }
+
+  /* --- Surfaces / callouts -------------------------------------------------- */
+  .pv-note {
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .pv-note--info  { background: var(--accent-50); color: var(--accent-800); }
+  .pv-note--warn  { background: var(--color-warning-50); color: oklch(0.4 0.09 70); }
+  .pv-note--error { background: var(--color-danger-50); color: oklch(0.42 0.13 25); }
+
+  /* --- Form fields ------------------------------------------------------- */
+  .pv-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 550;
+    color: var(--color-ink-soft);
+  }
+  .pv-input,
+  .pv-select,
+  .pv-textarea {
+    width: 100%;
+    height: 2.875rem;
+    border-radius: var(--radius-md);
+    background: #fff;
+    padding-inline: 0.85rem;
+    font-size: 1rem;
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition: box-shadow var(--dur-fast) var(--ease-out);
+    appearance: none;
+  }
+  .pv-textarea { height: auto; min-height: 6rem; padding-block: 0.6rem; line-height: 1.55; }
+  .pv-input:hover,
+  .pv-select:hover,
+  .pv-textarea:hover {
+    box-shadow: inset 0 0 0 1px var(--color-ink-faint);
+  }
+  .pv-input:focus-visible,
+  .pv-select:focus-visible,
+  .pv-textarea:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 1.5px var(--accent-600), 0 0 0 3px var(--accent-100);
+  }
+  .pv-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23667' stroke-width='1.4'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 0.85rem;
+    padding-right: 2rem;
+  }
+  .pv-hint { margin-top: 0.3rem; font-size: 0.8125rem; color: var(--color-ink-faint); }
+  .pv-error { margin-top: 0.3rem; font-size: 0.8125rem; color: var(--color-danger); }
+
+  /* --- Chips & badges -------------------------------------------------------- */
+  .pv-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: var(--radius-pill);
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8125rem;
+    line-height: 1;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .pv-chip--accent {
+    background: var(--accent-50);
+    color: var(--accent-800);
+    box-shadow: none;
+  }
+  .pv-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: var(--radius-sm);
+    padding: 0.15rem 0.45rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .pv-badge--score { background: var(--accent-700); color: #fff; }
+  .pv-badge--neutral { background: var(--color-mist); color: var(--color-ink-soft); }
+  .pv-badge--success { background: var(--color-success-50); color: oklch(0.38 0.1 155); }
+
+  /* --- Divider ---------------------------------------------------------- */
+  .pv-hairline { border: 0; border-top: 1px solid var(--color-line); }
+
+  /* --- FAQ / disclosure --------------------------------------------------- */
+  .pv-faq details {
+    border-top: 1px solid var(--color-line);
+  }
+  .pv-faq details:last-child { border-bottom: 1px solid var(--color-line); }
+  .pv-faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.05rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 550;
+  }
+  .pv-faq summary::-webkit-details-marker { display: none; }
+  .pv-faq summary .pv-faq__sign {
+    flex: none;
+    color: var(--accent-600);
+    transition: transform var(--dur-mid) var(--ease-out);
+  }
+  .pv-faq details[open] summary .pv-faq__sign { transform: rotate(45deg); }
+  .pv-faq details > p {
+    margin: -0.2rem 0 1.05rem;
+    color: var(--color-ink-soft);
+    line-height: 1.65;
   }
 }
 
+/* =============================================================================
+ * Scroll-reveal — progressive enhancement only. Content is always visible;
+ * the hidden-then-animate behaviour applies ONLY where scroll-driven timelines
+ * are supported AND motion is not reduced.
+ * ========================================================================== */
+@keyframes reveal-in {
+  from { transform: translateY(16px); opacity: 0.001; }
+  to { transform: none; opacity: 1; }
+}
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .reveal {
       animation: reveal-in linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 22%;
+      animation-range: entry 0% cover 24%;
     }
   }
 }
 
-/*
- * Issue #55 — when a "Ver fechas / disponibilidad" CTA jumps to the booking
- * module (#reserva-<slug>), give it a brief, subtle ring so the eye lands on it.
- * Static fallback everywhere; the gentle fade only where motion is welcome.
- */
+/* Issue #55 — a booking module targeted by a "Ver fechas" anchor gets a brief ring. */
 [id^="reserva-"]:target {
-  border-radius: var(--radius-card, 1rem);
+  border-radius: var(--radius-lg);
   outline: 2px solid var(--accent-500);
   outline-offset: 4px;
 }
 @media (prefers-reduced-motion: no-preference) {
   @keyframes booking-target-fade {
-    from {
-      outline-color: var(--accent-500);
-    }
-    to {
-      outline-color: transparent;
-    }
+    from { outline-color: var(--accent-500); }
+    to { outline-color: transparent; }
   }
   [id^="reserva-"]:target {
     animation: booking-target-fade 2s ease-out 0.4s forwards;
   }
 }
 
-/*
- * Blog article body (issue #57). The Markdown renderer emits a closed tag set
- * (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr); style it here so
- * the article reads well without a typography plugin.
- */
+/* =============================================================================
+ * Blog article body (issue #57). The Markdown renderer emits a closed tag set.
+ * ========================================================================== */
 .blog-prose {
   color: var(--color-ink);
   line-height: 1.75;
+  font-size: 1.0625rem;
 }
-.blog-prose > * + * {
-  margin-top: 1.15em;
-}
+.blog-prose > * + * { margin-top: 1.15em; }
 .blog-prose h2 {
   font-family: var(--font-display);
   font-size: 1.6rem;
   line-height: 1.2;
-  margin-top: 2em;
+  margin-top: 1.9em;
 }
 .blog-prose h3 {
   font-family: var(--font-display);
   font-size: 1.25rem;
   margin-top: 1.6em;
 }
-.blog-prose h4 {
-  font-weight: 600;
-  margin-top: 1.4em;
-}
+.blog-prose h4 { font-weight: 600; margin-top: 1.4em; }
 .blog-prose a {
   color: var(--accent-700);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 .blog-prose ul,
-.blog-prose ol {
-  padding-left: 1.4em;
-}
-.blog-prose ul {
-  list-style: disc;
-}
-.blog-prose ol {
-  list-style: decimal;
-}
-.blog-prose li + li {
-  margin-top: 0.4em;
-}
+.blog-prose ol { padding-left: 1.4em; }
+.blog-prose ul { list-style: disc; }
+.blog-prose ol { list-style: decimal; }
+.blog-prose li + li { margin-top: 0.4em; }
 .blog-prose blockquote {
   border-left: 3px solid var(--accent-500);
   padding-left: 1em;
@@ -204,7 +540,7 @@
   font-style: italic;
 }
 .blog-prose code {
-  background: var(--color-paper);
+  background: var(--color-mist);
   border: 1px solid var(--color-line);
   border-radius: 0.35em;
   padding: 0.1em 0.35em;

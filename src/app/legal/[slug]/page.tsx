@@ -39,7 +39,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
         ]}
       />
       <div className="container-page max-w-3xl py-10">
-        <h1 className="font-display text-3xl">{doc.title}</h1>
+        <h1 className="display-2">{doc.title}</h1>
         <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
           Última actualización: {doc.updated}
         </p>

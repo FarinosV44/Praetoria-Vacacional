@@ -22,15 +22,15 @@ export default function VentajasPage() {
         ]}
       />
       <div className="container-page max-w-3xl py-10">
-        <h1 className="font-display text-3xl sm:text-4xl">Ventajas de reservar directamente</h1>
-        <p className="mt-4 text-lg text-[var(--color-ink-soft)]">
+        <h1 className="display-2">Ventajas de reservar directamente</h1>
+        <p className="lede mt-4">
           Cuando reservas en esta web tratas directamente con quien gestiona el alojamiento. Ni
           intermediarios ni recargos.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {directBookingAdvantages.map((a) => (
-            <div key={a.title} className="rounded-xl border border-[var(--color-line)] p-5">
+            <div key={a.title} className="pv-card pv-card--pad">
               <h2 className="font-display text-lg">{a.title}</h2>
               <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{a.body}</p>
             </div>
@@ -55,7 +55,7 @@ export default function VentajasPage() {
               key={p.slug}
               href={`/${p.slug}`}
               data-experience={p.experience}
-              className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+              className="pv-btn pv-btn--primary"
             >
               Ver {p.name}
             </Link>

@@ -522,3 +522,39 @@ in the month of its date; revenue is attributed to the check-in month;
 MoM deltas + a channel-mix bar, filterable per property. 12 unit tests. Reuses
 the reservation data already in the repo — no schema, works in DEMO and Supabase.
 The live "now" dashboard at `/admin` is unchanged; this is the historical view.
+
+## D-027 — #77 — Design System V4 + visual regression
+**Date:** 2026-08-31 · issue #77
+`src/app/globals.css` rebuilt as a real token system + component vocabulary:
+- **Tokens** — full ink/paper/line ramp incl. `--color-mist` / `--color-ink-faint`;
+  accent 50–800 (sea + ski, remapped by `data-experience`); semantic
+  success/warning/danger; radii `sm|md|lg|xl|pill`; elevation `xs|sm|md|lg`;
+  fluid type scale (`--text-display-1..3`, `--text-title`); section rhythm
+  (`--space-section*`); motion (`--ease-out`, `--dur-fast|mid`). All legacy
+  names (`--color-line`, `--accent-600`, `--radius-card`, `--shadow-card`,
+  `container-page`, `eyebrow`) still resolve.
+- **`@utility`** — `display-1|2|3`, `lede`, `section-y`, `section-y-tight`.
+- **`@layer components`** — `.pv-btn` (+ `--primary|secondary|ghost|ondark|
+  ondark-ghost`, `--sm|lg`, `--block`), `.pv-card` (+ `--pad|soft|interactive|
+  accent`), `.pv-input|select|textarea|label|hint|error`, `.pv-chip`, `.pv-badge`,
+  `.pv-note` (info|warn|error), `.pv-faq`, `.pv-hairline`.
+- **React primitives** — `components/ui/Button.tsx` (rebuilt on `.pv-btn`,
+  gained `size="sm"`, `block`, `ondark`), `Card.tsx` (`Card` / `CardLink`),
+  `Field.tsx` (`Field` / `Input` / `Select` / `Textarea`), `SectionHeading.tsx`.
+- **Sweep** — header, footer, mobile menu, hero, availability search, booking
+  widget, booking bar, experience selector, property page (headings · impact
+  block · ideal-para chips · "más" links · closing CTA · sticky bar), property
+  card, direct-booking, rating badge, reviews, FAQ, guide layout, checkout flow +
+  page, coupon field, availability note/calendar, and every standalone page
+  (blog, guías, ofertas, contacto, legal, reserva, ventajas, landings). ~45
+  hand-rolled button/card strings replaced with the vocabulary. Header height
+  14→16 (`top-16` in MobileMenu).
+- **#87 side-effect** — property pages now embed an OpenStreetMap location frame
+  ("zona aproximada", exact address after booking); `frame-src` in
+  `next.config.ts` gains `https://www.openstreetmap.org`.
+- **Visual regression** — `e2e/visual.spec.ts`: full-page screenshots of 10
+  templates × {390, 1280} on chromium; baselines in `e2e/__screenshots__/`,
+  `maxDiffPixelRatio 0.02`, `animations: "disabled"`. Regenerate with
+  `npx playwright test visual --update-snapshots` after an intended change.
+- The admin (`admin.css`) keeps its own deliberately denser system (private
+  tool, not a marketing surface) — untouched.

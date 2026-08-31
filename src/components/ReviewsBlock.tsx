@@ -23,11 +23,11 @@ export function ReviewsBlock({
 }) {
   if (reviews.length === 0) {
     return (
-      <section aria-labelledby="reviews-heading" className="container-page py-14">
-        <h2 id="reviews-heading" className="font-display text-2xl sm:text-3xl">
+      <section aria-labelledby="reviews-heading" className="container-page section-y-tight">
+        <h2 id="reviews-heading" className="display-3">
           Opiniones
         </h2>
-        <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">
+        <p className="lede mt-3 max-w-2xl">
           Todavía no hemos publicado opiniones verificadas de {propertyName} en la web. Cuando
           estén disponibles se mostrarán aquí, siempre indicando su procedencia.
         </p>
@@ -36,9 +36,9 @@ export function ReviewsBlock({
   }
 
   return (
-    <section aria-labelledby="reviews-heading" className="container-page py-14">
+    <section aria-labelledby="reviews-heading" className="container-page section-y-tight">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="reviews-heading" className="font-display text-2xl sm:text-3xl">
+        <h2 id="reviews-heading" className="display-3">
           Opiniones
         </h2>
         {rating && (
@@ -49,12 +49,10 @@ export function ReviewsBlock({
       </div>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {reviews.map((r, i) => (
-          <li key={i} className="rounded-xl border border-[var(--color-line)] p-5">
+          <li key={i} className="pv-card pv-card--pad">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">{r.author}</span>
-              <span className="rounded-full bg-[var(--accent-50)] px-2 py-0.5 text-xs text-[var(--accent-700)]">
-                {r.rating.toFixed(0)}/10
-              </span>
+              <span className="pv-badge pv-badge--neutral">{r.rating.toFixed(1)}/10</span>
             </div>
             <p className="mt-2 text-[var(--color-ink)]">{r.text}</p>
             <p className="mt-3 text-xs text-[var(--color-ink-soft)]">Fuente: {sourceLabel[r.source]}</p>

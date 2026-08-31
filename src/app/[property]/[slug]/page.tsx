@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BookingWidget } from "@/components/booking/BookingWidget";
 import { PreferProperty } from "@/components/booking/PreferProperty";
+import { RatingBadge } from "@/components/property/RatingBadge";
 import { FaqBlock } from "@/components/FaqBlock";
 import { Picture } from "@/components/media/Picture";
 import { heroPhoto } from "@/content/properties/photos";
@@ -68,17 +69,10 @@ export default async function LandingPage({
 
       {/* Commercial hero — keyword + real photo + availability, before deep copy */}
       <header className="container-page pt-4">
-        <h1 className="font-display text-3xl sm:text-4xl">{landing.h1}</h1>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{landing.lead}</p>
+        <h1 className="display-2">{landing.h1}</h1>
+        <p className="lede mt-3 max-w-2xl">{landing.lead}</p>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
-          {prop.rating && (
-            <span className="inline-flex items-center gap-1.5">
-              <span className="rounded-md bg-[var(--accent-700)] px-1.5 py-0.5 text-xs font-semibold text-white">
-                {prop.rating.value.toFixed(1)}
-              </span>
-              {prop.rating.count} opiniones en Booking
-            </span>
-          )}
+          <RatingBadge rating={prop.rating} locale="es" />
           <span>
             {prop.headlineDistance.label} · {prop.headlineDistance.value}
           </span>
@@ -98,12 +92,12 @@ export default async function LandingPage({
           {/* Advantages summary — commercial block first */}
           {prop.highlights.length > 0 && (
             <section aria-labelledby="ventajas-heading">
-              <h2 id="ventajas-heading" className="font-display text-2xl">
+              <h2 id="ventajas-heading" className="display-3">
                 Por qué reservar aquí
               </h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {prop.highlights.slice(0, 4).map((h) => (
-                  <li key={h.title} className="rounded-xl border border-[var(--color-line)] p-4">
+                  <li key={h.title} className="pv-card !p-4">
                     <p className="flex items-start gap-2 text-sm font-medium">
                       <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
                         ◆
@@ -115,7 +109,7 @@ export default async function LandingPage({
               </ul>
               <Link
                 href={`/${prop.slug}`}
-                className="mt-5 inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+                className="mt-5 pv-btn pv-btn--primary"
               >
                 Ver el alojamiento completo
               </Link>
@@ -124,7 +118,7 @@ export default async function LandingPage({
 
           {/* Distances / local context */}
           <section aria-labelledby="dist-heading" className="mt-10">
-            <h2 id="dist-heading" className="font-display text-2xl">
+            <h2 id="dist-heading" className="display-3">
               Qué tienes cerca
             </h2>
             <table className="mt-3 w-full border-collapse text-sm">
@@ -144,7 +138,7 @@ export default async function LandingPage({
           {/* Deep copy after the commercial block */}
           {landing.blocks.map((b) => (
             <section key={b.heading} className="mt-10">
-              <h2 className="font-display text-2xl">{b.heading}</h2>
+              <h2 className="display-3">{b.heading}</h2>
               {b.body.map((para, i) => (
                 <p key={i} className="mt-2 text-[var(--color-ink-soft)]">
                   {para}
@@ -155,12 +149,12 @@ export default async function LandingPage({
 
           {topReviews.length > 0 && (
             <section className="mt-10">
-              <h2 className="font-display text-2xl">Opiniones de huéspedes</h2>
+              <h2 className="display-3">Opiniones de huéspedes</h2>
               <div className="mt-4 space-y-4">
                 {topReviews.map((r) => (
                   <figure
                     key={r.author + r.date}
-                    className="rounded-xl border border-[var(--color-line)] p-4"
+                    className="pv-card !p-4"
                   >
                     <blockquote className="text-sm text-[var(--color-ink-soft)]">“{r.text}”</blockquote>
                     <figcaption className="mt-2 text-xs">
@@ -181,13 +175,13 @@ export default async function LandingPage({
 
           {guides.length > 0 && (
             <section className="mt-10">
-              <h2 className="font-display text-2xl">Guías para preparar la escapada</h2>
+              <h2 className="display-3">Guías para preparar la escapada</h2>
               <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                 {guides.map((g) => (
                   <li key={g.path}>
                     <Link
                       href={g.path}
-                      className="block rounded-xl border border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                      className="pv-card pv-card--interactive block !p-4 text-sm font-medium"
                     >
                       {g.label}
                     </Link>
