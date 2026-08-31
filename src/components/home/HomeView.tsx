@@ -184,23 +184,33 @@ export async function HomeView({ locale }: { locale: Locale }) {
         </div>
         <ExperienceSelector
           locale={locale}
-          options={properties.map((p) => ({
-            slug: p.slug,
-            experience: p.experience,
-            name: p.name,
-            area: p.location.area,
-            region: p.location.region,
-            intro: p.shortIntro,
-            photo: heroPhoto(p.slug),
-            rating: p.rating ?? null,
-            headline: p.headlineDistance,
-          }))}
+          options={properties.map((p) => {
+            // Scene-setting shot for the emotional selector: the beach view for
+            // the sea, the snowy village for the mountain.
+            const pics = propertyPhotos(p.slug);
+            const want = p.experience === "sea" ? "vista-mar" : "invierno";
+            return {
+              slug: p.slug,
+              experience: p.experience,
+              name: p.name,
+              area: p.location.area,
+              region: p.location.region,
+              intro: p.shortIntro,
+              photo: pics.find((ph) => ph.base === want) ?? heroPhoto(p.slug),
+              rating: p.rating ?? null,
+              headline: p.headlineDistance,
+            };
+          })}
         />
       </div>
 
       {/* 5 · Per-destination story + real, property-specific advantages */}
       {properties.map((p, i) => {
-        const shot = propertyPhotos(p.slug)[i === 0 ? 6 : 3] ?? propertyPhotos(p.slug)[1];
+        // A photo that matches the story: the sea/environment for Valencia,
+        // the snowy village for Javalambre — falling back to a hero-ish shot.
+        const pics = propertyPhotos(p.slug);
+        const storyBase = p.experience === "sea" ? "atardecer-playa" : "invierno";
+        const shot = pics.find((ph) => ph.base === storyBase) ?? pics[1] ?? pics[0];
         const s = c.story[p.experience];
         return (
           <section

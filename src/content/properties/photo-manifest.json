@@ -4,137 +4,96 @@
       "base": "salon-comedor",
       "sourceId": "494824659",
       "order": 0,
-      "alt": "Salón-comedor del apartamento con mesa de madera y sofá, con vistas al valle de Camarena de la Sierra",
+      "category": "salon",
+      "focal": "55% 42%",
+      "alt": "Salón-comedor del apartamento de Javalambre con mesa de madera, sofá, chimenea y balcón con vistas al valle de Camarena de la Sierra",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "salon-chimenea",
       "sourceId": "600199569",
       "order": 1,
-      "alt": "Zona de estar del apartamento con sofá y chimenea de pellets",
+      "category": "salon",
+      "focal": "52% 45%",
+      "alt": "Zona de estar del apartamento con sofá, chimenea de pellets y salida al balcón con vistas al pueblo y a la sierra",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "salon-2",
       "sourceId": "464284736",
       "order": 2,
-      "alt": "Salón del apartamento de Javalambre con acceso al balcón",
+      "category": "salon",
+      "alt": "Salón abierto a la cocina y al comedor, con carteles de estaciones de esquí en la pared",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
-    },
-    {
-      "base": "cocina-1",
-      "sourceId": "464284738",
-      "order": 3,
-      "alt": "Cocina equipada del apartamento con frigorífico y zona de fregadero",
-      "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
-    },
-    {
-      "base": "cocina-2",
-      "sourceId": "464284742",
-      "order": 4,
-      "alt": "Cocina del apartamento de Javalambre totalmente equipada",
-      "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "dormitorio-1",
       "sourceId": "464284729",
-      "order": 5,
+      "order": 3,
+      "category": "dormitorio",
       "alt": "Dormitorio del apartamento con cama doble grande y ventana con vistas a la montaña",
       "aspect": 0.75,
-      "widths": [
-        480,
-        768
-      ]
+      "widths": [480, 768]
+    },
+    {
+      "base": "cocina-1",
+      "sourceId": "464284738",
+      "order": 4,
+      "category": "cocina",
+      "alt": "Cocina totalmente equipada del apartamento, con frigorífico y zona de fregadero",
+      "aspect": 1.3333,
+      "widths": [480, 768, 1200, 1600]
+    },
+    {
+      "base": "cocina-2",
+      "sourceId": "464284742",
+      "order": 5,
+      "category": "cocina",
+      "alt": "Otra vista de la cocina del apartamento de Javalambre, con horno, microondas y lavavajillas",
+      "aspect": 1.3333,
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "bano",
       "sourceId": "464284737",
       "order": 6,
+      "category": "bano",
       "alt": "Baño completo del apartamento con ducha y bidé",
       "aspect": 0.75,
-      "widths": [
-        480,
-        768,
-        1200
-      ]
-    },
-    {
-      "base": "edificio",
-      "sourceId": "464284750",
-      "order": 7,
-      "alt": "Edificio en el que se encuentra el apartamento, en el pueblo de Camarena de la Sierra",
-      "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
-    },
-    {
-      "base": "vistas-montana",
-      "sourceId": "462061041",
-      "order": 8,
-      "alt": "Vistas a las cumbres de la sierra de Javalambre desde el apartamento",
-      "aspect": 0.7925,
-      "widths": [
-        480,
-        768,
-        1200
-      ]
+      "widths": [480, 768, 1200]
     },
     {
       "base": "invierno",
       "sourceId": "462061032",
-      "order": 9,
-      "alt": "El entorno de Camarena de la Sierra y Javalambre cubierto de nieve en invierno",
+      "order": 7,
+      "category": "nieve",
+      "focal": "50% 45%",
+      "alt": "El pueblo de Camarena de la Sierra cubierto de nieve, con la sierra de Javalambre al fondo",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768
-      ]
+      "widths": [480, 768]
     },
     {
       "base": "pistas-esqui",
       "sourceId": "463880469",
-      "order": 10,
-      "alt": "Snowboard en las pistas de la estación de esquí de Javalambre, a unos 10 minutos en coche",
+      "order": 8,
+      "category": "nieve",
+      "focal": "50% 40%",
+      "alt": "Snowboard en las pistas de la estación de esquí de Javalambre, a unos 10 minutos en coche del apartamento",
       "aspect": 1.4949,
-      "widths": [
-        480,
-        768,
-        1200
-      ]
+      "widths": [480, 768, 1200]
+    },
+    {
+      "base": "edificio",
+      "sourceId": "464284750",
+      "order": 9,
+      "category": "exterior",
+      "focal": "40% 45%",
+      "alt": "Edificio del apartamento en Camarena de la Sierra, con acceso al parking privado en la planta baja",
+      "aspect": 1.3333,
+      "widths": [480, 768, 1200, 1600]
     }
   ],
   "valencia": [
@@ -142,123 +101,96 @@
       "base": "salon-vista-mar",
       "sourceId": "590920576",
       "order": 0,
-      "alt": "Salón del apartamento con vistas frontales al mar Mediterráneo, en la playa de la Llastra",
+      "category": "salon",
+      "focal": "62% 45%",
+      "alt": "Salón-comedor del apartamento con la mesa junto al gran ventanal y vistas frontales a la playa de la Llastra y al mar Mediterráneo",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
-    },
-    {
-      "base": "salon-vistas-1",
-      "sourceId": "590878011",
-      "order": 1,
-      "alt": "Zona de estar del apartamento a pie de la playa de la Llastra",
-      "aspect": 1.3338,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
-      "base": "salon-comedor",
-      "sourceId": "590920653",
-      "order": 2,
-      "alt": "Salón-comedor del apartamento con mesa, sillas y sofá",
-      "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
-    },
-    {
-      "base": "cocina",
-      "sourceId": "590878058",
-      "order": 3,
-      "alt": "Cocina totalmente equipada del apartamento de Valencia frente al mar",
-      "aspect": 1.3338,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
-      "base": "dormitorio-1",
-      "sourceId": "590878048",
-      "order": 4,
-      "alt": "Dormitorio del apartamento con armario azul",
-      "aspect": 1.3338,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
-      "base": "bano",
-      "sourceId": "590878043",
-      "order": 5,
-      "alt": "Baño del apartamento con lavabo, inodoro y espejo",
-      "aspect": 1.3338,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
-      "base": "paseo-maritimo",
-      "sourceId": "590920455",
-      "order": 6,
-      "alt": "Paseo marítimo junto a la playa de la Llastra, al lado del apartamento",
-      "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "vista-mar",
       "sourceId": "590920753",
-      "order": 7,
-      "alt": "Vista al mar Mediterráneo desde el apartamento",
+      "order": 1,
+      "category": "vistas",
+      "focal": "50% 42%",
+      "alt": "Vista frontal a la playa de la Llastra y al mar desde la terraza del apartamento",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
+    },
+    {
+      "base": "salon-vistas-1",
+      "sourceId": "590878011",
+      "order": 2,
+      "category": "salon",
+      "focal": "60% 45%",
+      "alt": "Salón luminoso del apartamento, con sofá y ventanal orientado a la playa",
+      "aspect": 1.3338,
+      "widths": [480, 768]
+    },
+    {
+      "base": "salon-comedor",
+      "sourceId": "590920653",
+      "order": 3,
+      "category": "salon",
+      "alt": "Salón-comedor del apartamento de Valencia, luminoso, con mesa, sillas y sofá",
+      "aspect": 1.3333,
+      "widths": [480, 768, 1200, 1600]
     },
     {
       "base": "atardecer-playa",
       "sourceId": "590924109",
-      "order": 8,
-      "alt": "Atardecer en la playa de la Llastra, junto al apartamento",
+      "order": 4,
+      "category": "entorno",
+      "focal": "50% 40%",
+      "alt": "El sol sobre el mar y la playa de la Llastra, vistos desde la fachada del apartamento",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
+    },
+    {
+      "base": "paseo-maritimo",
+      "sourceId": "590920455",
+      "order": 5,
+      "category": "exterior",
+      "focal": "48% 55%",
+      "alt": "El edificio del apartamento junto al paseo marítimo, con la playa de la Llastra justo delante",
+      "aspect": 1.3333,
+      "widths": [480, 768, 1200, 1600]
+    },
+    {
+      "base": "cocina",
+      "sourceId": "590878058",
+      "order": 6,
+      "category": "cocina",
+      "alt": "Cocina totalmente equipada del apartamento de Valencia frente al mar",
+      "aspect": 1.3338,
+      "widths": [480, 768]
+    },
+    {
+      "base": "dormitorio-1",
+      "sourceId": "590878048",
+      "order": 7,
+      "category": "dormitorio",
+      "alt": "Dormitorio del apartamento con cama doble y armario",
+      "aspect": 1.3338,
+      "widths": [480, 768]
+    },
+    {
+      "base": "bano",
+      "sourceId": "590878043",
+      "order": 8,
+      "category": "bano",
+      "alt": "Baño del apartamento con lavabo, inodoro y espejo",
+      "aspect": 1.3338,
+      "widths": [480, 768]
     },
     {
       "base": "entorno",
       "sourceId": "590924218",
       "order": 9,
-      "alt": "Entorno de playa y dunas cerca del apartamento, en el litoral sur de Valencia",
+      "category": "entorno",
+      "alt": "Playa y dunas del litoral sur de Valencia, junto al apartamento, en la playa de la Llastra",
       "aspect": 1.3333,
-      "widths": [
-        480,
-        768,
-        1200,
-        1600
-      ]
+      "widths": [480, 768, 1200, 1600]
     }
   ]
 }
