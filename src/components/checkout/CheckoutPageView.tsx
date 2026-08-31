@@ -71,6 +71,7 @@ export async function CheckoutPageView({
             coupon: result.quote.coupon,
           }}
           cancellationSummary={prop.cancellationPolicy.summary}
+          rating={prop.rating ?? null}
         />
       )}
     </div>

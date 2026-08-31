@@ -46,6 +46,8 @@ export interface AvailabilityResult {
   reason: string | null;
   /** Real nearby availability when `available` is false — never invented. */
   alternatives: PricedAlternative[];
+  /** Real source-attributed rating for social proof in results (issue #90). */
+  rating: { value: number; count: number; source: "booking" } | null;
 }
 
 /**
@@ -139,6 +141,7 @@ export async function checkProperty(
       quote: null,
       reason: "Alojamiento no encontrado",
       alternatives: [],
+      rating: null,
     };
   }
 
@@ -189,6 +192,7 @@ export async function checkProperty(
     quote,
     reason,
     alternatives,
+    rating: property.rating ?? null,
   };
 }
 

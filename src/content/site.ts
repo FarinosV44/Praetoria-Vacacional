@@ -1,4 +1,46 @@
 import type { FaqItem } from "@/domains/properties/types";
+import { PRAETORIA10_CODE } from "@/domains/pricing/coupons";
+
+/**
+ * Direct-booking value proposition (issue #91). Configurable, all REAL — never a
+ * false price comparison or invented benefit. Rendered near every decision point:
+ * home search, property booking card, checkout, SEO landings.
+ */
+export const directBooking = {
+  /** The active exclusive promo shown alongside the CTA. `null` = none. */
+  promo: { code: PRAETORIA10_CODE, percent: 10 } as { code: string; percent: number } | null,
+  /** "Reservando aquí" vs "Reservando en una plataforma" — factual, no brand attacks. */
+  compare: {
+    here: {
+      es: [
+        "Trato directo con quien gestiona el alojamiento",
+        "Precio total desde el primer paso, sin cargos de gestión del canal",
+        "Código 10PRAETORIA10: 10% de descuento en reserva directa",
+        "Confirmación inmediata y soporte local durante la estancia",
+      ],
+      en: [
+        "You deal directly with the person who runs the apartment",
+        "Full price from the first step, with no channel booking fee",
+        "Code 10PRAETORIA10: 10% off when you book direct",
+        "Instant confirmation and local support during your stay",
+      ],
+    },
+    platform: {
+      es: [
+        "Intermediario entre tú y el alojamiento",
+        "Posibles cargos de gestión del canal sobre el precio",
+        "Sin descuento de reserva directa",
+        "Atención a través de la plataforma",
+      ],
+      en: [
+        "A middleman between you and the apartment",
+        "Possible channel service fees on top of the price",
+        "No direct-booking discount",
+        "Support routed through the platform",
+      ],
+    },
+  },
+} as const;
 
 /** Reusable "why book direct" points (issues #3, #30). Concrete, no false urgency. */
 export const directBookingAdvantages: { title: string; body: string; icon: string }[] = [

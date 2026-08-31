@@ -7,6 +7,7 @@ import { pageMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BookingWidget } from "@/components/booking/BookingWidget";
+import { PreferProperty } from "@/components/booking/PreferProperty";
 import { FaqBlock } from "@/components/FaqBlock";
 import { Picture } from "@/components/media/Picture";
 import { heroPhoto } from "@/content/properties/photos";
@@ -56,6 +57,7 @@ export default async function LandingPage({
 
   return (
     <div data-experience={prop.experience}>
+      <PreferProperty slug={property} />
       <JsonLd
         data={[
           breadcrumbJsonLd(crumbs),

@@ -9,6 +9,8 @@ import { localizedPath, type Locale } from "@/i18n/config";
 import { AvailabilityCalendar, type RangeSelection } from "./AvailabilityCalendar";
 import { CouponField, type CouponState } from "./CouponField";
 import { feeLabel } from "@/domains/pricing/fees";
+import { DirectBookingSaving } from "./DirectBooking";
+import { RatingBadge } from "@/components/property/RatingBadge";
 
 const WIDGET_STR = {
   es: {
@@ -99,12 +101,14 @@ export function BookingWidget({
   minNightsHint,
   initial,
   locale = "es",
+  rating,
 }: {
   propertySlug: string;
   maxGuests: number;
   minNightsHint?: number;
   initial?: { checkIn?: string; checkOut?: string; guests?: number };
   locale?: Locale;
+  rating?: { value: number; count: number; source: "booking" } | null;
 }) {
   const router = useRouter();
   const s = WIDGET_STR[locale];
@@ -174,7 +178,10 @@ export function BookingWidget({
       className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-5 shadow-[var(--shadow-card)]"
       lang={locale === "en" ? "en" : undefined}
     >
-      <p className="font-display text-lg">{s.heading}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-display text-lg">{s.heading}</p>
+        {rating && <RatingBadge rating={rating} locale={locale} size="xs" withSource={false} />}
+      </div>
 
       <div className="mt-3 rounded-xl bg-[var(--color-paper)] p-2 text-center text-sm">
         {checkIn && checkOut
@@ -286,6 +293,15 @@ export function BookingWidget({
           locale={locale}
           propertySlug={propertySlug}
         />
+      )}
+
+      {!data?.quote?.coupon?.applied && (
+        <div className="mt-3">
+          <DirectBookingSaving
+            totalCents={data?.available ? q?.totalCents : undefined}
+            locale={locale}
+          />
+        </div>
       )}
 
       <Button
