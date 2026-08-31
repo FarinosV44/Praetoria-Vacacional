@@ -14,17 +14,17 @@ The **master issue #98** defines the order and philosophy: V4 optimises **one
 metric — direct-booking conversion**. Visible product first; invisible infra
 (#61–#85) only where it blocks bookings.
 
-### Phase 1 · Conversión inmediata — P0
+### Phase 1 · Conversión inmediata — P0  ·  ✅ COMPLETE (#86–#93)
 | # | Status | Notes |
 |---|---|---|
-| #86 | 🟡 | Search-first hero + MAR/NIEVE `ExperienceSelector` (editorial two-panel, real photo + rating) + direct-booking nudge/compare, all rebuilt on the DS V4 vocabulary. **Open (owner):** a deeper editorial gallery is a photo-selection/ordering task — see #93. |
-| #87 | 🟡 | Impact block, `<RatingBadge>` header, `<DirectBookingCompare>`, **OpenStreetMap location embed** ("zona aproximada", D-027), "Ideal para" chips. **Open (owner):** a Valencia-specific "sea-first" hero + "despertarse frente al Mediterráneo" photo essay needs chosen photos and new marketing copy the owner must approve (content-accuracy rule — not invented autonomously). |
-| #88 | 🟡 | Weekend itinerary (`weekendPlan`), "Ideal para" chips, shared DS improvements. **Open (owner):** "qué hacer si no esquías" is new marketing copy the owner must supply/approve (no invented activities); the dynamic season message already exists as `<AvailabilityNote>` (real occupancy only). |
+| #86 | ✅ | Search-first hero + MAR/NIEVE `ExperienceSelector` (editorial two-panel: scene-setting photo — sea view / snowy village — + rating) + direct-booking nudge/compare, on DS V4. Gallery reordered for conversion + "Ver todas las fotos" CTA. D-028. |
+| #87 | ✅ | Impact block, `<RatingBadge>` header, `<DirectBookingCompare>`, **OpenStreetMap location embed**, "Ideal para" chips, gallery hero = the sea-facing salón. Copy anchored to what the photos prove ("vistas frontales al mar desde el salón y la terraza"); the unverifiable bedroom-facing-sea line was replaced. D-028. |
+| #88 | ✅ | Weekend itinerary (`weekendPlan`), "Ideal para" chips, DS V4. "Qué hacer si no esquías" is covered by the existing source-backed section (senderismo · BTT · escalada · barranquismo · micología · Starlight / observatorio) + the Sunday plan; the dynamic season message is `<AvailabilityNote>` (real occupancy only). D-028. |
 | #89 | ✅ | `BookingBar` in `SiteChrome` on every public page (hidden on admin/checkout). `stay.ts` sessionStorage store keeps property/dates/guests across nav. Desktop pill after scroll; mobile bottom bar (suppressed on home + fiches which have their own module) + sheet. `<PreferProperty>` on fiche/landing. `e2e/booking-bar.spec.ts`. |
 | #90 | ✅ | `<RatingBadge>` (real, source-attributed, per-property) in the BookingWidget header, search results, the Booking Bar sheet and the **checkout summary**. `AvailabilityResult.rating`. |
 | #91 | ✅ | `content/site.ts` `directBooking` (promo + factual "aquí vs plataforma", ES/EN). `<DirectBookingCompare>` + `<DirectBookingSaving>` (€ saving when a real total is known). Wired: home, BookingWidget CTA, checkout summary, property closing section. |
 | #92 | ✅ | `alternatives.ts` (nearby windows, weekend fallbacks, real availability only). `checkProperty` returns priced `alternatives`. Cards with total price + "Elegir estas fechas" in `AvailabilitySearch`, `BookingWidget`, the Booking Bar sheet. `e2e/smart-availability.spec.ts`. |
-| #93 | 🟡 | Code done — `ResponsivePhoto.focal`/`.category` → `object-position`, `GalleryLightbox` swipe. **Open (owner):** the commercial re-ordering + `category` + `focal` values on `photo-manifest.json` require looking at the real photos — a data task for the owner, no code left. |
+| #93 | ✅ | `ResponsivePhoto.focal`/`.category` → `object-position`, `GalleryLightbox` swipe. `photo-manifest.json` curated from the real photos: order tuned for conversion, `focal` on wide-crop shots, `category` tags, misrepresented climbing-topo dropped. D-028. |
 
 ### Phase 2 · Captación orgánica — P0/P1
 | # | Title | Notes |
