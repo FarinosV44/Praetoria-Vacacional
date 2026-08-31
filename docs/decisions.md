@@ -509,3 +509,16 @@ tables, zero anon grants, no anon-exposing policy, no anon RPC grants).
     `ImportReport`, `console.warn`s, and `RunSyncButton` shows "⚠ N choques".
   - No schema change; `CalendarSyncRow` already carries enough. Adapters were
     scoped out — two channels with the same iCal shape don't justify the layer.
+
+## D-026 — Product #82 — Business Intelligence
+**Date:** 2026-08-31 · issue #82
+Pure `src/domains/analytics/kpis.ts` — `computePeriodKpis({from,to,propertyCount,
+reservations})` → occupancy, ADR, RevPAR, revenue, bookings, avg lead time, avg
+stay, cancellation rate, direct-nights share, channel mix. `trailingMonths(n)` +
+`pctChange`. Bases are stated in the module doc and on the page: a night counts
+in the month of its date; revenue is attributed to the check-in month;
+`confirmed`/`pending`/`external` occupy, `cancelled`/`expired` don't.
+`/admin/analitica` (SECONDARY nav) shows a 12-month table + 4 headline cards with
+MoM deltas + a channel-mix bar, filterable per property. 12 unit tests. Reuses
+the reservation data already in the repo — no schema, works in DEMO and Supabase.
+The live "now" dashboard at `/admin` is unchanged; this is the historical view.
