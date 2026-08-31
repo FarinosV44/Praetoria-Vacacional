@@ -19,6 +19,23 @@ test("admin routes carry a noindex header and redirect unauthenticated users", a
   expect(res.headers()["location"]).toContain("/admin/login");
 });
 
+test("cron / internal endpoints reject an unauthenticated request (issue #64)", async ({
+  request,
+}) => {
+  for (const path of ["/api/cron/expire-holds", "/api/ical/import"]) {
+    // no auth, a forged Vercel-cron header, and a wrong bearer must ALL be rejected
+    // (401 when CRON_SECRET is set, 503 "not configured" otherwise — never 200).
+    for (const headers of [
+      undefined,
+      { "x-vercel-cron": "1" },
+      { authorization: "Bearer nope" },
+    ]) {
+      const res = await request.get(path, headers ? { headers } : undefined);
+      expect([401, 503]).toContain(res.status());
+    }
+  }
+});
+
 test("security headers present on a public page", async ({ request }) => {
   const res = await request.get("/javalambre");
   const h = res.headers();

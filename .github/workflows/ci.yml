@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+# One run per ref; a newer push cancels the older one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: typecheck · lint · unit · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+        env:
+          # Build must not depend on live infra (D-021). No secrets here.
+          NEXT_PUBLIC_SITE_URL: https://example.com
+
+  e2e:
+    name: e2e (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts's webServer runs `npm run build && npm run start`
+      # on :3000 when E2E_BASE_URL is unset and CI is true.
+      - name: Run e2e
+        run: npx playwright test --project=chromium --workers=1
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          ADMIN_PASSWORD: ci-e2e-password
+          # NEXT_PUBLIC_* is inlined at build time — the whatsapp.spec needs it
+          # present when `npm run build` runs inside the Playwright webServer.
+          NEXT_PUBLIC_WHATSAPP_NUMBER: "34600111222"
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  security:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Fails the job on a known HIGH/CRITICAL advisory in production deps.
+      - run: npm audit --omit=dev --audit-level=high

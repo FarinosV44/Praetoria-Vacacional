@@ -53,6 +53,9 @@ const schema = z.object({
 
   // iCal sync — token that authenticates our public export feeds
   ICAL_EXPORT_TOKEN: z.string().optional(),
+  /** Shared secret for cron / internal service-to-service calls (issue #64).
+   *  Vercel Cron sends it automatically as `Authorization: Bearer <value>`. */
+  CRON_SECRET: z.string().optional(),
 
   // Analytics / Search Console (optional)
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
@@ -64,6 +67,18 @@ const schema = z.object({
 
   // Reservation hold window (minutes) while the guest pays
   RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(30),
+
+  /**
+   * Fail-closed production (issue #63). When `true` and NODE_ENV=production, the
+   * server refuses to boot if a critical integration is missing (no Supabase =
+   * DEMO mode, no Stripe, no admin session secret, no CRON_SECRET). Default off
+   * so a staging / preview deploy can still run degraded; the owner flips it on
+   * for the real launch (see docs/launch-checklist.md).
+   */
+  PRODUCTION_STRICT: z
+    .enum(["true", "false", "1", "0"])
+    .optional()
+    .transform((v) => v === "true" || v === "1"),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -103,6 +118,7 @@ export const env = {
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),
   icalExportConfigured: isReal(raw.ICAL_EXPORT_TOKEN),
+  CRON_SECRET: isReal(raw.CRON_SECRET) ? raw.CRON_SECRET : undefined,
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
   analyticsConfigured: isReal(raw.NEXT_PUBLIC_GA4_ID),
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),

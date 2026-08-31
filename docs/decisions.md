@@ -443,3 +443,27 @@ infra #61–#85). The reusable pieces, all real-data / no invented urgency:
 - **#86/#87/#88** — the hero and the shared `PropertyPageView` impact block are
   done; the per-property "wow" (Valencia sea-first hero, Javalambre weekend
   itinerary, MAR/NIEVE selector) is the remaining Phase-1 work.
+
+## D-023 — Infra #61/#63/#64 — CI, fail-closed production, service auth
+**Date:** 2026-08-31 · issues #61, #63, #64
+- **#64 service-to-service auth** — `requireServiceAuth(req)` in `src/lib/api.ts`
+  guards `/api/cron/expire-holds` and `/api/ical/import`. Constant-time bearer
+  check against `CRON_SECRET` (Vercel Cron sends it automatically). When
+  `CRON_SECRET` is unset: 503 "not configured" in production, `x-vercel-cron: 1`
+  accepted only in non-production. Never 200 without proof. e2e in
+  `production.spec.ts` asserts `[401, 503]` for no-auth / forged-header /
+  wrong-bearer across both endpoints.
+- **#63 fail-closed production** — `strictProductionBlockers()` in
+  `src/domains/config-status/strict.ts`. Only active when
+  `NODE_ENV=production` AND `PRODUCTION_STRICT` truthy; then `instrumentation.ts`
+  `register()` throws (server refuses to boot) if Supabase / Stripe /
+  `STRIPE_WEBHOOK_SECRET` / `CRON_SECRET` / an admin secret is missing. Default
+  (unset) keeps the degraded-mode boot from #41. 4 unit tests via
+  `vi.resetModules()` env swap.
+- **#61 CI** — `.github/workflows/ci.yml`: `quality` (typecheck · lint · unit ·
+  build with placeholder `NEXT_PUBLIC_SITE_URL`, no secrets, per D-021), `e2e`
+  (chromium, `--workers=1`, `NEXT_PUBLIC_WHATSAPP_NUMBER` set so the build inlines
+  it for `whatsapp.spec`), `security` (`npm audit --omit=dev --audit-level=high`).
+  `concurrency` cancels superseded runs.
+- **Owner follow-ups:** set `CRON_SECRET` on the host; decide `PRODUCTION_STRICT`
+  (recommended `true` once Supabase + Stripe live keys are in).

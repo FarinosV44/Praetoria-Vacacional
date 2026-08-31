@@ -8,6 +8,7 @@ export async function register() {
 
   const { env, DEMO_MODE } = await import("@/lib/env");
   const { getConfigFeatures } = await import("@/domains/config-status/registry");
+  const { strictProductionBlockers } = await import("@/domains/config-status/strict");
 
   const features = getConfigFeatures();
   const pending = features.filter((f) => f.state === "not_configured");
@@ -23,6 +24,17 @@ export async function register() {
     `────────────────────────────────────\n`;
 
   console.info(banner);
+
+  // Fail-closed production (issue #63): refuse to boot with a critical gap.
+  const blockers = strictProductionBlockers();
+  if (blockers.length) {
+    console.error(
+      "\n⛔ PRODUCTION_STRICT: el arranque se detiene por configuración crítica incompleta:\n" +
+        blockers.map((b) => `   · ${b}`).join("\n") +
+        "\n   Configura lo anterior, o pon PRODUCTION_STRICT=false para arrancar en modo degradado.\n",
+    );
+    throw new Error(`PRODUCTION_STRICT: ${blockers.length} problema(s) de configuración crítica`);
+  }
 
   if (env.NODE_ENV === "production") {
     if (DEMO_MODE) {
