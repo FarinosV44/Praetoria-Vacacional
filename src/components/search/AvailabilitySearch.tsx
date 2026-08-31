@@ -7,6 +7,7 @@ import { formatMoney, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { RatingBadge } from "@/components/property/RatingBadge";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const STR = {
   es: {
@@ -230,10 +231,10 @@ export function AvailabilitySearch({
           {[0, 1].map((i) => (
             <li key={i} className="pv-card flex items-center justify-between !p-4">
               <div className="space-y-2">
-                <div className="h-5 w-40 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
-                <div className="h-4 w-56 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-56" />
               </div>
-              <div className="h-11 w-24 animate-pulse rounded-full bg-[var(--color-line)]/70 motion-reduce:animate-none" />
+              <Skeleton className="h-9 w-24 rounded-full" />
             </li>
           ))}
         </ul>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { formatMoney, formatRange, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
+import { SkeletonQuote } from "@/components/ui/Skeleton";
 import { AvailabilityCalendar, type RangeSelection } from "./AvailabilityCalendar";
 import { CouponField, type CouponState } from "./CouponField";
 import { feeLabel } from "@/domains/pricing/fees";
@@ -216,7 +217,15 @@ export function BookingWidget({
       </label>
 
       <div aria-live="polite" className="mt-4 min-h-[3rem] text-sm">
-        {loading && <p className="text-[var(--color-ink-soft)]">{s.checking}</p>}
+        {loading && (checkIn && checkOut) && (
+          <>
+            <p className="sr-only">{s.checking}</p>
+            <SkeletonQuote />
+          </>
+        )}
+        {loading && !(checkIn && checkOut) && (
+          <p className="text-[var(--color-ink-soft)]">{s.checking}</p>
+        )}
         {error && !loading && <p className="pv-note pv-note--error">{error}</p>}
         {!loading && !error && data && !data.available && (
           <div>
