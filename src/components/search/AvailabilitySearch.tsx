@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { formatMoney, nightsLabel } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
+import { RatingBadge } from "@/components/property/RatingBadge";
 
 const STR = {
   es: {
@@ -75,6 +76,7 @@ interface ResultRow {
   quote: QuoteLite | null;
   reason: string | null;
   alternatives: AlternativeLite[];
+  rating: { value: number; count: number; source: "booking" } | null;
 }
 
 function todayPlus(days: number): string {
@@ -252,6 +254,9 @@ export function AvailabilitySearch({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-display text-lg">{r.propertyName}</p>
+                  {r.rating && (
+                    <RatingBadge rating={r.rating} locale={locale} size="xs" />
+                  )}
                   {r.available && r.quote ? (
                     <p className="text-sm text-[var(--color-ink-soft)]">
                       {formatMoney(r.quote.totalCents)} · {nightsLabel(r.quote.nights)} · {t.priceTotal}

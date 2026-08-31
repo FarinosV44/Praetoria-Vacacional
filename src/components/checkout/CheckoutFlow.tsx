@@ -8,6 +8,8 @@ import { track } from "@/lib/analytics";
 import { getCheckoutStrings } from "@/i18n/checkout";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { CouponField, type CouponState } from "@/components/booking/CouponField";
+import { DirectBookingSaving } from "@/components/booking/DirectBooking";
+import { RatingBadge } from "@/components/property/RatingBadge";
 import { feeLabel } from "@/domains/pricing/fees";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -33,6 +35,7 @@ interface Props {
   cancellationSummary: string;
   locale?: Locale;
   paymentsConfigured?: boolean;
+  rating?: { value: number; count: number; source: "booking" } | null;
 }
 
 type Step = 1 | 2 | 3;
@@ -355,6 +358,11 @@ export function CheckoutFlow(props: Props) {
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
           <p className="font-display text-lg">{propertyName}</p>
+          {props.rating && (
+            <div className="mt-1">
+              <RatingBadge rating={props.rating} locale={locale} size="xs" />
+            </div>
+          )}
           <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
             {formatRange(checkIn, checkOut)} · {nightsLabel(quote.nights)} · {guestsLabel(guests)}
           </p>
@@ -390,6 +398,11 @@ export function CheckoutFlow(props: Props) {
             <span>{formatMoney(q.totalCents)}</span>
           </div>
           <p className="mt-2 text-xs text-[var(--color-ink-soft)]">{t.finalPrice}</p>
+          {!q.coupon?.applied && (
+            <div className="mt-3">
+              <DirectBookingSaving totalCents={q.totalCents} locale={locale} />
+            </div>
+          )}
           <ul className="mt-3 space-y-1.5 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-ink-soft)]">
             <li className="flex gap-2">
               <span aria-hidden className="text-[var(--accent-600)]">

@@ -19,6 +19,7 @@ import {
   homeFaq,
   homeFaqEn,
 } from "@/content/site";
+import { DirectBookingCompare, DirectBookingSaving } from "@/components/booking/DirectBooking";
 
 const COPY = {
   es: {
@@ -168,6 +169,9 @@ export async function HomeView({ locale }: { locale: Locale }) {
           </div>
           <div className="mx-auto mt-6 max-w-3xl">
             <AvailabilitySearch locale={locale} />
+          </div>
+          <div className="mx-auto mt-4 max-w-3xl text-center">
+            <DirectBookingSaving locale={locale} />
           </div>
         </div>
       </section>
@@ -388,6 +392,9 @@ export async function HomeView({ locale }: { locale: Locale }) {
                 <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{a.body}</p>
               </div>
             ))}
+          </div>
+          <div className="mt-8">
+            <DirectBookingCompare locale={locale} />
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
             <a

@@ -6,6 +6,7 @@ import { useStay } from "@/domains/booking/stay";
 import { formatMoney } from "@/lib/format";
 import { track } from "@/lib/analytics";
 import { localizedPath, type Locale } from "@/i18n/config";
+import { RatingBadge } from "@/components/property/RatingBadge";
 
 const STR = {
   es: {
@@ -57,6 +58,7 @@ interface ResultRow {
   available: boolean;
   quote: { totalCents: number; nights: number } | null;
   alternatives: { checkIn: string; checkOut: string; totalCents: number }[];
+  rating: { value: number; count: number; source: "booking" } | null;
 }
 
 function todayPlus(days: number) {
@@ -308,7 +310,10 @@ export function BookingBar({ locale }: { locale: Locale }) {
                     className="rounded-xl border border-[var(--color-line)] p-3"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{r.propertyName}</span>
+                      <span>
+                        <span className="block font-medium">{r.propertyName}</span>
+                        {r.rating && <RatingBadge rating={r.rating} locale={locale} size="xs" />}
+                      </span>
                       {r.available && r.quote ? (
                         <button
                           type="button"

@@ -314,6 +314,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
             maxGuests={p.capacity.guests}
             minNightsHint={getRateConfig(p.slug)?.minNights}
             locale={locale}
+            rating={p.rating}
           />
         </aside>
       </div>
