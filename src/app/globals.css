@@ -438,6 +438,33 @@
   /* --- Divider ---------------------------------------------------------- */
   .pv-hairline { border: 0; border-top: 1px solid var(--color-line); }
 
+  /* --- Skeleton (issue #24) --------------------------------------------- */
+  .pv-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--color-mist);
+  }
+  .pv-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, #fff 65%, transparent),
+      transparent
+    );
+    animation: pv-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes pv-shimmer {
+    100% { transform: translateX(100%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pv-skeleton::after { animation: none; }
+  }
+
   /* --- FAQ / disclosure --------------------------------------------------- */
   .pv-faq details {
     border-top: 1px solid var(--color-line);
@@ -475,6 +502,15 @@
 @keyframes reveal-in {
   from { transform: translateY(16px); opacity: 0.001; }
   to { transform: none; opacity: 1; }
+}
+
+/* One-shot fade+rise for content that swaps in place (e.g. the MAR/NIEVE panel). */
+@keyframes pv-swap-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pv-swap-in { animation: pv-swap-in var(--dur-mid) var(--ease-out) both; }
 }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {

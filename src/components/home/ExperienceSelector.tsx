@@ -67,7 +67,7 @@ export function ExperienceSelector({
       <div
         key={current.slug}
         data-experience={current.experience}
-        className="pv-card pv-card--soft reveal mt-6 grid items-stretch gap-0 overflow-hidden !p-0 md:grid-cols-2"
+        className="pv-card pv-card--soft pv-swap-in mt-6 grid items-stretch gap-0 overflow-hidden !p-0 md:grid-cols-2"
       >
         <div className="relative min-h-[260px] md:min-h-[400px]">
           {current.photo && (
