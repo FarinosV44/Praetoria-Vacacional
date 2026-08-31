@@ -36,7 +36,7 @@ Legend: ✅ acceptance criteria met & verified · 🟡 functional, needs polish/
 | S2 · Data model | #6 | ✅ | migrations (exclusion constraint + trigger + RPCs), seed, TS types, repository abstraction (supabase + in-memory) |
 | S3 · Availability + calendars | #7 | ✅ | pure engine + tests; `/api/availability/search`, `/api/properties/[p]/calendar`; double-booking → 409 verified in DEMO |
 | S4 · Pricing engine | #8 | ✅ | server-only engine (seasons/weekend/min-stay/LOS discount/extra guest), 11 tests, browser never sends price |
-| S5 · Design system + branding | #2, #24 | 🟡 | tokens + ski/sea theming, LogoMark, editorial hero + cards, storytelling sections, scroll-reveal, full-screen gallery lightbox. Deeper micro-interaction/skeleton pass remains |
+| S5 · Design system + branding | #2, #24 | ✅ | DS V4 (D-027): token system + `.pv-*` vocabulary + `ui/*` primitives, full-site sweep, visual regression. #24 micro-interactions/skeleton pass: `.pv-skeleton` shimmer, `SkeletonQuote` in the booking widget, `.pv-swap-in` panel transition. |
 | S6 · Home + search | #3 | 🟡 | split hero, Playa/Nieve selector, live global search with per-property price+CTA, sticky mobile CTA, FAQ+JSON-LD |
 | S7 · Property pages | #4, #5 | 🟡 | full functional pages via shared PropertyPageView (ES+EN). Content = placeholder (D-004) |
 | S8 · Galleries + reviews | #17, #18, #27 | 🟡 | Gallery lightbox (LCP hero eager, rest lazy), empty-safe ReviewsBlock w/ source attribution. Needs real photos + WebP pipeline |
@@ -234,7 +234,8 @@ Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
 | #83 (infra) | `repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases) + static memory⇔supabase method-parity check. D-025 | ✅ on `develop` |
 | #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `main` (141ff1d) |
 | #82 (product) | pure `analytics/kpis.ts` + `/admin/analitica` — 12-month occupancy/ADR/RevPAR/channel-mix/lead-time/cancellation view, per-property, MoM deltas. 12 tests. D-026 | ✅ on `main` (4f2c85f) |
-| #77 (design) | `globals.css` → DS V4 token system + `.pv-*` component vocabulary + `ui/{Button,Card,Field,SectionHeading}`; full public-site sweep (header/footer/nav/hero/search/booking widget+bar/property page/cards/checkout/guides/blog/ofertas/landings/legal/contacto); OSM location embed on property pages (#87); `e2e/visual.spec.ts` full-page regression (10 templates × 2 widths). D-027 | ✅ on `develop` |
+| #77 (design) | `globals.css` → DS V4 token system + `.pv-*` component vocabulary + `ui/{Button,Card,Field,SectionHeading}`; full public-site sweep; OSM location embed on property pages (#87); `e2e/visual.spec.ts` full-page regression (10 templates × 2 widths). D-027 | ✅ on `main` (7406b8f) |
+| #24 (design) | Micro-interactions/skeleton pass — `.pv-skeleton` shimmer (reduced-motion-safe), `SkeletonQuote` in the booking widget re-quote, `.pv-swap-in` MAR/NIEVE panel transition, gallery "ver todas las fotos" CTA, reserva status badges | ✅ on `main` (5a107c8) |
 
 **Content-accuracy constraint (user, 2026-08-31, L-008):** the `10PRAETORIA10`
 code is **campaign-only — never shown on the public site** (it still works when a
@@ -332,7 +333,7 @@ Remaining before V1 "done" (issue #22):
 3. Deploy to the domain → run Lighthouse (targets Perf ≥90 mobile, SEO ≥95,
    A11y ≥90), validate structured data in Rich Results Test, submit sitemap in GSC.
 4. Nice-to-have: #33 SEO evolution dashboard, deeper local schema (#26), EN
-   landings/guides, deeper visual micro-interactions & skeletons (#24).
+   landings/guides (EN content = translation effort, owner-gated #85).
 5. `develop → main` merge + Vercel deploy — the user's call.
 
 ## Branches
