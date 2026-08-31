@@ -58,6 +58,10 @@ const schema = z.object({
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
   NEXT_PUBLIC_GSC_VERIFICATION: z.string().optional(),
 
+  // WhatsApp concierge (issue #97) — E.164 digits only, e.g. 34600111222.
+  // Absent → the floating WhatsApp button does not render.
+  NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
+
   // Reservation hold window (minutes) while the guest pays
   RESERVATION_HOLD_MINUTES: z.coerce.number().int().positive().default(30),
 });
@@ -101,6 +105,7 @@ export const env = {
   icalExportConfigured: isReal(raw.ICAL_EXPORT_TOKEN),
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
   analyticsConfigured: isReal(raw.NEXT_PUBLIC_GA4_ID),
+  whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
 } as const;
@@ -111,6 +116,9 @@ export const DEMO_MODE = !env.supabaseConfigured;
 export const publicEnv = {
   siteUrl: env.NEXT_PUBLIC_SITE_URL,
   siteName: env.NEXT_PUBLIC_SITE_NAME,
+  whatsappNumber: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER)
+    ? raw.NEXT_PUBLIC_WHATSAPP_NUMBER!.replace(/[^\d]/g, "")
+    : undefined,
   ga4Id: env.analyticsConfigured ? env.NEXT_PUBLIC_GA4_ID : undefined,
   gscVerification: isReal(raw.NEXT_PUBLIC_GSC_VERIFICATION)
     ? raw.NEXT_PUBLIC_GSC_VERIFICATION
