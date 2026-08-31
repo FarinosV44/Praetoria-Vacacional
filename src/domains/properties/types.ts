@@ -114,6 +114,15 @@ export interface PropertyContent {
    */
   highlights: { title: string; body: string }[];
 
+  /** Who this apartment is a great fit for (issues #87/#88 "ideal para"). Short. */
+  idealFor?: string[];
+
+  /**
+   * Optional weekend itinerary (issue #88 — "cómo sería tu fin de semana").
+   * A few plain lines per day; only filled where it genuinely helps sell.
+   */
+  weekendPlan?: { day: string; text: string }[];
+
   location: {
     /** Locality shown to guests (e.g. "Camarena de la Sierra"). */
     city: string;

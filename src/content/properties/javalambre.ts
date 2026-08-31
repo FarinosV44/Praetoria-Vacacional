@@ -21,6 +21,29 @@ export const javalambre: PropertyContent = {
   shortIntro:
     "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
 
+  idealFor: [
+    "Familias con niños",
+    "Primeras veces en la nieve y principiantes",
+    "Fines de semana y puentes desde Valencia",
+    "Grupos pequeños que esquían juntos",
+    "Escapada de montaña también sin esquís",
+  ],
+
+  weekendPlan: [
+    {
+      day: "Viernes",
+      text: "Llegada por la tarde, se enciende la chimenea de pellets y se deja el material en el guardaesquís. Cena en el pueblo de Camarena de la Sierra.",
+    },
+    {
+      day: "Sábado",
+      text: "Desayuno y a las pistas: en unos 10 minutos estás calzando los esquís en Javalambre. Comida en la estación y tarde de nieve; de vuelta, sobremesa larga en el apartamento.",
+    },
+    {
+      day: "Domingo",
+      text: "Media mañana de pistas o un paseo por la sierra si no esquías, y salida sin prisa. Camarena queda a poco más de una hora de Valencia.",
+    },
+  ],
+
   highlights: [
     {
       title: "A unos 10 minutos en coche de las pistas de Javalambre",

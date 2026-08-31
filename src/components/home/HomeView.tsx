@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { resolvePropertiesForHome } from "@/domains/properties/content";
 import { AvailabilitySearch } from "@/components/search/AvailabilitySearch";
-import { PropertyCard } from "@/components/property/PropertyCard";
+import { ExperienceSelector } from "@/components/home/ExperienceSelector";
 import { FaqBlock } from "@/components/FaqBlock";
 import { JsonLd } from "@/components/JsonLd";
 import { Picture } from "@/components/media/Picture";
@@ -179,23 +179,30 @@ export async function HomeView({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      {/* 4 · Choose your getaway — editorial cards */}
-      <section
-        id="alojamientos"
-        aria-labelledby="alojamientos-heading"
-        className="container-page reveal scroll-mt-24 py-16"
-      >
-        <p className="eyebrow">{locale === "en" ? "Two homes" : "Dos casas"}</p>
-        <h2 id="alojamientos-heading" className="mt-2 font-display text-3xl sm:text-4xl">
-          {dict.home.chooseHeading}
-        </h2>
-        <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">{dict.home.chooseSub}</p>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {properties.map((p) => (
-            <PropertyCard key={p.slug} property={p} locale={locale} />
-          ))}
+      {/* 4 · Choose your getaway — MAR / NIEVE selector (issue #86 §5) */}
+      <div id="alojamientos" className="scroll-mt-24">
+        <div className="container-page pt-16">
+          <p className="eyebrow">{locale === "en" ? "Two homes" : "Dos casas"}</p>
+          <h2 id="alojamientos-heading" className="mt-2 font-display text-3xl sm:text-4xl">
+            {dict.home.chooseHeading}
+          </h2>
+          <p className="mt-3 max-w-2xl text-[var(--color-ink-soft)]">{dict.home.chooseSub}</p>
         </div>
-      </section>
+        <ExperienceSelector
+          locale={locale}
+          options={properties.map((p) => ({
+            slug: p.slug,
+            experience: p.experience,
+            name: p.name,
+            area: p.location.area,
+            region: p.location.region,
+            intro: p.shortIntro,
+            photo: heroPhoto(p.slug),
+            rating: p.rating ?? null,
+            headline: p.headlineDistance,
+          }))}
+        />
+      </div>
 
       {/* 5 · Per-destination story + real, property-specific advantages */}
       {properties.map((p, i) => {

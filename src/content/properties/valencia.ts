@@ -24,6 +24,14 @@ export const valencia: PropertyContent = {
   shortIntro:
     "Un apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo desde el balcón, zona privada de playa y parking gratis. Un tramo de costa valenciana tranquilo, junto a la Albufera y a media hora de la ciudad de Valencia.",
 
+  idealFor: [
+    "Familias con niños",
+    "Parejas y escapadas de playa",
+    "Verano mediterráneo sin masificación",
+    "Días de arroz en la Albufera y El Perelló",
+    "Teletrabajo con vistas al mar en temporada baja",
+  ],
+
   highlights: [
     {
       title: "A pie de la playa de la Llastra, a unos 5 metros de la arena",
