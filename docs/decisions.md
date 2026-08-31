@@ -420,3 +420,26 @@ ignored, no phantom checkout day, `buildCalendar` over the consolidated ranges).
 `supabase/tests/property_busy_ranges.test.sql` (runnable transaction, rolls
 back). Verified: `next build` succeeds in DEMO **and** with Supabase configured
 against an unreachable DB — `/[property]` stays `● SSG`.
+
+## D-022 — V4 Phase 1 (conversion) — architecture of the shared pieces
+**Date:** 2026-08-31 · master issue #98
+V4 optimises direct-booking conversion; visible product first (#86–#93 before the
+infra #61–#85). The reusable pieces, all real-data / no invented urgency:
+- **#92 alternatives** — pure `src/domains/booking/alternatives.ts`
+  (`rescueAlternatives` = shifted same-length windows, closest first, then
+  weekend fallbacks). `checkProperty` prices them (empty when available). Cards
+  in every search surface. `AvailabilityResult` grew `alternatives` + `rating`.
+- **#89 Booking Bar** — `src/domains/booking/stay.ts` (a `useSyncExternalStore`
+  store persisted to `sessionStorage`, SSR-safe) + `BookingBar` mounted in
+  `SiteChrome`. Never a source of truth; the server always re-quotes.
+  `<PreferProperty>` declares a page's property.
+- **#90 RatingBadge** — `src/components/property/RatingBadge.tsx`, Booking's /10
+  scale kept, renders nothing without data, per-property.
+- **#91 direct booking** — `content/site.ts` `directBooking` (configurable promo
+  + a factual comparison, no brand attacks, no fake struck prices).
+  `<DirectBookingCompare>` / `<DirectBookingSaving>`.
+- **#93** — `ResponsivePhoto.focal` → `object-position`; lightbox swipe. The
+  commercial re-order is data on `photo-manifest.json`.
+- **#86/#87/#88** — the hero and the shared `PropertyPageView` impact block are
+  done; the per-property "wow" (Valencia sea-first hero, Javalambre weekend
+  itinerary, MAR/NIEVE selector) is the remaining Phase-1 work.

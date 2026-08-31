@@ -14,17 +14,17 @@ The **master issue #98** defines the order and philosophy: V4 optimises **one
 metric — direct-booking conversion**. Visible product first; invisible infra
 (#61–#85) only where it blocks bookings.
 
-### Phase 1 · Conversión inmediata — P0 (do first, in this order)
-| # | Title | Notes |
+### Phase 1 · Conversión inmediata — P0
+| # | Status | Notes |
 |---|---|---|
-| #86 | Home "máquina de reservar" | Full rebuild: hero, trust bar, MAR/NIEVE selector, search-first, availability-with-price, social proof, direct-booking, editorial gallery, seasonal content, closing CTA. Assembles #89/#90/#91/#92. |
-| #87 | Ficha Valencia "wow" | High-desire landing: sea-first hero, boutique gallery, impact block, sticky booking card, "despertarse frente al Mediterráneo", nearby, map, ideal-for, reviews, objection FAQ, blog links. |
-| #88 | Ficha Javalambre "wow" | Snow-escape landing: hero, ~10 min claim, sticky card, "tu base para esquiar", Camarena, para-quién, weekend itinerary, non-ski, distances, snow FAQ. |
-| #89 | Booking Bar V4 | Persistent premium booking bar — desktop sticky-on-scroll, mobile bottom bar + sheet, context-aware property preselect, keeps dates across navigation, no layout shift. |
-| #90 | Prueba social premium | Rating + review count next to each property name; curated 3–5 review block per property; "lo que más valoran"; rating in home/fiche/results/checkout; mini social proof by CTA. Real data only, never mixed between properties. |
-| #91 | Reserva directa que gane a Booking | Configurable real direct-booking benefits; "Reservando aquí vs plataforma" microblock; € savings when a promo applies (10PRAETORIA10); shown at decision points (home, fiche, checkout, landings). |
-| #92 | Disponibilidad inteligente | Rescue a no-availability search: nearby free dates, equivalent weekends, the other property, keep guests+duration, one-tap to move. Alternative cards with total price + "Elegir estas fechas". Real availability only. |
-| #93 | Galería premium | Reorder galleries by commercial impact; 1 hero + 4–6 sales photos + full gallery; categories; fast fullscreen mobile lightbox; per-image focal point; property-specific crops. |
+| #86 | 🟡 | Hero now search-first ("Comprobar fechas" primary → `#buscador`, "Ver apartamentos" secondary). Direct-booking saving nudge + "aquí vs plataforma" compare in the closing section. #92 priced results + trust bar already flow after the hero. **Open:** MAR/NIEVE editorial selector, deeper editorial gallery / seasonal-content blocks. |
+| #87 | 🟡 | Shared `PropertyPageView` gains an impact block (`~5 m a la arena · hasta 6 · 3 hab · 75 m²`), `<RatingBadge>` header, `<DirectBookingCompare>` by the closing CTAs. **Open:** Valencia sea-first hero treatment, "despertarse frente al Mediterráneo" photo blocks, "ideal para", map embed. |
+| #88 | 🟡 | Same shared improvements. **Open:** Javalambre weekend itinerary (viernes→domingo), "para quién es perfecto", "qué hacer si no esquías", dynamic-but-verified season message. |
+| #89 | ✅ | `BookingBar` in `SiteChrome` on every public page (hidden on admin/checkout). `stay.ts` sessionStorage store keeps property/dates/guests across nav. Desktop pill after scroll; mobile bottom bar (suppressed on home + fiches which have their own module) + sheet. `<PreferProperty>` on fiche/landing. `e2e/booking-bar.spec.ts`. |
+| #90 | ✅ | `<RatingBadge>` (real, source-attributed, per-property) in the BookingWidget header, search results, the Booking Bar sheet and the **checkout summary**. `AvailabilityResult.rating`. |
+| #91 | ✅ | `content/site.ts` `directBooking` (promo + factual "aquí vs plataforma", ES/EN). `<DirectBookingCompare>` + `<DirectBookingSaving>` (€ saving when a real total is known). Wired: home, BookingWidget CTA, checkout summary, property closing section. |
+| #92 | ✅ | `alternatives.ts` (nearby windows, weekend fallbacks, real availability only). `checkProperty` returns priced `alternatives`. Cards with total price + "Elegir estas fechas" in `AvailabilitySearch`, `BookingWidget`, the Booking Bar sheet. `e2e/smart-availability.spec.ts`. |
+| #93 | 🟡 | `ResponsivePhoto.focal` / `.category` + `object-position` in `Picture`; swipe in `GalleryLightbox`. **Open:** the commercial re-ordering + category assignment + focal points are a data task on `photo-manifest.json` (needs eyes on the photos). |
 
 ### Phase 2 · Captación orgánica — P0/P1
 | # | Title | Notes |
