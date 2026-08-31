@@ -284,6 +284,17 @@ intranet incl. `/admin/analitica`, accessibility, audit, admin-dod).
    optional `NEXT_PUBLIC_WHATSAPP_NUMBER`.
 3. Redeploy `main` on Hostinger (clean build cache).
 
+**2026-08-31 (latest) — #86/#87/#88/#93 closed + GO-LIVE prep (D-028):**
+Photo manifest curated from the real photos (order/focal/category), the
+misrepresented climbing-topo dropped, one unverifiable Valencia claim softened
+(ES+EN), `HomeView` picks story/selector photos by name. **All of Phase 1
+(#86–#93) is now ✅.** `docs/launch-checklist.md` rewritten as the single
+Hostinger-oriented GO-LIVE doc: the 15 pending migrations, the full env-var
+table (categorised, no secrets), the `PRODUCTION_STRICT=true` recommendation,
+the fail-open/DEMO/mock audit (all fail-closed once configured; `PRODUCTION_STRICT`
+blocks every degraded path), and a step-by-step manual checklist. No code left
+for launch — only account setup in the owner's panels.
+
 **2026-08-31 (later) — #77 Design System V4** shipped to `develop` (D-027):
 `globals.css` is now a real token system + `.pv-*` component vocabulary; the
 whole public site was swept onto it (one button/card/field/heading language,

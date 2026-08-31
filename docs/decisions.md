@@ -558,3 +558,36 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   `npx playwright test visual --update-snapshots` after an intended change.
 - The admin (`admin.css`) keeps its own deliberately denser system (private
   tool, not a marketing surface) — untouched.
+
+## D-028 — #86/#87/#88/#93 — photo curation + copy accuracy
+**Date:** 2026-08-31 · issues #86, #87, #88, #93 (owner delegated the photo/order/crop calls)
+- **Photo order** (`photo-manifest.json`), from the existing real photos only:
+  - Valencia: `salon-vista-mar` (hero/OG — table at the sea window) → `vista-mar`
+    (terrace, frontal beach) → bright living rooms → `atardecer-playa` (sun over
+    sea) → `paseo-maritimo` (building on the seafront promenade) → rooms →
+    `entorno`.
+  - Javalambre: `salon-comedor` (hero/OG — warm, fireplace, valley view) →
+    living rooms → `dormitorio-1` (mountain-view window) → kitchens → `bano` →
+    `invierno` (snowy village) → `pistas-esqui` → `edificio`.
+- **`vistas-montana` removed from the Javalambre manifest** — it is a
+  climbing-route topo poster, not a window view, and its alt text
+  ("vistas … desde el apartamento") misrepresented it. The image files stay in
+  `/public` (orphaned, harmless); `scripts/fetch-property-photos.mjs` still lists
+  it.
+- **`focal`** (`object-position`) added on the wide-crop shots so the sea /
+  fireplace / building stays framed on mobile; **`category`** tags added
+  (vistas/salon/cocina/dormitorio/bano/exterior/entorno/nieve) for future use —
+  no new gallery UI built.
+- **Copy** — one claim softened: the single Valencia bedroom photo shows no sea
+  view, so "te duermes y te despiertas con el Mediterráneo delante" →
+  "vistas frontales al mar desde el salón y la terraza; las mañanas empiezan con
+  la playa delante" (ES + EN); section heading "Dormir prácticamente sobre el
+  Mediterráneo" → "En primera línea de la playa de la Llastra"; amenity "Balcón
+  con vistas frontales al mar" → "Terraza con vistas frontales al mar". Every
+  other content claim is photo- or data-backed and untouched. "Qué hacer si no
+  esquías" for Javalambre was already covered by a source-backed section.
+- **`HomeView`** — the story image and the MAR/NIEVE selector photo are picked
+  by base name (`vista-mar` / `atardecer-playa` / `invierno`), not a brittle
+  index.
+- Visual regression baselines regenerated; `e2e/visual.spec.ts` now waits for
+  `<img>` decode before the snapshot (a cold-capture flake fix).
