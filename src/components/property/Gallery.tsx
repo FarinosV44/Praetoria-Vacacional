@@ -16,7 +16,8 @@ export function Gallery({ photos, name }: { photos: ResponsivePhoto[]; name: str
   const [hero, ...rest] = photos;
   if (!hero) return null;
 
-  const tile = "group relative block overflow-hidden rounded-xl";
+  const tile =
+    "group relative block overflow-hidden rounded-[var(--radius-lg)] focus-visible:outline-2 focus-visible:outline-offset-2";
   const img = "transition-transform duration-500 group-hover:scale-[1.03]";
 
   return (
@@ -54,6 +55,18 @@ export function Gallery({ photos, name }: { photos: ResponsivePhoto[]; name: str
           </button>
         ))}
       </div>
+
+      {photos.length > 1 && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setOpen(0)}
+            className="pv-btn pv-btn--secondary pv-btn--sm"
+          >
+            Ver todas las fotos ({photos.length})
+          </button>
+        </div>
+      )}
 
       <GalleryLightbox photos={photos} name={name} openIndex={open} onClose={() => setOpen(null)} />
     </section>

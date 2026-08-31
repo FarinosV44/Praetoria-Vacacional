@@ -31,8 +31,13 @@ export default async function ErrorPage({
   return (
     <div className="container-page py-16" lang={locale === "en" ? "en" : undefined}>
       <div className="pv-card pv-card--soft mx-auto max-w-lg !p-8 text-center">
-        <p className="text-4xl">↺</p>
-        <h1 className="mt-3 display-3">{t.failedHeading}</h1>
+        <span
+          aria-hidden
+          className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-warning-50)] text-2xl"
+        >
+          ↺
+        </span>
+        <h1 className="mt-4 display-3">{t.failedHeading}</h1>
         <p className="mt-2 text-[var(--color-ink-soft)]">{t.failedSub}</p>
         <div className="mt-8 flex justify-center gap-3">
           <Link
