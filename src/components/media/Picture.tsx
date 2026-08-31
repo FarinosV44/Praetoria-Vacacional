@@ -21,6 +21,9 @@ export function Picture({
   imgClassName?: string;
 }) {
   const maxW = Math.max(...photo.widths);
+  // Focal point (issue #93) — keeps the important part in frame on tight mobile
+  // crops. `photo.focal` is "x% y%"; defaults to centre.
+  const objectPosition = photo.focal ?? undefined;
   return (
     <Image
       src={`${photo.dir}/${photo.base}-${maxW}.webp`}
@@ -28,6 +31,7 @@ export function Picture({
       fill
       sizes={sizes}
       priority={priority}
+      style={objectPosition ? { objectPosition } : undefined}
       className={`${imgClassName} ${className}`.trim()}
     />
   );

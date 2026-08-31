@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ResponsivePhoto } from "@/content/properties/photos";
 
 /**
@@ -29,6 +29,18 @@ export function GalleryLightbox({
     [photos.length],
   );
   const next = useCallback(() => setIndex((i) => (i + 1) % photos.length), [photos.length]);
+
+  // Touch swipe (issue #93 — mobile).
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current === null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? touchX.current) - touchX.current;
+    if (Math.abs(dx) > 45) (dx < 0 ? next : prev)();
+    touchX.current = null;
+  };
 
   useEffect(() => {
     if (openIndex === null) return;
@@ -68,7 +80,11 @@ export function GalleryLightbox({
         </button>
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center px-2 pb-6">
+      <div
+        className="relative flex flex-1 items-center justify-center px-2 pb-6"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         <button
           onClick={prev}
           aria-label="Anterior"
