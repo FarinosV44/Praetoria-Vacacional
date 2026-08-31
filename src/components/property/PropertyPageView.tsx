@@ -8,6 +8,8 @@ import { BookingWidget } from "@/components/booking/BookingWidget";
 import { bookingSectionId, bookingSectionHref } from "@/domains/booking/anchor";
 import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
 import { PreferProperty } from "@/components/booking/PreferProperty";
+import { RatingBadge } from "@/components/property/RatingBadge";
+import { DirectBookingCompare } from "@/components/booking/DirectBooking";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
@@ -129,14 +131,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         </p>
         <h1 className="mt-2 font-display text-3xl sm:text-4xl">{p.seo.h1}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
-          {p.rating && (
-            <span className="inline-flex items-center gap-1.5">
-              <span className="rounded-md bg-[var(--accent-700)] px-1.5 py-0.5 text-xs font-semibold text-white">
-                {p.rating.value.toFixed(1)}
-              </span>
-              {t.ratingOn(p.rating.count)}
-            </span>
-          )}
+          <RatingBadge rating={p.rating} locale={locale} />
           <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
         </div>
         <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{p.shortIntro}</p>
@@ -144,6 +139,31 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
       </header>
 
       <Gallery photos={photos} name={p.name} />
+
+      {/* Impact block — the single most persuasive line, in frame at a glance (#87/#88) */}
+      <div className="container-page mt-6">
+        <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--accent-50)] px-5 py-3 text-sm font-medium">
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
+            {p.headlineDistance.value} · {p.headlineDistance.label.toLowerCase()}
+          </li>
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
+            {locale === "en" ? "Up to" : "Hasta"} {p.capacity.guests}{" "}
+            {locale === "en" ? "guests" : "huéspedes"}
+          </li>
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
+            {p.capacity.bedrooms} {locale === "en" ? "bedrooms" : "habitaciones"}
+          </li>
+          {p.capacity.sizeSqm && (
+            <li className="flex items-center gap-2">
+              <span aria-hidden className="text-[var(--accent-600)]">◆</span>
+              {p.capacity.sizeSqm} m²
+            </li>
+          )}
+        </ul>
+      </div>
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px]">
         <div className="space-y-12">
@@ -332,6 +352,9 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         <div className="container-page">
           <h2 className="font-display text-2xl sm:text-3xl">{t.closingHeading(p.name)}</h2>
           <p className="mt-2 max-w-xl text-[var(--color-ink-soft)]">{t.closingBody}</p>
+          <div className="mt-6">
+            <DirectBookingCompare locale={locale} />
+          </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
               href={bookingSectionHref(p.slug)}
