@@ -214,12 +214,12 @@ export function CheckoutFlow(props: Props) {
             return (
               <li key={label} className="flex items-center gap-2">
                 <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                     active
                       ? "bg-[var(--accent-600)] text-white"
                       : done
-                        ? "bg-[var(--accent-50)] text-[var(--accent-700)]"
-                        : "bg-[var(--color-line)] text-[var(--color-ink-soft)]"
+                        ? "bg-[var(--accent-100)] text-[var(--accent-800)]"
+                        : "bg-[var(--color-mist)] text-[var(--color-ink-faint)]"
                   }`}
                 >
                   {done ? "✓" : n}
@@ -236,7 +236,7 @@ export function CheckoutFlow(props: Props) {
         </ol>
 
         {error && (
-          <p role="alert" className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p role="alert" className="pv-note pv-note--error mb-4">
             {error}
             {error.includes(t.datesGone) && (
               <>
@@ -250,7 +250,7 @@ export function CheckoutFlow(props: Props) {
         )}
 
         {step === 1 && (
-          <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+          <section className="pv-card pv-card--soft pv-card--pad">
             <h2 className="font-display text-xl">{t.confirmGetaway}</h2>
             <p className="mt-2 text-[var(--color-ink-soft)]">
               {propertyName} · {formatRange(checkIn, checkOut)} · {nightsLabel(quote.nights)} ·{" "}
@@ -269,7 +269,7 @@ export function CheckoutFlow(props: Props) {
               locale={locale}
               propertySlug={propertySlug}
             />
-            <Button className="mt-5 w-full" size="lg" disabled={busy} onClick={goToDetails}>
+            <Button block className="mt-5" disabled={busy} onClick={goToDetails}>
               {busy ? t.oneMoment : t.continue}
             </Button>
           </section>
@@ -278,7 +278,7 @@ export function CheckoutFlow(props: Props) {
         {step === 2 && (
           <form
             onSubmit={submitDetails}
-            className="rounded-xl border border-[var(--color-line)] bg-white p-5"
+            className="pv-card pv-card--soft pv-card--pad"
           >
             <h2 className="font-display text-xl">{t.yourDetails}</h2>
             <p className="mt-1 text-sm text-[var(--color-ink-soft)]">{t.noAccount}</p>
@@ -332,10 +332,10 @@ export function CheckoutFlow(props: Props) {
         )}
 
         {step === 3 && (
-          <section className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+          <section className="pv-card pv-card--soft pv-card--pad">
             <h2 className="font-display text-xl">{t.securePayment}</h2>
             {props.paymentsConfigured === false && (
-              <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <p className="pv-note pv-note--warn mt-2">
                 {locale === "en"
                   ? "Card payments are not enabled yet. This step runs in demo mode and no charge is made."
                   : "Los pagos con tarjeta aún no están activos. Este paso funciona en modo demostración y no se realiza ningún cobro."}
@@ -347,7 +347,7 @@ export function CheckoutFlow(props: Props) {
               <Button type="button" variant="secondary" onClick={() => setStep(2)}>
                 {t.back}
               </Button>
-              <Button className="flex-1" size="lg" disabled={busy} onClick={pay}>
+              <Button className="flex-1" disabled={busy} onClick={pay}>
                 {busy ? t.redirecting : t.pay(formatMoney(quote.totalCents))}
               </Button>
             </div>
@@ -356,7 +356,7 @@ export function CheckoutFlow(props: Props) {
       </div>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-xl border border-[var(--color-line)] bg-white p-5">
+        <div className="pv-card pv-card--soft pv-card--pad">
           <p className="font-display text-lg">{propertyName}</p>
           {props.rating && (
             <div className="mt-1">
@@ -448,15 +448,15 @@ function Field({
   autoComplete?: string;
 }) {
   return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{label}</span>
+    <label className="block">
+      <span className="pv-label">{label}</span>
       <input
         type={type}
         required={required}
         autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-12 w-full rounded-xl border border-[var(--color-line)] px-3 text-base"
+        className="pv-input"
       />
     </label>
   );

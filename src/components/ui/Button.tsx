@@ -1,28 +1,31 @@
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost";
-type Size = "md" | "lg";
+/**
+ * The canonical button (issue #77). Renders the design-system `.pv-btn`
+ * vocabulary from globals.css — one height per size, pill shape, consistent
+ * focus + motion. Use this (or a plain `.pv-btn` class on an `<a>`) everywhere
+ * rather than hand-rolled utility strings.
+ */
+type Variant = "primary" | "secondary" | "ghost" | "ondark" | "ondark-ghost";
+type Size = "sm" | "md" | "lg";
 
-const base =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.98] motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100";
-
-const variants: Record<Variant, string> = {
-  primary:
-    "bg-[var(--accent-600)] text-[var(--accent-contrast)] hover:bg-[var(--accent-700)] shadow-sm",
-  secondary:
-    "bg-white text-[var(--color-ink)] ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)] hover:text-[var(--accent-700)]",
-  ghost: "text-[var(--color-ink-soft)] hover:text-[var(--accent-700)]",
-};
-
-const sizes: Record<Size, string> = {
-  md: "h-11 px-5 text-sm",
-  lg: "h-14 px-7 text-base",
-};
+const cls = (variant: Variant, size: Size, block: boolean, extra: string) =>
+  [
+    "pv-btn",
+    `pv-btn--${variant}`,
+    size === "sm" && "pv-btn--sm",
+    size === "lg" && "pv-btn--lg",
+    block && "pv-btn--block",
+    extra,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
 interface CommonProps {
   variant?: Variant;
   size?: Size;
+  block?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -30,11 +33,12 @@ interface CommonProps {
 export function Button({
   variant = "primary",
   size = "md",
+  block = false,
   className = "",
   ...props
 }: CommonProps & ComponentPropsWithoutRef<"button">) {
   return (
-    <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
+    <button className={cls(variant, size, block, className)} {...props}>
       {props.children}
     </button>
   );
@@ -43,13 +47,14 @@ export function Button({
 export function ButtonLink({
   variant = "primary",
   size = "md",
+  block = false,
   className = "",
   href,
   children,
   ...props
 }: CommonProps & { href: string } & Omit<ComponentPropsWithoutRef<typeof Link>, "href">) {
   return (
-    <Link href={href} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
+    <Link href={href} className={cls(variant, size, block, className)} {...props}>
       {children}
     </Link>
   );

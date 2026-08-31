@@ -32,8 +32,8 @@ export default async function BlogIndexPage() {
 
       <header className="container-page pt-4">
         <p className="eyebrow">Actualidad y guías</p>
-        <h1 className="mt-2 font-display text-3xl sm:text-4xl">Blog de Praetoria Vacacional</h1>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">
+        <h1 className="mt-2 display-2">Blog de Praetoria Vacacional</h1>
+        <p className="lede mt-3 max-w-2xl">
           Planes, gastronomía, nieve y playa alrededor de nuestros dos alojamientos: la playa de la
           Llastra al sur de Valencia y Javalambre, en Camarena de la Sierra.
         </p>
@@ -41,7 +41,7 @@ export default async function BlogIndexPage() {
 
       <div className="container-page py-10">
         {posts.length === 0 ? (
-          <p className="rounded-xl border border-[var(--color-line)] bg-white p-6 text-[var(--color-ink-soft)]">
+          <p className="pv-card !p-6 text-[var(--color-ink-soft)]">
             Aún no hay artículos publicados. Vuelve pronto.
           </p>
         ) : (
@@ -50,7 +50,7 @@ export default async function BlogIndexPage() {
               <li key={post.id}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white transition hover:border-[var(--accent-500)]"
+                  className="pv-card pv-card--interactive group flex h-full flex-col overflow-hidden !p-0"
                 >
                   {post.featuredImageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element

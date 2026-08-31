@@ -24,6 +24,17 @@ export default defineConfig({
     baseURL: externalBaseUrl ?? "http://localhost:3000",
     trace: "on-first-retry",
   },
+  // Visual-regression tolerances (issue #77). Font hinting / sub-pixel AA differ
+  // slightly between machines; a small ratio keeps the baseline stable while
+  // still catching real layout / spacing / colour regressions.
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02,
+      animations: "disabled",
+      scale: "css",
+    },
+  },
+  snapshotPathTemplate: "{testDir}/__screenshots__/{testFileName}/{arg}{ext}",
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile-safari", use: { ...devices["iPhone 13"] } },

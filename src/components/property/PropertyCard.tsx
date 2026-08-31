@@ -36,7 +36,7 @@ export function PropertyCard({
     <Link
       href={localizedPath(locale, `/${property.slug}`)}
       data-experience={property.experience}
-      className="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="pv-card pv-card--soft pv-card--interactive group relative flex flex-col overflow-hidden !p-0"
     >
       <div className="relative aspect-[16/11] overflow-hidden">
         {hero && (
@@ -46,18 +46,18 @@ export function PropertyCard({
             imgClassName="h-full w-full object-cover transition-transform duration-[600ms] group-hover:scale-[1.04]"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-        <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold tracking-wide text-[var(--accent-700)]">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <span className="pv-chip absolute left-4 top-4 !bg-white/95 font-semibold !text-[var(--accent-700)] !shadow-none">
           {property.experience === "ski" ? "❄ " : "☀ "}
           {meta.label}
         </span>
         {property.rating && (
-          <span className="absolute right-4 top-4 rounded-full bg-[var(--accent-700)] px-2.5 py-1 text-xs font-semibold text-white">
+          <span className="pv-badge pv-badge--score absolute right-4 top-4">
             {property.rating.value.toFixed(1)}
           </span>
         )}
-        <div className="absolute inset-x-4 bottom-4 text-white">
-          <h3 className="font-display text-2xl leading-tight drop-shadow">{property.name}</h3>
+        <div className="absolute inset-x-5 bottom-5 text-white">
+          <h3 className="font-display text-2xl leading-tight drop-shadow-md">{property.name}</h3>
           <p className="text-sm text-white/90 drop-shadow">
             {property.location.area} · {property.location.region}
           </p>

@@ -68,10 +68,10 @@ export default async function SeasonalPageView({
 
       <header className="container-page pt-4">
         <p className="eyebrow">{page.period}</p>
-        <h1 className="mt-2 font-display text-3xl sm:text-4xl">{page.h1}</h1>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{page.lead}</p>
+        <h1 className="mt-2 display-2">{page.h1}</h1>
+        <p className="lede mt-3 max-w-2xl">{page.lead}</p>
         {page.status !== "published" && (
-          <p className="mt-3 rounded-md bg-amber-100 px-3 py-1 text-sm text-amber-900">
+          <p className="mt-3 pv-note pv-note--warn">
             Borrador — esta página no está indexada.
           </p>
         )}
@@ -89,7 +89,7 @@ export default async function SeasonalPageView({
         <article className="min-w-0 max-w-2xl">
           {page.blocks.map((b) => (
             <section key={b.heading} className="[&:not(:first-child)]:mt-9">
-              <h2 className="font-display text-2xl">{b.heading}</h2>
+              <h2 className="display-3">{b.heading}</h2>
               {b.body.map((para, i) => (
                 <p key={i} className="mt-2 text-[var(--color-ink-soft)]">
                   {para}
@@ -101,14 +101,14 @@ export default async function SeasonalPageView({
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               href={`/${prop.slug}`}
-              className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+              className="pv-btn pv-btn--primary"
             >
               Ver el alojamiento
             </Link>
             {landing && (
               <Link
                 href={`/${landing.propertySlug}/${landing.slug}`}
-                className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
+                className="pv-btn pv-btn--secondary"
               >
                 {landing.h1}
               </Link>
@@ -117,11 +117,11 @@ export default async function SeasonalPageView({
 
           {page.faq && page.faq.length > 0 && (
             <section className="mt-12">
-              <h2 className="font-display text-2xl">Preguntas frecuentes</h2>
-              <div className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+              <h2 className="display-3">Preguntas frecuentes</h2>
+              <div className="pv-faq mt-4">
                 {page.faq.map((f) => (
-                  <details key={f.question} className="group py-3">
-                    <summary className="cursor-pointer list-none font-medium">{f.question}</summary>
+                  <details key={f.question}>
+                    <summary>{f.question}<span aria-hidden className="pv-faq__sign">+</span></summary>
                     <p className="mt-2 text-[var(--color-ink-soft)]">{f.answer}</p>
                   </details>
                 ))}

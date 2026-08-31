@@ -32,7 +32,7 @@ export function DirectBookingCompare({ locale }: { locale: Locale }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <div className="rounded-[var(--radius-card)] border border-[var(--accent-500)] bg-[var(--accent-50)] p-5">
+      <div className="pv-card pv-card--pad pv-card--accent">
         <p className="text-sm font-semibold text-[var(--accent-700)]">{t.here}</p>
         <ul className="mt-3 space-y-2 text-sm">
           {c.here[l].map((item) => (
@@ -45,7 +45,7 @@ export function DirectBookingCompare({ locale }: { locale: Locale }) {
           ))}
         </ul>
       </div>
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] p-5">
+      <div className="pv-card pv-card--pad">
         <p className="text-sm font-semibold text-[var(--color-ink-soft)]">{t.platform}</p>
         <ul className="mt-3 space-y-2 text-sm text-[var(--color-ink-soft)]">
           {c.platform[l].map((item) => (
@@ -80,9 +80,7 @@ export function DirectBookingSaving({
     totalCents && totalCents > 0 ? Math.round((totalCents * promo.percent) / 100) : null;
 
   return (
-    <p
-      className={`inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-50)] px-3 py-1 text-sm text-[var(--accent-700)] ${className}`}
-    >
+    <p className={`pv-chip pv-chip--accent ${className}`}>
       <span aria-hidden>🏷️</span>
       {saving ? t.saveApprox(formatMoney(saving)) : t.promo(promo.percent, promo.code)}
     </p>

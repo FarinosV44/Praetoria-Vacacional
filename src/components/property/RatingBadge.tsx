@@ -32,9 +32,7 @@ export function RatingBadge({
       className={`inline-flex items-center gap-1.5 ${size === "xs" ? "text-xs" : "text-sm"}`}
       aria-label={`${rating.value.toFixed(1)} de 10, ${rating.count} ${reviews} ${on}`}
     >
-      <span className="rounded-md bg-[var(--accent-700)] px-1.5 py-0.5 text-xs font-semibold text-white">
-        {rating.value.toFixed(1)}
-      </span>
+      <span className="pv-badge pv-badge--score">{rating.value.toFixed(1)}</span>
       <span className="text-[var(--color-ink-soft)]">
         {rating.count} {reviews}
         {withSource ? ` · ${on}` : ""}

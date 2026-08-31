@@ -129,12 +129,12 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         <p className="eyebrow">
           {p.location.area} · {p.location.region}
         </p>
-        <h1 className="mt-2 font-display text-3xl sm:text-4xl">{p.seo.h1}</h1>
+        <h1 className="mt-2 display-2">{p.seo.h1}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
           <RatingBadge rating={p.rating} locale={locale} />
           <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
         </div>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--color-ink-soft)]">{p.shortIntro}</p>
+        <p className="lede mt-3 max-w-2xl">{p.shortIntro}</p>
         <AvailabilityNote propertySlug={p.slug} locale={locale === "en" ? "en" : "es"} />
       </header>
 
@@ -142,7 +142,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
       {/* Impact block — the single most persuasive line, in frame at a glance (#87/#88) */}
       <div className="container-page mt-6">
-        <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--accent-50)] px-5 py-3 text-sm font-medium">
+        <ul className="pv-card pv-card--accent flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3.5 text-sm font-medium">
           <li className="flex items-center gap-2">
             <span aria-hidden className="text-[var(--accent-600)]">◆</span>
             {p.headlineDistance.value} · {p.headlineDistance.label.toLowerCase()}
@@ -165,16 +165,16 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         </ul>
       </div>
 
-      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px]">
+      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px] lg:gap-14">
         <div className="space-y-12">
           {/* Quick facts */}
           <section aria-labelledby="cap-heading">
-            <h2 id="cap-heading" className="font-display text-2xl">
+            <h2 id="cap-heading" className="display-3">
               {t.theProperty}
             </h2>
             <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {facts.map(([label, value]) => (
-                <div key={label} className="rounded-xl border border-[var(--color-line)] p-4">
+                <div key={label} className="pv-card !p-4">
                   <dt className="text-xs text-[var(--color-ink-soft)]">{label}</dt>
                   <dd className="mt-1 font-medium">{value}</dd>
                 </div>
@@ -185,14 +185,14 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
           {/* Lo mejor de este alojamiento — real, property-specific (issue #44) */}
           {p.highlights.length > 0 && (
             <section aria-labelledby="best-heading">
-              <h2 id="best-heading" className="font-display text-2xl">
+              <h2 id="best-heading" className="display-3">
                 {t.bestOf}
               </h2>
               <ul className="mt-4 grid gap-4 sm:grid-cols-2">
                 {p.highlights.map((h) => (
                   <li
                     key={h.title}
-                    className="rounded-xl border border-[var(--color-line)] p-4"
+                    className="pv-card !p-4"
                   >
                     <p className="flex items-start gap-2 font-medium">
                       <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
@@ -209,15 +209,12 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {locale === "es" && p.idealFor && p.idealFor.length > 0 && (
             <section aria-labelledby="ideal-heading">
-              <h2 id="ideal-heading" className="font-display text-2xl">
+              <h2 id="ideal-heading" className="display-3">
                 Ideal para
               </h2>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {p.idealFor.map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-full border border-[var(--color-line)] bg-[var(--accent-50)] px-3 py-1.5 text-sm"
-                  >
+                  <li key={item} className="pv-chip pv-chip--accent">
                     {item}
                   </li>
                 ))}
@@ -227,7 +224,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {locale === "es" && p.weekendPlan && p.weekendPlan.length > 0 && (
             <section aria-labelledby="weekend-heading">
-              <h2 id="weekend-heading" className="font-display text-2xl">
+              <h2 id="weekend-heading" className="display-3">
                 Cómo sería tu fin de semana
               </h2>
               <ol className="mt-4 space-y-4">
@@ -245,7 +242,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {p.sections.map((s) => (
             <section key={s.heading}>
-              <h2 className="font-display text-2xl">{s.heading}</h2>
+              <h2 className="display-3">{s.heading}</h2>
               {s.body.map((para, i) => (
                 <p key={i} className="mt-3 text-[var(--color-ink-soft)]">
                   {para}
@@ -256,7 +253,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {/* Amenities grouped */}
           <section aria-labelledby="amenities-heading">
-            <h2 id="amenities-heading" className="font-display text-2xl">
+            <h2 id="amenities-heading" className="display-3">
               {t.amenities}
             </h2>
             <div className="mt-4 grid gap-6 sm:grid-cols-2">
@@ -280,12 +277,35 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {/* Location */}
           <section aria-labelledby="loc-heading">
-            <h2 id="loc-heading" className="font-display text-2xl">
+            <h2 id="loc-heading" className="display-3">
               {t.location}
             </h2>
             <p className="mt-3 text-[var(--color-ink-soft)]">
               {p.name} — {p.location.addressLine}, {p.location.postalCode} {p.location.region}.
             </p>
+
+            <figure className="mt-4 overflow-hidden rounded-[var(--radius-lg)] shadow-[inset_0_0_0_1px_var(--color-line)]">
+              <iframe
+                title={
+                  locale === "en"
+                    ? `Approximate location of ${p.name} on the map`
+                    : `Ubicación aproximada de ${p.name} en el mapa`
+                }
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="block h-64 w-full border-0 sm:h-72"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                  p.location.geo.lng - 0.035
+                }%2C${p.location.geo.lat - 0.02}%2C${p.location.geo.lng + 0.035}%2C${
+                  p.location.geo.lat + 0.02
+                }&layer=mapnik&marker=${p.location.geo.lat}%2C${p.location.geo.lng}`}
+              />
+              <figcaption className="bg-[var(--color-mist)] px-3 py-1.5 text-xs text-[var(--color-ink-faint)]">
+                {locale === "en"
+                  ? "Approximate area — the exact address is shared after booking. Map © OpenStreetMap."
+                  : "Zona aproximada — la dirección exacta se facilita al confirmar la reserva. Mapa © OpenStreetMap."}
+              </figcaption>
+            </figure>
 
             <h3 className="mt-6 text-sm font-semibold">{t.gettingThere}</h3>
             {p.location.gettingThere.map((para, i) => (
@@ -320,7 +340,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {/* Stay info */}
           <section aria-labelledby="stay-heading">
-            <h2 id="stay-heading" className="font-display text-2xl">
+            <h2 id="stay-heading" className="display-3">
               {t.stayInfo}
             </h2>
             <dl className="mt-4 space-y-2 text-sm">
@@ -342,7 +362,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
 
           {links.length > 0 && (
             <section aria-labelledby="more-heading">
-              <h2 id="more-heading" className="font-display text-2xl">
+              <h2 id="more-heading" className="display-3">
                 {t.more}
               </h2>
               <ul className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -350,9 +370,9 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
                   <li key={l.path}>
                     <Link
                       href={l.path}
-                      className="block rounded-xl border border-[var(--color-line)] p-4 text-sm hover:border-[var(--accent-500)]"
+                      className="pv-card pv-card--interactive block !p-4 text-sm font-medium"
                     >
-                      {l.label}
+                      {l.label} <span aria-hidden className="text-[var(--accent-600)]">→</span>
                     </Link>
                   </li>
                 ))}
@@ -383,25 +403,19 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
       {/* Closing CTA (issue #44 §14) */}
       <section
         data-experience={p.experience}
-        className="border-t border-[var(--color-line)] bg-[var(--accent-50)] py-14"
+        className="border-t border-[var(--color-line)] bg-[var(--accent-50)] section-y-tight"
       >
         <div className="container-page">
-          <h2 className="font-display text-2xl sm:text-3xl">{t.closingHeading(p.name)}</h2>
-          <p className="mt-2 max-w-xl text-[var(--color-ink-soft)]">{t.closingBody}</p>
+          <h2 className="display-3">{t.closingHeading(p.name)}</h2>
+          <p className="lede mt-2 max-w-xl">{t.closingBody}</p>
           <div className="mt-6">
             <DirectBookingCompare locale={locale} />
           </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={bookingSectionHref(p.slug)}
-              className="inline-flex h-12 items-center rounded-full bg-[var(--accent-600)] px-6 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
-            >
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href={bookingSectionHref(p.slug)} className="pv-btn pv-btn--primary">
               {t.closingCta}
             </a>
-            <Link
-              href={path("/contacto")}
-              className="inline-flex h-12 items-center rounded-full px-5 text-sm font-medium ring-1 ring-[var(--color-line)] hover:ring-[var(--accent-500)]"
-            >
+            <Link href={path("/contacto")} className="pv-btn pv-btn--secondary">
               {t.closingContact}
             </Link>
           </div>
@@ -409,10 +423,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
       </section>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
-        <a
-          href={bookingSectionHref(p.slug)}
-          className="flex h-12 items-center justify-center rounded-full bg-[var(--accent-600)] font-medium text-white"
-        >
+        <a href={bookingSectionHref(p.slug)} className="pv-btn pv-btn--primary pv-btn--block">
           {t.stickyCta}
         </a>
       </div>

@@ -146,14 +146,14 @@ export function AvailabilitySearch({
     }).format(new Date(`${iso}T00:00:00Z`));
 
   return (
-    <div className={compact ? "" : "rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6"}>
+    <div className={compact ? "" : "pv-card pv-card--soft p-5 sm:p-6"}>
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_auto_auto] lg:items-end">
-        <label className="text-sm sm:col-span-2 lg:col-span-1">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.property}</span>
+        <label className="sm:col-span-2 lg:col-span-1">
+          <span className="pv-label">{t.property}</span>
           <select
             value={property}
             onChange={(e) => setProperty(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base"
+            className="pv-select"
           >
             <option value="">{t.anyProperty}</option>
             {PROPERTIES.map((p) => (
@@ -163,34 +163,34 @@ export function AvailabilitySearch({
             ))}
           </select>
         </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkIn}</span>
+        <label>
+          <span className="pv-label">{t.checkIn}</span>
           <input
             type="date"
             required
             value={checkIn}
             min={todayPlus(0)}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base"
+            className="pv-input"
           />
         </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.checkOut}</span>
+        <label>
+          <span className="pv-label">{t.checkOut}</span>
           <input
             type="date"
             required
             value={checkOut}
             min={checkIn}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base"
+            className="pv-input"
           />
         </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">{t.guests}</span>
+        <label>
+          <span className="pv-label">{t.guests}</span>
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
-            className="h-12 w-full rounded-xl border border-[var(--color-line)] bg-white px-3 text-base lg:w-24"
+            className="pv-select lg:w-24"
           >
             {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
@@ -201,9 +201,8 @@ export function AvailabilitySearch({
         </label>
         <Button
           type="submit"
-          size="lg"
           disabled={status === "loading"}
-          className="h-12 sm:col-span-2 lg:col-span-1 lg:h-12"
+          className="sm:col-span-2 lg:col-span-1"
         >
           {status === "loading" ? t.checking : t.submit}
         </Button>
@@ -221,7 +220,7 @@ export function AvailabilitySearch({
       )}
 
       {message && (
-        <p role="alert" className="mt-3 text-sm text-red-600">
+        <p role="alert" className="pv-note pv-note--error mt-3">
           {message}
         </p>
       )}
@@ -229,10 +228,7 @@ export function AvailabilitySearch({
       {status === "loading" && (
         <ul className="mt-5 grid gap-3" aria-hidden>
           {[0, 1].map((i) => (
-            <li
-              key={i}
-              className="flex items-center justify-between rounded-xl border border-[var(--color-line)] p-4"
-            >
+            <li key={i} className="pv-card flex items-center justify-between !p-4">
               <div className="space-y-2">
                 <div className="h-5 w-40 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
                 <div className="h-4 w-56 animate-pulse rounded bg-[var(--color-line)]/70 motion-reduce:animate-none" />
@@ -249,7 +245,7 @@ export function AvailabilitySearch({
             <li
               key={r.propertySlug}
               data-experience={r.experience}
-              className="rounded-xl border border-[var(--color-line)] p-4"
+              className="pv-card !p-4"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -272,14 +268,14 @@ export function AvailabilitySearch({
                   <Link
                     href={reservePath(r.propertySlug)}
                     onClick={() => track("select_property", { property_slug: r.propertySlug })}
-                    className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white hover:bg-[var(--accent-700)]"
+                    className="pv-btn pv-btn--primary pv-btn--sm"
                   >
                     {t.book}
                   </Link>
                 ) : (
                   <Link
                     href={propertyPath(r.propertySlug)}
-                    className="inline-flex h-11 items-center rounded-full px-4 text-sm font-medium text-[var(--accent-700)] ring-1 ring-[var(--color-line)]"
+                    className="pv-btn pv-btn--secondary pv-btn--sm"
                   >
                     {t.seeProperty}
                   </Link>
@@ -288,14 +284,14 @@ export function AvailabilitySearch({
 
               {!r.available && r.alternatives.length > 0 && (
                 <div className="mt-3 border-t border-[var(--color-line)] pt-3">
-                  <p className="text-xs font-medium text-[var(--color-ink-soft)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">
                     {t.tryTheseInstead}
                   </p>
                   <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {r.alternatives.map((a) => (
                       <li
                         key={`${a.checkIn}-${a.checkOut}`}
-                        className="flex items-center justify-between gap-2 rounded-lg bg-[var(--color-paper)] px-3 py-2 text-sm"
+                        className="flex items-center justify-between gap-2 rounded-[var(--radius-md)] bg-[var(--color-mist)] px-3 py-2 text-sm"
                       >
                         <span>
                           <span className="font-medium">
@@ -313,7 +309,7 @@ export function AvailabilitySearch({
                               kind: a.kind,
                             })
                           }
-                          className="whitespace-nowrap rounded-full bg-[var(--accent-600)] px-3 py-1.5 text-xs font-medium text-white hover:bg-[var(--accent-700)]"
+                          className="pv-btn pv-btn--primary pv-btn--sm !h-8 !px-3 !text-xs"
                         >
                           {t.chooseTheseDates}
                         </Link>
@@ -325,7 +321,7 @@ export function AvailabilitySearch({
             </li>
           ))}
           {alt && alt.quote && (
-            <li className="rounded-xl border border-dashed border-[var(--accent-500)] bg-[var(--accent-50)] p-4 text-sm">
+            <li className="rounded-[var(--radius-lg)] border border-dashed border-[var(--accent-500)] bg-[var(--accent-50)] p-4 text-sm">
               {locale === "en" ? (
                 <>
                   These dates are free at <strong>{alt.propertyName}</strong> for{" "}

@@ -233,7 +233,8 @@ Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
 | #75 (infra) | `20260831130000_rls_hardening.sql` — RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon stripped of every table/RPC grant, default privileges locked, availability RPCs → service_role. `rls_hardening.test.sql`. D-024 | ✅ on `develop` |
 | #83 (infra) | `repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases) + static memory⇔supabase method-parity check. D-025 | ✅ on `develop` |
 | #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `main` (141ff1d) |
-| #82 (product) | pure `analytics/kpis.ts` + `/admin/analitica` — 12-month occupancy/ADR/RevPAR/channel-mix/lead-time/cancellation view, per-property, MoM deltas. 12 tests. D-026 | ✅ on `develop` |
+| #82 (product) | pure `analytics/kpis.ts` + `/admin/analitica` — 12-month occupancy/ADR/RevPAR/channel-mix/lead-time/cancellation view, per-property, MoM deltas. 12 tests. D-026 | ✅ on `main` (4f2c85f) |
+| #77 (design) | `globals.css` → DS V4 token system + `.pv-*` component vocabulary + `ui/{Button,Card,Field,SectionHeading}`; full public-site sweep (header/footer/nav/hero/search/booking widget+bar/property page/cards/checkout/guides/blog/ofertas/landings/legal/contacto); OSM location embed on property pages (#87); `e2e/visual.spec.ts` full-page regression (10 templates × 2 widths). D-027 | ✅ on `develop` |
 
 **Content-accuracy constraint (user, 2026-08-31, L-008):** the `10PRAETORIA10`
 code is **campaign-only — never shown on the public site** (it still works when a
@@ -282,11 +283,23 @@ intranet incl. `/admin/analitica`, accessibility, audit, admin-dod).
    optional `NEXT_PUBLIC_WHATSAPP_NUMBER`.
 3. Redeploy `main` on Hostinger (clean build cache).
 
+**2026-08-31 (later) — #77 Design System V4** shipped to `develop` (D-027):
+`globals.css` is now a real token system + `.pv-*` component vocabulary; the
+whole public site was swept onto it (one button/card/field/heading language,
+consistent rhythm and elevation). `e2e/visual.spec.ts` locks it with full-page
+screenshots (regenerate baselines with `npx playwright test visual
+--update-snapshots`). Property pages gained an OpenStreetMap location embed.
+
 **"Do all issues ALL" — what is NOT done and why:**
 - **Large, buildable, deferred by #98 (no booking impact):** #76 durable jobs +
-  transactional outbox, #77 design system V4 + visual regression, #62 distributed
-  rate limiting (needs a KV provider choice), #78 Lighthouse CI (needs the
-  deployed URL).
+  transactional outbox, #62 distributed rate limiting (needs a KV provider
+  choice), #78 Lighthouse CI (needs the deployed URL).
+- **#86/#87/#88/#93 remaining polish is owner-gated, not code-gated:** the
+  structural/visual work is done (DS V4, MAR/NIEVE selector, impact block, map
+  embed, chips, weekend itinerary). What's left needs the owner: choose/order
+  the real photos (`photo-manifest.json` `category`/`focal`), and approve any
+  new marketing copy ("despertarse frente al Mediterráneo", "qué hacer si no
+  esquías") — not written autonomously under the content-accuracy rule.
 - **Owner-decision-gated (per the issues.md table) — cannot be built without the
   owner's input on vendors / legal / credentials:** #65 (Supabase Auth + MFA),
   #66 (observability vendor), #67 (refund policy + Stripe live), #68 (guest

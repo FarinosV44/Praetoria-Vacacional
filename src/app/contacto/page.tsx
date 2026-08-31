@@ -23,25 +23,25 @@ export default function ContactoPage() {
         ]}
       />
       <div className="container-page max-w-2xl py-10">
-        <h1 className="font-display text-3xl sm:text-4xl">Contacto</h1>
-        <p className="mt-4 text-lg text-[var(--color-ink-soft)]">
+        <h1 className="display-2">Contacto</h1>
+        <p className="lede mt-4">
           Para cualquier duda antes de reservar o sobre una reserva existente, escríbenos. Te
           respondemos lo antes posible.
         </p>
-        <dl className="mt-8 space-y-3 text-[var(--color-ink)]">
+        <dl className="pv-card pv-card--pad mt-8 space-y-4 text-[var(--color-ink)]">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Email</dt>
-            <dd>
+            <dt className="text-xs uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">Email</dt>
+            <dd className="mt-0.5">
               <a className="hover:text-[var(--accent-700)]" href={`mailto:${company.email}`}>
                 {company.email}
               </a>
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+            <dt className="text-xs uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">
               Teléfono y WhatsApp
             </dt>
-            <dd>
+            <dd className="mt-0.5">
               <a
                 className="hover:text-[var(--accent-700)]"
                 href={`tel:${company.phone.replace(/\s+/g, "")}`}
@@ -51,8 +51,8 @@ export default function ContactoPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Titular</dt>
-            <dd>
+            <dt className="text-xs uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">Titular</dt>
+            <dd className="mt-0.5">
               {company.legalName} · NIF {company.taxId}
               <br />
               {companyAddressOneLine()}

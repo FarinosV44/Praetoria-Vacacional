@@ -18,9 +18,12 @@ export function SiteHeader() {
     { href: "/contacto", label: "Contacto", icon: "✉" },
   ];
 
+  const navLink =
+    "rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--accent-50)] hover:text-[var(--accent-700)]";
+
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-paper)]/80 backdrop-blur">
-      <div className="container-page flex h-14 items-center justify-between gap-3">
+    <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-paper)]/85 backdrop-blur-md">
+      <div className="container-page flex h-16 items-center justify-between gap-3">
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2 font-display text-base tracking-tight text-[var(--color-ink)]"
@@ -37,29 +40,23 @@ export function SiteHeader() {
               key={p.slug}
               href={`/${p.slug}`}
               data-experience={p.experience}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--accent-50)] hover:text-[var(--accent-700)]"
+              className={`inline-flex items-center gap-1.5 ${navLink}`}
             >
               <span aria-hidden>{p.experience === "ski" ? "❄" : "☀"}</span>
               {p.name.split(" ")[0]}
             </Link>
           ))}
-          <Link
-            href="/guias"
-            className="rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] hover:text-[var(--accent-700)]"
-          >
+          <Link href="/guias" className={navLink}>
             Guías
           </Link>
-          <Link
-            href="/blog"
-            className="rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] hover:text-[var(--accent-700)]"
-          >
+          <Link href="/blog" className={navLink}>
             Blog
           </Link>
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
           <LanguageSwitcher />
-          <ButtonLink href="/#buscador" size="md" className="hidden h-10 px-4 md:inline-flex">
+          <ButtonLink href="/#buscador" size="sm" className="hidden md:inline-flex">
             Ver disponibilidad
           </ButtonLink>
           <MobileMenu items={menuItems} />

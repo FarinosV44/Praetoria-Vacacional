@@ -40,7 +40,7 @@ export function SimulatorClient({
 
   return (
     <div
-      className="mx-auto max-w-md rounded-xl border border-[var(--color-line)] bg-white p-6"
+      className="mx-auto max-w-md pv-card !p-6"
       lang={locale === "en" ? "en" : undefined}
     >
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{t.simDemoNote}</p>

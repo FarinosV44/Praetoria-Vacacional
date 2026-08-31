@@ -26,7 +26,7 @@ export default async function ExitoPage({
 
   return (
     <div className="container-page py-16" lang={locale === "en" ? "en" : undefined}>
-      <div className="mx-auto max-w-lg rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-8 text-center">
+      <div className="pv-card pv-card--soft mx-auto max-w-lg !p-8 text-center">
         {confirmed ? (
           <>
             <ConfirmationTracker
@@ -35,7 +35,7 @@ export default async function ExitoPage({
               code={reservation!.code}
             />
             <p className="text-4xl">✓</p>
-            <h1 className="mt-3 font-display text-2xl">{t.confirmedHeading}</h1>
+            <h1 className="mt-3 display-3">{t.confirmedHeading}</h1>
             <p className="mt-2 text-[var(--color-ink-soft)]">{t.confirmedSub}</p>
             <dl className="mt-6 space-y-2 text-left text-sm">
               <Row label={t.ref} value={reservation!.code} strong />
@@ -52,7 +52,7 @@ export default async function ExitoPage({
         ) : (
           <>
             <p className="text-4xl">⏳</p>
-            <h1 className="mt-3 font-display text-2xl">{t.confirmingHeading}</h1>
+            <h1 className="mt-3 display-3">{t.confirmingHeading}</h1>
             <p className="mt-2 text-[var(--color-ink-soft)]">
               {reservation ? t.confirmingSub : t.notFoundSub}
             </p>
@@ -61,7 +61,7 @@ export default async function ExitoPage({
         <div className="mt-8 flex justify-center gap-3">
           <Link
             href={localizedPath(locale, "/")}
-            className="inline-flex h-11 items-center rounded-full bg-[var(--accent-600)] px-5 text-sm font-medium text-white"
+            className="pv-btn pv-btn--primary"
           >
             {t.backHome}
           </Link>
