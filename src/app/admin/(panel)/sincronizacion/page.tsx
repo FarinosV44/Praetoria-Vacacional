@@ -79,6 +79,15 @@ export default async function AdminSyncPage() {
                   </p>
                 )}
 
+                {ch.needsAttention && (
+                  <p className="mt-1 rounded bg-amber-50 px-2 py-1 text-xs text-amber-900">
+                    <strong>
+                      {ch.health === "stale" ? "Feed sin actualizar" : "Feed con fallos"}:
+                    </strong>{" "}
+                    {ch.healthReason}
+                  </p>
+                )}
+
                 <ImportFeedForm
                   propertySlug={p.slug}
                   channel={ch.channel}

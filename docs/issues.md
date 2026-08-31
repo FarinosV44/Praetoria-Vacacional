@@ -47,13 +47,13 @@ metric — direct-booking conversion**. Visible product first; invisible infra
 | #64 | Internal endpoints + cron: strong auth, CRON_SECRET, service-to-service | — (buildable) |
 | #65 | Admin multiuser: Supabase Auth, MFA, revocable sessions, per-user RBAC | Supabase Auth + MFA decision |
 | #66 | Observability: errors, traces, structured logs, metrics, alerts | Sentry/monitoring vendor |
-| #75 | Supabase security hardening: RLS, least privilege, service-role boundaries | — (buildable, partly done in D-021) |
+| #75 | ✅ code — migration `20260831130000_rls_hardening.sql` + `rls_hardening.test.sql`. RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon/authenticated stripped of every table + RPC grant, default privileges locked, availability RPCs → service_role only. D-024. **Owner:** `supabase db push`. |
 | #76 | Durable jobs + transactional outbox (emails, sync, campaigns) | — (buildable) |
 | #77 | Design system V4 + visual regression | — (buildable; feeds Phase 1) |
 | #78 | Performance budgets + Lighthouse CI + real CWV | CI + deployed URL |
 | #80 | Backup, DR, restore drills, RPO/RTO | Supabase plan / ops |
-| #83 | Repo refactor by domain + contract tests (Memory vs Supabase parity) | — (buildable; D-021 started this pattern) |
-| #84 | Channel sync resilience: iCal reconciliation, stale feeds, conflicts, adapters | — (buildable) |
+| #83 | ✅ code — `src/lib/repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases against the in-memory store) + a static method-surface parity check (memory ⇔ supabase). D-025. |
+| #84 | ✅ code — `feed-health.ts` (stale/failing/never verdict, shown on `/admin/sincronizacion`) + `conflicts.ts` (feed night vs direct booking, surfaced in `ImportReport` + `RunSyncButton`). 12 unit tests. Adapters scoped out (two channels, same iCal shape). D-025. |
 
 ### V4 product — #67–#74, #79, #81, #82, #85 (deferred; mostly need owner decisions)
 | # | Title | Owner input needed |

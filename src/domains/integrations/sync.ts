@@ -4,6 +4,7 @@ import { getRepository, type Repository } from "@/lib/repository";
 import { getAllProperties, getPropertyBySlug } from "@/domains/properties/registry";
 import { generateIcs, parseIcs, type IcsExportEvent } from "./ical";
 import { envImportUrl } from "./feed-config";
+import { detectChannelConflicts, type SyncConflict } from "./conflicts";
 
 /**
  * Channel calendar sync (issue #9). Each property is independent: its import
@@ -78,6 +79,8 @@ export interface ImportReport {
   /** internal `external` reservation records created/cancelled from the feed */
   linkedCreated?: number;
   linkedCancelled?: number;
+  /** feed nights that collide with an existing DIRECT booking (issue #84) */
+  conflicts?: SyncConflict[];
   error?: string;
 }
 
@@ -141,6 +144,14 @@ async function importOne(slug: string): Promise<ImportReport[]> {
       const linked = await repo
         .reconcileExternalReservations(property.id, feed.channel as never)
         .catch(() => ({ created: 0, updated: 0, cancelled: 0 }));
+      // Cross-channel double-booking: a feed night we already sold directly (#84).
+      const directRes = await repo
+        .listReservations({ propertyId: property.id, status: ["pending", "confirmed"] })
+        .catch(() => []);
+      const conflicts = detectChannelConflicts(
+        events.map((e) => ({ startDate: e.startDate, endDate: e.endDate, externalUid: e.uid })),
+        directRes,
+      );
       reports.push({
         property: slug,
         channel: feed.channel,
@@ -148,7 +159,13 @@ async function importOne(slug: string): Promise<ImportReport[]> {
         ...result,
         linkedCreated: linked.created,
         linkedCancelled: linked.cancelled,
+        conflicts,
       });
+      if (conflicts.length) {
+        console.warn(
+          `[sync] ${slug}/${feed.channel}: ${conflicts.length} conflicto(s) con reservas directas`,
+        );
+      }
       await repo.recordSyncRun(property.id, feed.channel, "import", {
         status: "ok",
         eventsImported: result.created + result.kept,

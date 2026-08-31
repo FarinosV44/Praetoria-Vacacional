@@ -3,6 +3,7 @@ import { getRepository } from "@/lib/repository";
 import { getAllProperties } from "@/domains/properties/registry";
 import type { CalendarSyncRow } from "@/domains/booking/types";
 import { envImportUrl } from "./feed-config";
+import { assessFeedHealth, feedNeedsAttention, type FeedHealth } from "./feed-health";
 
 export type FeedState = "configured" | "not_configured" | "error";
 
@@ -20,6 +21,10 @@ export interface ChannelFeedStatus {
   lastStatus: string | null;
   lastError: string | null;
   eventsImported: number;
+  /** Freshness verdict on the last successful run (issue #84). */
+  health: FeedHealth;
+  healthReason: string;
+  needsAttention: boolean;
 }
 
 export interface PropertyFeedStatus {
@@ -80,6 +85,12 @@ export async function getImportFeedStatus(): Promise<PropertyFeedStatus[]> {
           else if (effective) state = run?.lastError ? "error" : "configured";
           else state = "not_configured";
 
+          const { health, reason: healthReason } = assessFeedHealth({
+            lastRunAt: run?.lastRunAt ?? null,
+            lastStatus: run?.lastStatus ?? null,
+            lastError: run?.lastError ?? null,
+          });
+
           return {
             channel,
             label,
@@ -92,6 +103,9 @@ export async function getImportFeedStatus(): Promise<PropertyFeedStatus[]> {
             lastStatus: run?.lastStatus ?? null,
             lastError: run?.lastError ?? null,
             eventsImported: run?.eventsImported ?? 0,
+            health: effective ? health : "never",
+            healthReason: effective ? healthReason : "Feed sin configurar.",
+            needsAttention: !!effective && feedNeedsAttention(health),
           };
         }),
       );

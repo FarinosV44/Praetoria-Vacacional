@@ -10,6 +10,7 @@ interface Report {
   removed?: number;
   kept?: number;
   linkedCreated?: number;
+  conflicts?: { reservationCode: string; channelRange: { start: string; end: string } }[];
   error?: string;
 }
 
@@ -62,6 +63,12 @@ export function RunSyncButton({ propertySlug }: { propertySlug: string }) {
             : r.status === "skipped"
               ? "sin URL configurada"
               : `error — ${r.error ?? ""}`}
+          {r.conflicts && r.conflicts.length > 0 && (
+            <strong className="ml-1 text-red-700">
+              · ⚠ {r.conflicts.length} choque(s) con reserva directa (
+              {r.conflicts.map((c) => c.reservationCode).join(", ")})
+            </strong>
+          )}
         </span>
       ))}
     </div>

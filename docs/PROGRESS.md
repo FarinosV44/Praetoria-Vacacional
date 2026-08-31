@@ -229,7 +229,10 @@ Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
 | #86–#93 (Phase 1) | `alternatives.ts` rescue dates (priced, real availability only) · `stay.ts` sessionStorage booking store + `BookingBar` in `SiteChrome` · `RatingBadge` (Booking /10, per-property, renders nothing without data) · `directBooking` factual compare — **no public discount codes, no fake struck prices** · MAR/NIEVE `ExperienceSelector` · `PropertyPageView` impact block + "ideal para" chips + Javalambre weekend itinerary · `ResponsivePhoto.focal` → object-position + lightbox swipe | ✅ code (merged to `main` earlier: 4569ca9 / 8c2d209) |
 | #94/#95/#96 (Phase 2 SEO) | 3 local landings (playa de la Llastra, El Perelló, Camarena de la Sierra) · 2 seasonal offer pages · blog post → property CTA strip + `PreferProperty` · `docs/seo/blog-calendar.md` | ✅ on `develop` (9a18c0a) |
 | #97 (Phase 3) | `WhatsAppButton` — link-based `wa.me` concierge, prefilled with property + dates when known, hidden on `/admin`, `NEXT_PUBLIC_WHATSAPP_NUMBER` gated | ✅ on `develop` (65fccaa) |
-| #61/#63/#64 (infra) | `.github/workflows/ci.yml` (quality · e2e · security) · `strictProductionBlockers()` fail-closed boot under `PRODUCTION_STRICT` · `requireServiceAuth()` on cron + iCal-import endpoints (`CRON_SECRET`, constant-time, never 200 without proof) | ✅ on `develop` (this batch) |
+| #61/#63/#64 (infra) | `.github/workflows/ci.yml` (quality · e2e · security) · `strictProductionBlockers()` fail-closed boot under `PRODUCTION_STRICT` · `requireServiceAuth()` on cron + iCal-import endpoints (`CRON_SECRET`, constant-time, never 200 without proof) | ✅ on `main` (0afd32d) |
+| #75 (infra) | `20260831130000_rls_hardening.sql` — RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon stripped of every table/RPC grant, default privileges locked, availability RPCs → service_role. `rls_hardening.test.sql`. D-024 | ✅ on `develop` |
+| #83 (infra) | `repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases) + static memory⇔supabase method-parity check. D-025 | ✅ on `develop` |
+| #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `develop` |
 
 **Content-accuracy constraint (user, 2026-08-31, L-008):** the `10PRAETORIA10`
 code is **campaign-only — never shown on the public site** (it still works when a
@@ -238,9 +241,11 @@ forfait and equipment rental are at the resort, not the building. Full sweep don
 across `site.ts`, `DirectBooking.tsx`, `javalambre.ts` (ES+EN), 4 landings, 2
 seasonal pages.
 
-`tsc` + `next lint` + `next build` clean · **239 unit** · targeted chromium e2e
+`tsc` + `next lint` + `next build` clean · **260 unit** · targeted chromium e2e
 (production, whatsapp, smart-availability, booking-bar, accessibility, audit) 20
-green.
+green. (The #61/#63/#64 merge to `main` at 0afd32d carried a `tsc`-only failure
+in `e2e/production.spec.ts` — a heterogeneous header array; fixed in the #75/#83/#84
+commit. `next build` was unaffected.)
 
 **Owner follow-ups for this batch:** `supabase db push` (migrations through
 `20260831120000`); set `CRON_SECRET` on Hostinger; decide `PRODUCTION_STRICT`
