@@ -17,6 +17,11 @@ export interface ResponsivePhoto {
   dir: string;
   /** Largest webp — used as the plain <Image> src / og:image. */
   src: string;
+  /** Optional CSS object-position ("x% y%") so mobile crops keep the subject
+   *  in frame (issue #93). Absent → centre. */
+  focal?: string;
+  /** Optional grouping for a categorised gallery ("vistas", "salon", …). */
+  category?: string;
 }
 
 type ManifestEntry = {
@@ -25,6 +30,8 @@ type ManifestEntry = {
   order: number;
   aspect: number;
   widths: number[];
+  focal?: string;
+  category?: string;
 };
 
 const M = manifest as Record<string, ManifestEntry[]>;

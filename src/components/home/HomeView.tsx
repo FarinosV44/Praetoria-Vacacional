@@ -27,6 +27,8 @@ const COPY = {
     heroTitle: "Del Mediterráneo a la nieve, desde Valencia.",
     heroSub:
       "Dos apartamentos para vivir Valencia todo el año: uno a pie de la playa de la Llastra, al sur de la ciudad; otro en Camarena de la Sierra, a diez minutos de las pistas de Javalambre. Verano mediterráneo, escapadas de nieve en invierno y una gran ciudad en medio. En reserva directa y con precio total desde el principio.",
+    heroCta: "Comprobar fechas",
+    heroCta2: "Ver apartamentos",
     discover: (n: string) => `Descubrir ${n}`,
     trust: [
       "Dos destinos, un mismo eje: Valencia todo el año",
@@ -54,6 +56,8 @@ const COPY = {
     heroTitle: "From the Mediterranean to the snow, out of Valencia.",
     heroSub:
       "Two apartments for a year-round Valencia: one right on la Llastra beach, south of the city; the other in Camarena de la Sierra, ten minutes from the Javalambre slopes. Mediterranean summers, winter snow escapes and a great city in between. Booked direct, with the full price up front.",
+    heroCta: "Check dates",
+    heroCta2: "See the apartments",
     discover: (n: string) => `Discover ${n}`,
     trust: [
       "Two destinations on one axis: Valencia, all year",
@@ -128,20 +132,19 @@ export async function HomeView({ locale }: { locale: Locale }) {
           </h1>
           <p className="mt-4 max-w-lg text-base text-white/90 sm:text-lg">{c.heroSub}</p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {properties.map((p) => (
-              <Link
-                key={p.slug}
-                href={path(`/${p.slug}`)}
-                data-experience={p.experience}
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-medium text-[var(--accent-700)] transition hover:shadow-lg"
-              >
-                <span aria-hidden>{p.experience === "ski" ? "❄" : "☀"}</span>
-                {c.discover(p.name)}
-                <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
-                  →
-                </span>
-              </Link>
-            ))}
+            <a
+              href="#buscador"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--accent-700)] transition hover:shadow-lg"
+            >
+              {c.heroCta}
+              <span aria-hidden>→</span>
+            </a>
+            <a
+              href="#alojamientos"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-medium text-white ring-1 ring-white/40 transition hover:ring-white/80"
+            >
+              {c.heroCta2}
+            </a>
           </div>
         </div>
       </section>
@@ -177,7 +180,11 @@ export async function HomeView({ locale }: { locale: Locale }) {
       </section>
 
       {/* 4 · Choose your getaway — editorial cards */}
-      <section aria-labelledby="alojamientos-heading" className="container-page reveal py-16">
+      <section
+        id="alojamientos"
+        aria-labelledby="alojamientos-heading"
+        className="container-page reveal scroll-mt-24 py-16"
+      >
         <p className="eyebrow">{locale === "en" ? "Two homes" : "Dos casas"}</p>
         <h2 id="alojamientos-heading" className="mt-2 font-display text-3xl sm:text-4xl">
           {dict.home.chooseHeading}
