@@ -34,8 +34,13 @@ export default async function ExitoPage({
               totalCents={reservation!.totalCents}
               code={reservation!.code}
             />
-            <p className="text-4xl">✓</p>
-            <h1 className="mt-3 display-3">{t.confirmedHeading}</h1>
+            <span
+              aria-hidden
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-success-50)] text-2xl text-[var(--color-success)]"
+            >
+              ✓
+            </span>
+            <h1 className="mt-4 display-3">{t.confirmedHeading}</h1>
             <p className="mt-2 text-[var(--color-ink-soft)]">{t.confirmedSub}</p>
             <dl className="mt-6 space-y-2 text-left text-sm">
               <Row label={t.ref} value={reservation!.code} strong />
@@ -51,8 +56,13 @@ export default async function ExitoPage({
           </>
         ) : (
           <>
-            <p className="text-4xl">⏳</p>
-            <h1 className="mt-3 display-3">{t.confirmingHeading}</h1>
+            <span
+              aria-hidden
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-50)] text-2xl"
+            >
+              ⏳
+            </span>
+            <h1 className="mt-4 display-3">{t.confirmingHeading}</h1>
             <p className="mt-2 text-[var(--color-ink-soft)]">
               {reservation ? t.confirmingSub : t.notFoundSub}
             </p>
