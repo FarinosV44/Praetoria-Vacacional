@@ -35,6 +35,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Self-contained server output (.next/standalone/server.js). Hostinger's
+  // managed Next.js runtime — and most managed Node hosts — run that file
+  // instead of `next start`; without it there is no server to run → 503.
+  output: "standalone",
   // ESLint + its config live in devDependencies (CI runs them). A production
   // host that installs with --omit=dev / NODE_ENV=production won't have eslint,
   // and `next build` would otherwise fail looking for it. `tsc` still runs in CI.
