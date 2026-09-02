@@ -57,6 +57,7 @@ import type {
 } from "@/domains/marketing/types";
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
+import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -114,6 +115,7 @@ interface Store {
   campaignRecipients: CampaignRecipient[];
   unsubscribes: { email: string; unsubscribedAt: string; source: string | null }[];
   auditLog: AuditRow[];
+  jobs: Job[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -206,6 +208,7 @@ function seed(): Store {
     campaignRecipients: [],
     unsubscribes: [],
     auditLog: [],
+    jobs: [],
   };
 }
 
@@ -336,6 +339,7 @@ store.campaigns ??= [];
 store.campaignRecipients ??= [];
 store.unsubscribes ??= [];
 store.auditLog ??= [];
+store.jobs ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1585,5 +1589,118 @@ export const memoryRepository: Repository = {
     row.lastError = result.error ?? null;
     if (typeof result.eventsImported === "number") row.eventsImported = result.eventsImported;
     save();
+  },
+
+  // --- Durable jobs / transactional outbox (issue #76) -------------
+  async enqueueJob(input: EnqueueJobInput) {
+    const key = input.idempotencyKey ?? null;
+    if (key) {
+      const existing = store.jobs.find((j) => j.idempotencyKey === key && j.status !== "cancelled");
+      if (existing) return existing;
+    }
+    const now = new Date().toISOString();
+    const job: Job = {
+      id: randomUUID(),
+      type: input.type,
+      payload: input.payload ?? {},
+      idempotencyKey: key,
+      status: "queued",
+      attempts: 0,
+      maxAttempts: input.maxAttempts ?? 5,
+      runAfter: input.runAfter ?? now,
+      lockedAt: null,
+      lockedBy: null,
+      lastError: null,
+      result: null,
+      createdAt: now,
+      updatedAt: now,
+      succeededAt: null,
+      deadLetteredAt: null,
+    };
+    store.jobs.push(job);
+    save();
+    return job;
+  },
+
+  // Synchronous body (no `await`) so two concurrent callers cannot lease the
+  // same job — JS runs this to completion before yielding.
+  async claimJobs(worker: string, batch: number, leaseSeconds: number) {
+    const nowMs = Date.now();
+    const leaseCutoff = new Date(nowMs - leaseSeconds * 1000).toISOString();
+    const nowIso = new Date(nowMs).toISOString();
+    const eligible = store.jobs
+      .filter((j) => {
+        if (j.runAfter > nowIso) return false;
+        if (j.status === "queued" || j.status === "retrying") return true;
+        // crash recovery: a running job whose lease elapsed
+        if (j.status === "running" && (j.lockedAt ?? "") < leaseCutoff) return true;
+        return false;
+      })
+      .sort((a, b) => a.runAfter.localeCompare(b.runAfter))
+      .slice(0, Math.max(0, batch));
+
+    for (const j of eligible) {
+      j.status = "running";
+      j.attempts += 1;
+      j.lockedAt = nowIso;
+      j.lockedBy = worker;
+      j.updatedAt = nowIso;
+    }
+    if (eligible.length) save();
+    return eligible.map((j) => ({ ...j }));
+  },
+
+  async settleJob(id: string, settlement: JobSettlement) {
+    const j = store.jobs.find((x) => x.id === id);
+    if (!j) return;
+    j.status = settlement.status;
+    j.attempts = settlement.attempts;
+    j.runAfter = settlement.runAfter;
+    j.lastError = settlement.lastError;
+    j.result = settlement.result;
+    j.succeededAt = settlement.succeededAt;
+    j.deadLetteredAt = settlement.deadLetteredAt;
+    j.lockedAt = null;
+    j.lockedBy = null;
+    j.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async listJobs(filter?: JobFilter) {
+    let out = [...store.jobs];
+    if (filter?.status?.length) out = out.filter((j) => filter.status!.includes(j.status));
+    if (filter?.type) out = out.filter((j) => j.type === filter.type);
+    out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return out.slice(0, filter?.limit ?? 200);
+  },
+
+  async getJob(id: string) {
+    return store.jobs.find((j) => j.id === id) ?? null;
+  },
+
+  async retryJob(id: string) {
+    const j = store.jobs.find((x) => x.id === id);
+    if (!j) throw new Error("JOB_NOT_FOUND");
+    j.status = "queued";
+    j.runAfter = new Date().toISOString();
+    j.lastError = null;
+    j.deadLetteredAt = null;
+    j.lockedAt = null;
+    j.lockedBy = null;
+    j.updatedAt = new Date().toISOString();
+    save();
+    return { ...j };
+  },
+
+  async cancelJob(id: string) {
+    const j = store.jobs.find((x) => x.id === id);
+    if (!j) throw new Error("JOB_NOT_FOUND");
+    if (j.status === "succeeded") return { ...j };
+    j.status = "cancelled";
+    j.lockedAt = null;
+    j.lockedBy = null;
+    j.updatedAt = new Date().toISOString();
+    save();
+    return { ...j };
   },
 };

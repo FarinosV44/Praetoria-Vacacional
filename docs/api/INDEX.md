@@ -114,6 +114,8 @@ half-open `[check_in, check_out)`, consolidate occupying reservations
 | `20260829140000_marketing.sql` | `segments`, `campaigns`, `campaign_recipients`, `marketing_unsubscribes` |
 | `20260830090000_channel_feeds.sql` | `channel_feeds` (property_id, channel) → url — the authoritative store for Booking/Airbnb iCal import URLs, decoupled from `calendar_syncs` telemetry (D-011). Backfills from `calendar_syncs.feed_url` |
 | `20260831120000_availability_rpc.sql` | Idempotent re-deploy + hardening of `property_busy_ranges` / `is_stay_available` (`security definer`, pinned `search_path`, grants); locks mutating RPCs to `service_role`; `notify pgrst, 'reload schema'` (D-021) |
+| `20260831130000_rls_hardening.sql` | RLS enabled + forced on all app tables; anon/authenticated stripped of every grant; default privileges locked (issue #75) |
+| `20260901120000_jobs.sql` | `jobs` (durable queue + transactional outbox) + `claim_jobs(worker, batch, lease)` RPC (`FOR UPDATE SKIP LOCKED`, `service_role` only). RLS enabled + forced (D-029, issue #76) |
 
 `ADMIN_ROLE` (`admin` \| `gestion` \| `lectura`, default `admin`) selects the
 single login's role.
@@ -136,3 +138,25 @@ New capability `content.write` (roles `admin`, `gestion`). Public routes:
 `/[property]` and `/en/[property]` moved to `dynamicParams = true` (issue #57):
 known slugs still prerender, a valid slug missing from a build renders on demand
 instead of a permanent 404.
+
+## Durable jobs / transactional outbox (issue #76, D-029)
+
+Full doc: `docs/jobs.md`.
+
+| Module | Exports |
+|---|---|
+| `src/domains/jobs/types.ts` | `Job`, `JobStatus`, `JobType`, `EnqueueJobInput`, `JobOutcome`, `JobSettlement`, `JobFilter` |
+| `src/domains/jobs/backoff.ts` | `backoffMs`, `nextRunAfter`, `DEFAULT_BACKOFF` (pure) |
+| `src/domains/jobs/policy.ts` | `decideNext`, `decideOrphan` (pure state machine) |
+| `src/domains/jobs/metrics.ts` | `summarizeJobs` → queue depth / oldest-pending age / error rate (pure) |
+| `src/domains/jobs/handlers.ts` | `HANDLERS` registry, `hasHandler` |
+| `src/domains/jobs/runner.ts` | `runDueJobs({ worker, batch, leaseSeconds })` |
+| `src/domains/jobs/enqueue.ts` | `enqueueJob`, `enqueueBestEffort`, `enqueueReservationEmails`, `enqueuePaymentFailedEmail`, `drainJobsSafely`, `jobKey` |
+| `Repository` (+2 impls) | `enqueueJob`, `claimJobs`, `settleJob`, `listJobs`, `getJob`, `retryJob`, `cancelJob` |
+
+| HTTP | Method | Notes |
+|---|---|---|
+| `/api/cron/jobs` | GET/POST | `force-dynamic`. `Authorization: Bearer <CRON_SECRET>` (issue #64). Leases + runs a batch; never works inline. `vercel.json` every 2 min. |
+
+Admin: `/admin/procesos` (queue health, dead-letter list, `retryJobAction` /
+`cancelJobAction` / `runJobsNowAction` — `settings.write`, audit-logged).

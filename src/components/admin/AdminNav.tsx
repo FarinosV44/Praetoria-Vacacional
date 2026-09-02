@@ -55,6 +55,7 @@ const SECONDARY: Item[] = [
   { href: "/admin/pagos", label: "Pagos y correos", icon: "invoice" },
   { href: "/admin/blog", label: "Blog", icon: "megaphone" },
   { href: "/admin/seo", label: "SEO", icon: "tag" },
+  { href: "/admin/procesos", label: "Procesos", icon: "plug" },
   { href: "/admin/actividad", label: "Actividad", icon: "dots" },
 ];
 

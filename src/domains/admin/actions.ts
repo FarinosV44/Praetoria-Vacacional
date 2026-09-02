@@ -293,3 +293,35 @@ export async function setImportFeedUrlAction(
   revalidatePath("/admin/sincronizacion");
   return { ok: true };
 }
+
+// --- Durable jobs (issue #76) ---------------------------------------------
+
+export async function retryJobAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  assertCapability("settings.write");
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await getRepository().retryJob(id);
+    await logAction("job.retry", { entity: "job", entityId: id });
+  }
+  revalidatePath("/admin/procesos");
+}
+
+export async function cancelJobAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  assertCapability("settings.write");
+  const id = String(formData.get("id") ?? "");
+  if (id) {
+    await getRepository().cancelJob(id);
+    await logAction("job.cancel", { entity: "job", entityId: id });
+  }
+  revalidatePath("/admin/procesos");
+}
+
+export async function runJobsNowAction(): Promise<void> {
+  await assertAdmin();
+  assertCapability("settings.write");
+  const { runDueJobs } = await import("@/domains/jobs/runner");
+  await runDueJobs({ worker: "admin", batch: 25 });
+  revalidatePath("/admin/procesos");
+}

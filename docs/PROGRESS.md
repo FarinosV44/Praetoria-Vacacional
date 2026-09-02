@@ -233,6 +233,7 @@ Optimises direct-booking conversion. Architecture in D-022 (Phase 1) and D-023
 | #75 (infra) | `20260831130000_rls_hardening.sql` — RLS enabled+forced on all 24 app tables (`content_overrides` was the gap), anon stripped of every table/RPC grant, default privileges locked, availability RPCs → service_role. `rls_hardening.test.sql`. D-024 | ✅ on `develop` |
 | #83 (infra) | `repository/contract.ts` shared behavioural spec + `contract.memory.test.ts` (9 cases) + static memory⇔supabase method-parity check. D-025 | ✅ on `develop` |
 | #84 (infra) | `feed-health.ts` stale/failing verdict on `/admin/sincronizacion` + `conflicts.ts` feed-vs-direct-booking detection in `ImportReport`/`RunSyncButton`. 12 tests. D-025 | ✅ on `main` (141ff1d) |
+| #76 (infra) | Durable jobs + transactional outbox. `jobs` table + `claim_jobs` RPC (migration `20260901120000`); pure `backoff`/`policy`/`metrics` + `handlers`/`runner`/`enqueue`; 7 `Repository` methods (memory + supabase). `finalizeReservation`/`markPaymentFailed` enqueue the emails (keyed, crash-safe) then drain inline best-effort. `/api/cron/jobs` (CRON_SECRET, every 2 min) is the only scheduled processor. `/admin/procesos` — queue health, dead-letter list, retry/cancel. 28 unit + 3 contract cases + e2e (cron auth, route privacy). D-029 | ✅ on `develop` |
 | #82 (product) | pure `analytics/kpis.ts` + `/admin/analitica` — 12-month occupancy/ADR/RevPAR/channel-mix/lead-time/cancellation view, per-property, MoM deltas. 12 tests. D-026 | ✅ on `main` (4f2c85f) |
 | #77 (design) | `globals.css` → DS V4 token system + `.pv-*` component vocabulary + `ui/{Button,Card,Field,SectionHeading}`; full public-site sweep; OSM location embed on property pages (#87); `e2e/visual.spec.ts` full-page regression (10 templates × 2 widths). D-027 | ✅ on `main` (7406b8f) |
 | #24 (design) | Micro-interactions/skeleton pass — `.pv-skeleton` shimmer (reduced-motion-safe), `SkeletonQuote` in the booking widget re-quote, `.pv-swap-in` MAR/NIEVE panel transition, gallery "ver todas las fotos" CTA, reserva status badges | ✅ on `main` (5a107c8) |
@@ -257,6 +258,22 @@ commit. `next build` was unaffected.)
 
 ## Exact position
 
+**2026-09-02 — #76 durable jobs + transactional outbox, on `develop`:**
+Persisted `jobs` queue backs the confirmation / internal-notice / payment-failed
+emails (and, as registered types, iCal import + hold expiry). `finalizeReservation`
+now enqueues the email intention with a deterministic idempotency key **before**
+the inline best-effort send, so a crash after "reservation confirmed" cannot lose
+the mail; transient Resend failures retry with exponential backoff; exhausted
+jobs land in a dead-letter the owner sees at `/admin/procesos`. Atomic leasing
+(`claim_jobs` `FOR UPDATE SKIP LOCKED` / synchronous in-memory claim) means two
+workers never double-process. `/api/cron/jobs` every 2 min is the only scheduled
+processor. No queue vendor — a real broker can back the same `Repository` methods
+later. D-029. `tsc` + `next lint` + `next build` clean · **300 unit** · e2e
+(booking-flow ×4, coupons ×3, production incl. `/api/cron/jobs` auth, intranet
+incl. `/admin/procesos`) green. **Owner:** apply migration `20260901120000_jobs.sql`
+(bundled in `supabase/apply-all-migrations.sql`); ensure `CRON_SECRET` is set so
+the worker cron runs.
+
 **2026-08-31 — V4 "Sales Machine" (master #98) + buildable infra, all on `main`:**
 `develop` and `main` level. Merged this session:
 - `0afd32d` — V4 conversion #86–#97 (booking bar, rescue dates, rating badge,
@@ -276,8 +293,8 @@ green (production incl. cron auth, whatsapp, smart-availability, booking-bar,
 intranet incl. `/admin/analitica`, accessibility, audit, admin-dod).
 
 **Owner follow-ups (blocking a real deploy, not code):**
-1. `supabase db push` — apply migrations through `20260831130000` (availability
-   RPCs + RLS hardening).
+1. `supabase db push` — apply migrations through `20260901120000` (availability
+   RPCs + RLS hardening + the `jobs` queue).
 2. Set new Supabase key names (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
    `SUPABASE_SECRET_KEY`) or keep legacy; set `CRON_SECRET`; decide
    `PRODUCTION_STRICT` (recommend `true` once Supabase + Stripe live);
@@ -303,9 +320,9 @@ screenshots (regenerate baselines with `npx playwright test visual
 --update-snapshots`). Property pages gained an OpenStreetMap location embed.
 
 **"Do all issues ALL" — what is NOT done and why:**
-- **Large, buildable, deferred by #98 (no booking impact):** #76 durable jobs +
-  transactional outbox, #62 distributed rate limiting (needs a KV provider
-  choice), #78 Lighthouse CI (needs the deployed URL).
+- **Large, buildable, deferred by #98 (no booking impact):** #62 distributed
+  rate limiting (needs a KV provider choice), #78 Lighthouse CI (needs the
+  deployed URL). (#76 durable jobs + transactional outbox — **done**, D-029.)
 - **#86/#87/#88/#93 remaining polish is owner-gated, not code-gated:** the
   structural/visual work is done (DS V4, MAR/NIEVE selector, impact block, map
   embed, chips, weekend itinerary). What's left needs the owner: choose/order

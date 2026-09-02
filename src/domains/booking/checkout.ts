@@ -5,10 +5,10 @@ import { getRepository, PropertyUnavailableError } from "@/lib/repository";
 import { getPropertyBySlug, getPropertyById } from "@/domains/properties/registry";
 import { quoteForCheckout } from "./service";
 import {
-  sendReservationConfirmation,
-  sendPaymentFailedNotice,
-  sendInternalReservationNotice,
-} from "@/domains/notifications/email";
+  enqueueReservationEmails,
+  enqueuePaymentFailedEmail,
+  drainJobsSafely,
+} from "@/domains/jobs/enqueue";
 import { createCheckoutSession, stripeEnabled } from "@/domains/payments/stripe";
 import type { Reservation } from "./types";
 import type { GuestDetailsInput, StartCheckoutInput } from "@/lib/validation";
@@ -219,17 +219,16 @@ export async function finalizeReservation(
     currency: "EUR",
   });
 
-  // Emails — failure here NEVER changes reservation state (issue #12/#42).
-  // Every attempt is written to the email log so admin can see failures.
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await sendReservationConfirmation(reservation);
-    if (res.ok) break;
-    if (attempt === 3) console.error("confirmation email failed after retries", res.error);
-    else await new Promise((r) => setTimeout(r, attempt * 500));
+  // Emails go through the durable outbox (issue #76): the intention is persisted
+  // in the same operation as the confirmation, so a crash here cannot lose it,
+  // and a transient Resend failure is retried with backoff by the worker.
+  // Failure to *enqueue* still never changes reservation state (issue #12/#42).
+  if (!alreadyConfirmed) {
+    await enqueueReservationEmails(reservation.id);
+    // Best-effort: send synchronously now so the guest doesn't wait for a cron
+    // tick. If this throws or the process dies, the queued job is the guarantee.
+    await drainJobsSafely();
   }
-  await sendInternalReservationNotice(reservation).catch((err) =>
-    console.error("internal notification failed", err),
-  );
 
   return { ok: true, reservation };
 }
@@ -248,7 +247,8 @@ export async function markPaymentFailed(reservationId: string): Promise<void> {
     currency: "EUR",
   });
   if (reservation.status === "pending") {
-    await sendPaymentFailedNotice(reservation).catch(() => undefined);
+    await enqueuePaymentFailedEmail(reservation.id);
+    await drainJobsSafely();
   }
 }
 

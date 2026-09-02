@@ -47,6 +47,7 @@ import type {
 } from "@/domains/marketing/types";
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
+import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -1760,4 +1761,152 @@ export const supabaseRepository: Repository = {
     );
     if (error) throw error;
   },
+
+  // --- Durable jobs / transactional outbox (issue #76) -------------
+  async enqueueJob(input: EnqueueJobInput) {
+    const db = supabaseAdmin();
+    const key = input.idempotencyKey ?? null;
+    if (key) {
+      const { data: existing } = await db
+        .from("jobs")
+        .select()
+        .eq("idempotency_key", key)
+        .neq("status", "cancelled")
+        .maybeSingle();
+      if (existing) return mapJob(existing);
+    }
+    const { data, error } = await db
+      .from("jobs")
+      .insert({
+        type: input.type,
+        payload: input.payload ?? {},
+        idempotency_key: key,
+        max_attempts: input.maxAttempts ?? 5,
+        run_after: input.runAfter ?? new Date().toISOString(),
+      })
+      .select()
+      .single();
+    if (error) {
+      // Lost an enqueue race on the unique idempotency_key — return the winner.
+      if (error.code === "23505" && key) {
+        const { data: winner } = await db
+          .from("jobs")
+          .select()
+          .eq("idempotency_key", key)
+          .maybeSingle();
+        if (winner) return mapJob(winner);
+      }
+      throw error;
+    }
+    return mapJob(data);
+  },
+
+  async claimJobs(worker: string, batch: number, leaseSeconds: number) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.rpc("claim_jobs", {
+      p_worker: worker,
+      p_batch: batch,
+      p_lease_seconds: leaseSeconds,
+    });
+    if (error) throw error;
+    return (data ?? []).map(mapJob);
+  },
+
+  async settleJob(id: string, s: JobSettlement) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("jobs")
+      .update({
+        status: s.status,
+        attempts: s.attempts,
+        run_after: s.runAfter,
+        last_error: s.lastError,
+        result: s.result,
+        succeeded_at: s.succeededAt,
+        dead_lettered_at: s.deadLetteredAt,
+        locked_at: null,
+        locked_by: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async listJobs(filter?: JobFilter) {
+    const db = supabaseAdmin();
+    let q = db.from("jobs").select().order("created_at", { ascending: false });
+    if (filter?.status?.length) q = q.in("status", filter.status);
+    if (filter?.type) q = q.eq("type", filter.type);
+    q = q.limit(filter?.limit ?? 200);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapJob);
+  },
+
+  async getJob(id: string) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("jobs").select().eq("id", id).maybeSingle();
+    return data ? mapJob(data) : null;
+  },
+
+  async retryJob(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("jobs")
+      .update({
+        status: "queued",
+        run_after: new Date().toISOString(),
+        last_error: null,
+        dead_lettered_at: null,
+        locked_at: null,
+        locked_by: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapJob(data);
+  },
+
+  async cancelJob(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("jobs")
+      .update({
+        status: "cancelled",
+        locked_at: null,
+        locked_by: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .neq("status", "succeeded")
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return mapJob(data);
+    const current = await db.from("jobs").select().eq("id", id).single();
+    return mapJob(current.data);
+  },
 };
+
+function mapJob(row: any): Job {
+  return {
+    id: row.id,
+    type: row.type,
+    payload: row.payload ?? {},
+    idempotencyKey: row.idempotency_key ?? null,
+    status: row.status,
+    attempts: Number(row.attempts ?? 0),
+    maxAttempts: Number(row.max_attempts ?? 5),
+    runAfter: row.run_after,
+    lockedAt: row.locked_at ?? null,
+    lockedBy: row.locked_by ?? null,
+    lastError: row.last_error ?? null,
+    result: row.result ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    succeededAt: row.succeeded_at ?? null,
+    deadLetteredAt: row.dead_lettered_at ?? null,
+  };
+}

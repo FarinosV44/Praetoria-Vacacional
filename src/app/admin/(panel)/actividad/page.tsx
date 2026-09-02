@@ -15,6 +15,8 @@ const ACTION_LABEL: Record<string, string> = {
   "coupon.delete": "Código promocional eliminado",
   "campaign.send": "Campaña enviada",
   "calendar.close_dates": "Fechas cerradas en el calendario",
+  "job.retry": "Proceso reintentado",
+  "job.cancel": "Proceso cancelado",
 };
 
 export default async function ActividadPage() {

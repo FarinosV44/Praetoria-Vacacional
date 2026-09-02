@@ -27,6 +27,12 @@ import type {
   SegmentInput,
 } from "@/domains/marketing/types";
 import type { SegmentCriteria } from "@/domains/marketing/segments";
+import type {
+  EnqueueJobInput,
+  Job,
+  JobFilter,
+  JobSettlement,
+} from "@/domains/jobs/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -412,4 +418,28 @@ export interface Repository {
     direction: "import" | "export",
     result: { status: string; error?: string | null; eventsImported?: number },
   ): Promise<void>;
+
+  // --- Durable jobs / transactional outbox (issue #76) -------------
+  /**
+   * Persist an intention to do async work. When `idempotencyKey` is set and a
+   * non-cancelled job already exists for it, the existing job is returned and
+   * nothing new is inserted — so enqueuing twice (a retried request, two
+   * workers) is safe.
+   */
+  enqueueJob(input: EnqueueJobInput): Promise<Job>;
+  /**
+   * Atomically lease up to `batch` due jobs for `worker`: status becomes
+   * `running`, `attempts` is incremented, a lease of `leaseSeconds` is taken.
+   * Only `queued`/`retrying` jobs with `run_after <= now`, plus `running` jobs
+   * whose lease has elapsed (crash recovery), are eligible.
+   */
+  claimJobs(worker: string, batch: number, leaseSeconds: number): Promise<Job[]>;
+  /** Apply the state transition computed by `decideNext` / `decideOrphan`. */
+  settleJob(id: string, settlement: JobSettlement): Promise<void>;
+  listJobs(filter?: JobFilter): Promise<Job[]>;
+  getJob(id: string): Promise<Job | null>;
+  /** Admin: send a `dead_letter` (or `retrying`) job back to `queued`, run now. */
+  retryJob(id: string): Promise<Job>;
+  /** Admin: stop a job that has not finished. */
+  cancelJob(id: string): Promise<Job>;
 }
