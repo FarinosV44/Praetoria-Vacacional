@@ -37,28 +37,35 @@ export async function GET() {
   const checks: Record<string, "ok" | "demo" | "error"> = {};
 
   // Data layer round-trip.
+  let repoError: string | null = null;
   try {
     await getRepository().getSyncRows();
     checks.repository = DEMO_MODE ? "demo" : "ok";
   } catch (err) {
+    repoError = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     console.error("health: repository check failed", err);
     checks.repository = "error";
   }
 
   const features = Object.fromEntries(getConfigFeatures().map((f) => [f.key, f.state]));
 
-  const healthy = checks.repository !== "error";
+  const degraded = checks.repository === "error";
   return NextResponse.json(
     {
-      status: healthy ? "ok" : "degraded",
+      // The process is alive and env parsed — return 200 so a hosting health
+      // check doesn't pull the whole app offline. `status` says whether it can
+      // actually serve; `repoError` names the fault (usually: migrations not
+      // applied, or a wrong Supabase key).
+      status: degraded ? "degraded" : "ok",
       demoMode: DEMO_MODE,
       supabase: supabaseEnvDiagnostics(),
       checks,
+      repoError,
       integrations: features,
       version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev",
       responseMs: Date.now() - started,
       time: new Date().toISOString(),
     },
-    { status: healthy ? 200 : 503, headers: { "cache-control": "no-store" } },
+    { status: 200, headers: { "cache-control": "no-store" } },
   );
 }
