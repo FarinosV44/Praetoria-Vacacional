@@ -34,10 +34,14 @@ pending and apply in order:
 20260902160000_traveller_registry
 ```
 
-`supabase db push` reads `supabase_migrations.schema_migrations` and applies only
-what is missing — on a fresh project that is all 21. It is safe to re-run; every
-migration is idempotent or tracked. (Or paste `supabase/apply-all-migrations.sql`
-into the SQL Editor.)
+**No tienes la CLI de Supabase → usa el SQL Editor.** Pega TODO el contenido de
+`supabase/apply-all-migrations.sql` en Supabase → SQL Editor → New query → Run.
+Ese fichero es **idempotente**: seguro de ejecutar varias veces y sobre una base
+de datos parcialmente migrada (cada tipo / tabla / índice / trigger / constraint
+se crea solo si falta). Se regenera con `npm run db:bundle`.
+
+Con la CLI: `supabase db push` lee `supabase_migrations.schema_migrations` y
+aplica solo lo que falte.
 
 **Verify after push:**
 
