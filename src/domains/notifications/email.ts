@@ -102,11 +102,14 @@ export async function sendReservationConfirmation(reservation: Reservation): Pro
     ["Huéspedes", guestsLabel(reservation.guests)],
     ["Importe pagado", `<strong>${formatMoney(reservation.totalCents)}</strong>`],
   ];
+  const { signPortalToken } = await import("@/domains/portal/token");
+  const { publicEnv } = await import("@/lib/env");
+  const portalUrl = `${publicEnv.siteUrl.replace(/\/$/, "")}/mi-reserva/${signPortalToken(reservation.id)}`;
   const html = brandedEmail({
     heading: greetingLine,
     intro: `Hola ${reservation.guestName ?? ""}, tu reserva está confirmada.`,
     rows,
-    footer: "Pago procesado de forma segura por Stripe.",
+    footer: `Pago procesado de forma segura por Stripe.\n\nGestiona tu reserva (llegada, peticiones, factura): ${portalUrl}`,
   });
 
   return sendEmail(

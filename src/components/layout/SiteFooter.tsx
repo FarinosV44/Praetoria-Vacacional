@@ -68,6 +68,11 @@ export function SiteFooter() {
                 Contacto
               </Link>
             </li>
+            <li>
+              <Link className={colLink} href="/mi-reserva">
+                Gestiona tu reserva
+              </Link>
+            </li>
           </ul>
         </nav>
 

@@ -761,3 +761,20 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   at point of use rather than a build step here.
 - **DEMO** keeps the metadata CRUD (so the UI renders) but blocks uploads —
   there's nowhere to put the bytes without Storage.
+
+## D-037 — #68 — passwordless guest portal
+**Date:** 2026-09-02 · issue #68
+- **Stateless magic link.** `<reservationId>.<expiryMs>.<hmac>` (base64url),
+  7-day TTL, keyed off an existing server secret. No `guest_portal_tokens`
+  table — a leaked link dies on expiry and the guest self-serves a new one with
+  code + email. The lookup requires the code AND the reservation's own email to
+  match, and never reveals whether a pair matched (rate-limited 5 / 10 min).
+- **What the guest can do:** see the stay + payment status, pay the outstanding
+  balance (`total − Σ succeeded payments` via a fresh Stripe Checkout Session),
+  download issued invoices, and submit an arrival time + requests (appended to
+  the reservation notes + an email to the owner).
+- **Invoice document extracted.** `<InvoiceDocument>` is now a shared pure
+  component; the admin viewer and the token-guarded guest route both render it.
+  The guest route checks the invoice belongs to that reservation and is issued.
+- **noindex** via the middleware prefix list; linked from the footer and the
+  confirmation email.

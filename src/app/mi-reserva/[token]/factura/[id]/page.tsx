@@ -1,24 +1,30 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { requireAdmin } from "@/domains/admin/auth";
+import { notFound } from "next/navigation";
 import { getRepository } from "@/lib/repository";
-import { PrintButton } from "@/components/admin/PrintButton";
+import { portalDataForToken } from "@/domains/portal/service";
 import { InvoiceDocument } from "@/components/invoice/InvoiceDocument";
+import { PrintButton } from "@/components/admin/PrintButton";
 
-export const metadata: Metadata = {
-  title: "Factura",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = { title: "Factura", robots: { index: false, follow: false } };
 
-export default async function InvoiceDocumentPage({
+export default async function PortalInvoicePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ token: string; id: string }>;
 }) {
-  await requireAdmin();
-  const { id } = await params;
+  const { token, id } = await params;
+  const data = await portalDataForToken(token);
+  if (!data) notFound();
+
   const invoice = await getRepository().getInvoice(id);
-  if (!invoice) notFound();
+  // The invoice must belong to this guest's reservation and be issued.
+  if (
+    !invoice ||
+    invoice.reservationId !== data.reservation.id ||
+    invoice.status === "draft"
+  ) {
+    notFound();
+  }
 
   return (
     <div style={{ background: "#eef1f6", minHeight: "100dvh", padding: "24px 12px" }}>
@@ -30,11 +36,10 @@ export default async function InvoiceDocumentPage({
           .no-print { display: none !important; }
         }
       `}</style>
-
       <div className="no-print" style={{ maxWidth: 760, margin: "0 auto 12px", display: "flex", gap: 8 }}>
         <PrintButton />
         <a
-          href={`/admin/facturas/${invoice.id}`}
+          href={`/mi-reserva/${token}`}
           style={{
             padding: "8px 16px",
             fontSize: 14,
@@ -47,7 +52,6 @@ export default async function InvoiceDocumentPage({
           ← Volver
         </a>
       </div>
-
       <InvoiceDocument invoice={invoice} />
     </div>
   );
