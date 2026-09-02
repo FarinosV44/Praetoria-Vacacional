@@ -18,7 +18,9 @@ const isReal = (v: string | undefined): v is string => !!v && !PLACEHOLDER.test(
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
-  NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
+  // Kept permissive on purpose — a typo in the site URL must not 503 the whole
+  // site (cf. PRODUCTION_STRICT tolerance). It is normalised in `normalizeUrl`.
+  NEXT_PUBLIC_SITE_URL: z.string().optional(),
   NEXT_PUBLIC_SITE_NAME: z.string().default("Praetoria Vacacional"),
 
   // Supabase — both the legacy (JWT anon / service_role) and the new
@@ -133,6 +135,22 @@ if (!parsed.success) {
 
 const raw = parsed.data;
 
+/** Best-effort: accept "domain.com", "http://…", trailing slashes, spaces. A
+ *  bad value logs a warning and falls back — it never throws. */
+function normalizeSiteUrl(v: string | undefined): string {
+  const fallback = "http://localhost:3000";
+  const s = (v ?? "").trim().replace(/\/+$/, "");
+  if (!s) return fallback;
+  const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+  try {
+    return new URL(withScheme).origin;
+  } catch {
+    console.warn(`⚠ NEXT_PUBLIC_SITE_URL ("${v}") is not a valid URL — using ${fallback}`);
+    return fallback;
+  }
+}
+const siteUrl = normalizeSiteUrl(raw.NEXT_PUBLIC_SITE_URL);
+
 // Resolve the Supabase config once. The runtime-only `SUPABASE_URL` wins over
 // the build-time `NEXT_PUBLIC_SUPABASE_URL` so a hosting-panel value works
 // without a rebuild.
@@ -165,6 +183,8 @@ const rateLimitRedisToken = isReal(raw.UPSTASH_REDIS_REST_TOKEN)
 
 export const env = {
   ...raw,
+  /** Always a valid absolute origin, no trailing slash (see `normalizeSiteUrl`). */
+  NEXT_PUBLIC_SITE_URL: siteUrl,
   /** URL of the Supabase project (or undefined in DEMO mode). */
   supabaseUrl,
   /** Publishable / anon key — RLS-gated, safe on the client. */
