@@ -625,3 +625,28 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   are chosen. iCal import + hold expiry keep their existing dedicated cron
   endpoints *and* are registered job types, so they can move to the queue later
   with no new code.
+
+## D-030 — #69 — guest communications lifecycle
+**Date:** 2026-09-02 · issue #69
+- **Transactional, not marketing.** The pre-arrival / check-in / check-out /
+  review messages execute the booking, so they are *not* consent-gated (that
+  gate stays on `segments`/`campaigns`). They reuse the #12 Resend pipeline —
+  **no new email/WhatsApp provider**, so the issue's "owner input" blocker
+  didn't actually apply to a first version.
+- **Pure planner + repository reconcile.** `planReservationComms(reservation,
+  rules, now)` returns the desired message set; `scheduled_messages` holds one
+  row per `(reservation, kind)` and `syncReservationMessages` upserts by kind,
+  re-times still-`planned` rows and retires the rest. Re-running after a date
+  change re-plans with no duplicates; a cancellation retires every `planned`
+  row. Called from `finalizeReservation` (best-effort, never un-confirms a
+  reservation) and an admin "re-planificar".
+- **24-hour minimum lead.** A message under 24 h away is dropped, not fired
+  late — a last-minute booking simply misses the pre-stay sequence.
+- **Per-property rules + notes.** `CommRule[]` (enabled / anchor / offsetDays /
+  hour) overridable per property at `/admin/comunicaciones/ajustes`, plus
+  free-text arrival/departure notes. Templates invent no access details
+  (L-008): without an owner note they point the guest at the real contact
+  channels. ES/EN by guest country.
+- **Worker.** `/api/cron/comms` (`CRON_SECRET`, every 15 min in `vercel.json`)
+  sends due messages; idempotent (status flips off `planned`), 4 attempts with
+  30-min backoff, then `failed` and visible at `/admin/comunicaciones`.

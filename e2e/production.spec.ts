@@ -22,7 +22,12 @@ test("admin routes carry a noindex header and redirect unauthenticated users", a
 test("cron / internal endpoints reject an unauthenticated request (issue #64)", async ({
   request,
 }) => {
-  for (const path of ["/api/cron/expire-holds", "/api/ical/import", "/api/cron/jobs"]) {
+  for (const path of [
+    "/api/cron/expire-holds",
+    "/api/ical/import",
+    "/api/cron/jobs",
+    "/api/cron/comms",
+  ]) {
     // no auth, a forged Vercel-cron header, and a wrong bearer must ALL be rejected
     // (401 when CRON_SECRET is set, 503 "not configured" otherwise — never 200).
     const cases: (Record<string, string> | undefined)[] = [

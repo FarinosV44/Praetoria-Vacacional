@@ -33,6 +33,12 @@ import type {
   JobFilter,
   JobSettlement,
 } from "@/domains/jobs/types";
+import type {
+  CommsFilter,
+  DesiredMessage,
+  ScheduledMessage,
+  ScheduledMessageStatus,
+} from "@/domains/comms/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -196,7 +202,14 @@ export interface UpsertPaymentInput {
 
 export interface EmailLogEntry {
   reservationId?: string | null;
-  kind: "confirmation" | "payment_failed" | "internal";
+  kind:
+    | "confirmation"
+    | "payment_failed"
+    | "internal"
+    | "pre_arrival"
+    | "checkin_info"
+    | "checkout_reminder"
+    | "review_request";
   recipient: string;
   status: "sent" | "failed" | "skipped";
   providerId?: string | null;
@@ -442,4 +455,32 @@ export interface Repository {
   retryJob(id: string): Promise<Job>;
   /** Admin: stop a job that has not finished. */
   cancelJob(id: string): Promise<Job>;
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  /**
+   * Reconcile the scheduled messages for a reservation to `desired`: upsert by
+   * kind (moving the `send_at` of a still-`planned` row), and retire any
+   * `planned` row whose kind is no longer desired. Rows already sent/queued are
+   * left alone.
+   */
+  syncReservationMessages(reservationId: string, desired: DesiredMessage[]): Promise<void>;
+  /** Retire every still-`planned` message for a reservation (on cancellation). */
+  cancelReservationMessages(reservationId: string): Promise<void>;
+  listScheduledMessages(filter?: CommsFilter): Promise<ScheduledMessage[]>;
+  listReservationMessages(reservationId: string): Promise<ScheduledMessage[]>;
+  /** `planned` messages whose `send_at` has passed. */
+  dueScheduledMessages(nowIso: string, limit: number): Promise<ScheduledMessage[]>;
+  markScheduledMessage(
+    id: string,
+    patch: {
+      status: ScheduledMessageStatus;
+      attempts?: number;
+      sendAt?: string;
+      sentAt?: string | null;
+      lastError?: string | null;
+      providerId?: string | null;
+    },
+  ): Promise<void>;
+  /** Admin manual resend: back to `planned`, `send_at` now. */
+  resetScheduledMessage(id: string): Promise<ScheduledMessage>;
 }

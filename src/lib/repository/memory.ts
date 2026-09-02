@@ -58,6 +58,11 @@ import type {
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
+import type {
+  CommsFilter,
+  DesiredMessage,
+  ScheduledMessage,
+} from "@/domains/comms/types";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -116,6 +121,7 @@ interface Store {
   unsubscribes: { email: string; unsubscribedAt: string; source: string | null }[];
   auditLog: AuditRow[];
   jobs: Job[];
+  scheduledMessages: ScheduledMessage[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -209,6 +215,7 @@ function seed(): Store {
     unsubscribes: [],
     auditLog: [],
     jobs: [],
+    scheduledMessages: [],
   };
 }
 
@@ -340,6 +347,7 @@ store.campaignRecipients ??= [];
 store.unsubscribes ??= [];
 store.auditLog ??= [];
 store.jobs ??= [];
+store.scheduledMessages ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1702,5 +1710,98 @@ export const memoryRepository: Repository = {
     j.updatedAt = new Date().toISOString();
     save();
     return { ...j };
+  },
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  async syncReservationMessages(reservationId: string, desired: DesiredMessage[]) {
+    const now = new Date().toISOString();
+    const wanted = new Map(desired.map((d) => [d.kind, d.sendAt]));
+    for (const [kind, sendAt] of wanted) {
+      const row = store.scheduledMessages.find(
+        (m) => m.reservationId === reservationId && m.kind === kind,
+      );
+      if (!row) {
+        store.scheduledMessages.push({
+          id: randomUUID(),
+          reservationId,
+          kind,
+          sendAt,
+          status: "planned",
+          attempts: 0,
+          sentAt: null,
+          lastError: null,
+          providerId: null,
+          createdAt: now,
+          updatedAt: now,
+        });
+      } else if (row.status === "planned") {
+        row.sendAt = sendAt;
+        row.updatedAt = now;
+      }
+    }
+    // retire planned rows no longer desired
+    for (const m of store.scheduledMessages) {
+      if (m.reservationId === reservationId && m.status === "planned" && !wanted.has(m.kind)) {
+        m.status = "cancelled";
+        m.updatedAt = now;
+      }
+    }
+    save();
+  },
+
+  async cancelReservationMessages(reservationId: string) {
+    const now = new Date().toISOString();
+    for (const m of store.scheduledMessages) {
+      if (m.reservationId === reservationId && m.status === "planned") {
+        m.status = "cancelled";
+        m.updatedAt = now;
+      }
+    }
+    save();
+  },
+
+  async listScheduledMessages(filter?: CommsFilter) {
+    let out = [...store.scheduledMessages];
+    if (filter?.status?.length) out = out.filter((m) => filter.status!.includes(m.status));
+    if (filter?.kind) out = out.filter((m) => m.kind === filter.kind);
+    out.sort((a, b) => b.sendAt.localeCompare(a.sendAt));
+    return out.slice(0, filter?.limit ?? 200);
+  },
+
+  async listReservationMessages(reservationId: string) {
+    return store.scheduledMessages
+      .filter((m) => m.reservationId === reservationId)
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt));
+  },
+
+  async dueScheduledMessages(nowIso: string, limit: number) {
+    return store.scheduledMessages
+      .filter((m) => m.status === "planned" && m.sendAt <= nowIso)
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt))
+      .slice(0, Math.max(0, limit));
+  },
+
+  async markScheduledMessage(id, patch) {
+    const m = store.scheduledMessages.find((x) => x.id === id);
+    if (!m) return;
+    m.status = patch.status;
+    if (patch.attempts != null) m.attempts = patch.attempts;
+    if (patch.sendAt !== undefined) m.sendAt = patch.sendAt;
+    if (patch.sentAt !== undefined) m.sentAt = patch.sentAt;
+    if (patch.lastError !== undefined) m.lastError = patch.lastError;
+    if (patch.providerId !== undefined) m.providerId = patch.providerId;
+    m.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async resetScheduledMessage(id: string) {
+    const m = store.scheduledMessages.find((x) => x.id === id);
+    if (!m) throw new Error("MESSAGE_NOT_FOUND");
+    m.status = "planned";
+    m.sendAt = new Date().toISOString();
+    m.lastError = null;
+    m.updatedAt = new Date().toISOString();
+    save();
+    return { ...m };
   },
 };

@@ -150,6 +150,8 @@ export async function cancelReservationAction(formData: FormData): Promise<void>
   const reason = String(formData.get("reason") ?? "Cancelada desde administración");
   if (id) {
     await getRepository().cancelReservation(id, reason);
+    // Retire any pending guest lifecycle messages (issue #69).
+    await getRepository().cancelReservationMessages(id).catch(() => undefined);
     await logAction("reservation.cancel", { entity: "reservation", entityId: id, meta: { reason } });
   }
   revalidatePath("/admin/reservas");

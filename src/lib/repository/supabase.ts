@@ -48,6 +48,7 @@ import type {
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
+import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -1888,7 +1889,123 @@ export const supabaseRepository: Repository = {
     const current = await db.from("jobs").select().eq("id", id).single();
     return mapJob(current.data);
   },
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  async syncReservationMessages(reservationId: string, desired: DesiredMessage[]) {
+    const db = supabaseAdmin();
+    const { data: existing } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("reservation_id", reservationId);
+    const rows = (existing ?? []) as any[];
+    const wanted = new Map(desired.map((d) => [d.kind, d.sendAt]));
+
+    const inserts: any[] = [];
+    for (const [kind, sendAt] of wanted) {
+      const row = rows.find((r) => r.kind === kind);
+      if (!row) {
+        inserts.push({ reservation_id: reservationId, kind, send_at: sendAt, status: "planned" });
+      } else if (row.status === "planned" && row.send_at !== sendAt) {
+        await db.from("scheduled_messages").update({ send_at: sendAt }).eq("id", row.id);
+      }
+    }
+    if (inserts.length) {
+      const { error } = await db.from("scheduled_messages").insert(inserts);
+      if (error && error.code !== "23505") throw error;
+    }
+    const retire = rows
+      .filter((r) => r.status === "planned" && !wanted.has(r.kind))
+      .map((r) => r.id);
+    if (retire.length) {
+      await db.from("scheduled_messages").update({ status: "cancelled" }).in("id", retire);
+    }
+  },
+
+  async cancelReservationMessages(reservationId: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("scheduled_messages")
+      .update({ status: "cancelled" })
+      .eq("reservation_id", reservationId)
+      .eq("status", "planned");
+    if (error) throw error;
+  },
+
+  async listScheduledMessages(filter?: CommsFilter) {
+    const db = supabaseAdmin();
+    let q = db.from("scheduled_messages").select().order("send_at", { ascending: false });
+    if (filter?.status?.length) q = q.in("status", filter.status);
+    if (filter?.kind) q = q.eq("kind", filter.kind);
+    q = q.limit(filter?.limit ?? 200);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async listReservationMessages(reservationId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("reservation_id", reservationId)
+      .order("send_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async dueScheduledMessages(nowIso: string, limit: number) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("status", "planned")
+      .lte("send_at", nowIso)
+      .order("send_at", { ascending: true })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async markScheduledMessage(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = { status: patch.status };
+    if (patch.attempts != null) upd.attempts = patch.attempts;
+    if (patch.sendAt !== undefined) upd.send_at = patch.sendAt;
+    if (patch.sentAt !== undefined) upd.sent_at = patch.sentAt;
+    if (patch.lastError !== undefined) upd.last_error = patch.lastError;
+    if (patch.providerId !== undefined) upd.provider_id = patch.providerId;
+    const { error } = await db.from("scheduled_messages").update(upd).eq("id", id);
+    if (error) throw error;
+  },
+
+  async resetScheduledMessage(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .update({ status: "planned", send_at: new Date().toISOString(), last_error: null })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapScheduledMessage(data);
+  },
 };
+
+function mapScheduledMessage(row: any): ScheduledMessage {
+  return {
+    id: row.id,
+    reservationId: row.reservation_id,
+    kind: row.kind,
+    sendAt: row.send_at,
+    status: row.status,
+    attempts: Number(row.attempts ?? 0),
+    sentAt: row.sent_at ?? null,
+    lastError: row.last_error ?? null,
+    providerId: row.provider_id ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 function mapJob(row: any): Job {
   return {

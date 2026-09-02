@@ -22,7 +22,7 @@ interface SendResult {
   error?: string;
 }
 
-async function send(
+export async function sendEmail(
   to: string,
   subject: string,
   html: string,
@@ -109,7 +109,7 @@ export async function sendReservationConfirmation(reservation: Reservation): Pro
     footer: "Pago procesado de forma segura por Stripe.",
   });
 
-  return send(
+  return sendEmail(
     reservation.guestEmail,
     `Reserva confirmada · ${name} · ${reservation.code}`,
     html,
@@ -138,7 +138,7 @@ disponibles hasta que otra persona las reserve.`;
     footer:
       "No se ha realizado ningún cargo. Puedes volver a intentarlo desde la web mientras las fechas sigan libres.",
   });
-  return send(reservation.guestEmail, `No se pudo completar tu reserva · ${name}`, html, text, {
+  return sendEmail(reservation.guestEmail, `No se pudo completar tu reserva · ${name}`, html, text, {
     kind: "payment_failed",
     reservationId: reservation.id,
   });
@@ -170,13 +170,13 @@ export async function sendInternalReservationNotice(reservation: Reservation): P
     ],
     footer: "Gestiónala en el panel de administración.",
   });
-  return send(to, `Nueva reserva · ${name} · ${reservation.code}`, html, text, {
+  return sendEmail(to, `Nueva reserva · ${name} · ${reservation.code}`, html, text, {
     kind: "internal",
     reservationId: reservation.id,
   });
 }
 
-function brandedEmail(o: {
+export function brandedEmail(o: {
   heading: string;
   intro: string;
   rows: [string, string][];

@@ -17,6 +17,9 @@ const ACTION_LABEL: Record<string, string> = {
   "calendar.close_dates": "Fechas cerradas en el calendario",
   "job.retry": "Proceso reintentado",
   "job.cancel": "Proceso cancelado",
+  "comms.resend": "Comunicación reenviada",
+  "comms.replan": "Comunicaciones replanificadas",
+  "comms.settings": "Ajustes de comunicaciones guardados",
 };
 
 export default async function ActividadPage() {
