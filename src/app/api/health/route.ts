@@ -42,7 +42,13 @@ export async function GET() {
     await getRepository().getSyncRows();
     checks.repository = DEMO_MODE ? "demo" : "ok";
   } catch (err) {
-    repoError = (err instanceof Error ? err.message : String(err)).slice(0, 300);
+    const msg =
+      err instanceof Error
+        ? err.message
+        : typeof err === "object" && err && "message" in err
+          ? String((err as { message: unknown }).message)
+          : String(err);
+    repoError = msg.slice(0, 300);
     console.error("health: repository check failed", err);
     checks.repository = "error";
   }

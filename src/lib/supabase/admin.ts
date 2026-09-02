@@ -14,6 +14,11 @@ export function supabaseAdmin(): SupabaseClient {
   if (!cached) {
     cached = createClient(env.supabaseUrl!, env.supabaseSecretKey!, {
       auth: { autoRefreshToken: false, persistSession: false },
+      // Never let an unreachable database hang a request/worker indefinitely.
+      global: {
+        fetch: (input, init) =>
+          fetch(input as RequestInfo, { ...init, signal: AbortSignal.timeout(8000) }),
+      },
     });
   }
   return cached;

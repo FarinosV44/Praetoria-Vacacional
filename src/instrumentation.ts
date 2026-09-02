@@ -5,7 +5,17 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  try {
+    await registerImpl();
+  } catch (err) {
+    // A boot-banner error must never take the server down. The one intentional
+    // hard stop (PRODUCTION_STRICT) is re-thrown below.
+    if (err instanceof Error && err.message.startsWith("PRODUCTION_STRICT:")) throw err;
+    console.error("instrumentation.register() failed (continuing):", err);
+  }
+}
 
+async function registerImpl() {
   const { env, DEMO_MODE } = await import("@/lib/env");
   const { getConfigFeatures } = await import("@/domains/config-status/registry");
   const { strictProductionBlockers } = await import("@/domains/config-status/strict");

@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
   // managed Next.js runtime — and most managed Node hosts — run that file
   // instead of `next start`; without it there is no server to run → 503.
   output: "standalone",
+  // Keep the SDKs out of the bundle — require()'d from node_modules at runtime
+  // and copied verbatim into the standalone output. Avoids mis-traced deps
+  // crashing the standalone server on boot.
+  serverExternalPackages: ["@supabase/supabase-js", "@supabase/ssr", "resend", "stripe"],
   // ESLint + its config live in devDependencies (CI runs them). A production
   // host that installs with --omit=dev / NODE_ENV=production won't have eslint,
   // and `next build` would otherwise fail looking for it. `tsc` still runs in CI.
