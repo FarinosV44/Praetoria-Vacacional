@@ -591,3 +591,37 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   index.
 - Visual regression baselines regenerated; `e2e/visual.spec.ts` now waits for
   `<img>` decode before the snapshot (a cold-capture flake fix).
+
+## D-029 — #76 — durable jobs + transactional outbox
+**Date:** 2026-09-02 · issue #76
+- **One table, provider-agnostic.** `jobs` (migration `20260901120000_jobs.sql`)
+  backs every kind of critical async work. No queue vendor — business logic
+  never imports a provider, only `enqueueJob()` / the repository. A real broker
+  can back the same `Repository` methods later without touching callers.
+- **Transactional outbox.** `finalizeReservation` (and `markPaymentFailed`)
+  enqueue the confirmation / internal-notice / payment-failed emails right after
+  `confirmReservation`, with a deterministic `idempotency_key`
+  (`email.reservation_confirmation:<reservationId>`). The intention is now
+  persisted; a crash before the send cannot lose it. Enqueue failure still never
+  rolls back the reservation (`enqueueBestEffort` swallows). After enqueuing, the
+  request drains the queue inline (`drainJobsSafely`) so the guest still gets the
+  mail immediately — the durable job is the guarantee if that inline pass dies.
+- **Leased workers, idempotent handlers.** `claimJobs(worker, batch, lease)` is
+  atomic — Postgres `claim_jobs` RPC uses `FOR UPDATE SKIP LOCKED`; the in-memory
+  version runs its claim body synchronously. Two workers never take the same job.
+  `attempts` is incremented at lease time, so a crashed worker's job is retried
+  once its lease elapses (crash recovery), and `maxAttempts` is still honoured.
+- **State machine (pure).** `decideNext(job, outcome, now)` → succeeded /
+  retrying (exponential backoff, `DEFAULT_BACKOFF` 30 s × 4, cap 6 h, 20 % floor
+  jitter) / `dead_letter`. `retryable: false` from a handler (e.g. reservation
+  deleted) skips straight to dead-letter.
+- **Admin.** `/admin/procesos` — queue depth, oldest-pending age, error rate,
+  dead-letter count; filter by status; "Reintentar" (dead-letter → queued) and
+  "Cancelar", both `settings.write` + audit-logged; "Procesar ahora" runs a
+  batch. `/api/cron/jobs` (`CRON_SECRET`, every 2 min in `vercel.json`) is the
+  only scheduled processor — the scheduler encola, the worker procesa.
+- **Not migrated yet:** Stripe refund reconciliation (#67) and campaign bulk
+  send (#73) are owner-gated; they plug into the same queue when their providers
+  are chosen. iCal import + hold expiry keep their existing dedicated cron
+  endpoints *and* are registered job types, so they can move to the queue later
+  with no new code.

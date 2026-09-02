@@ -104,6 +104,46 @@ export function runRepositoryContract(makeHarness: () => Promise<ContractHarness
     expect(await repo.isStayAvailable(propertyId, "2026-12-27", "2026-12-30")).toBe(true);
   });
 
+  it("enqueueJob de-dupes on the idempotency key", async () => {
+    const { repo } = await makeHarness();
+    const a = await repo.enqueueJob({ type: "email.internal_notice", idempotencyKey: "r1:notice" });
+    const b = await repo.enqueueJob({ type: "email.internal_notice", idempotencyKey: "r1:notice" });
+    expect(b.id).toBe(a.id);
+    expect((await repo.listJobs({ type: "email.internal_notice" })).length).toBe(1);
+  });
+
+  it("claimJobs leases a due job exactly once", async () => {
+    const { repo } = await makeHarness();
+    const job = await repo.enqueueJob({ type: "holds.expire" });
+    const first = await repo.claimJobs("w1", 10, 120);
+    expect(first.map((j) => j.id)).toContain(job.id);
+    expect(first.find((j) => j.id === job.id)?.status).toBe("running");
+    expect(first.find((j) => j.id === job.id)?.attempts).toBe(1);
+    // a second claim, still inside the lease, sees nothing
+    const second = await repo.claimJobs("w2", 10, 120);
+    expect(second.map((j) => j.id)).not.toContain(job.id);
+  });
+
+  it("settleJob applies the transition; retryJob requeues a dead letter", async () => {
+    const { repo } = await makeHarness();
+    const job = await repo.enqueueJob({ type: "holds.expire" });
+    await repo.claimJobs("w1", 10, 120);
+    await repo.settleJob(job.id, {
+      status: "dead_letter",
+      attempts: 3,
+      runAfter: new Date().toISOString(),
+      lastError: "nope",
+      result: null,
+      succeededAt: null,
+      deadLetteredAt: new Date().toISOString(),
+    });
+    expect((await repo.getJob(job.id))?.status).toBe("dead_letter");
+
+    const requeued = await repo.retryJob(job.id);
+    expect(requeued.status).toBe("queued");
+    expect(requeued.lastError).toBeNull();
+  });
+
   it("expireStaleHolds releases an elapsed hold and nothing else", async () => {
     const { repo, propertyId, makeHoldStale } = await makeHarness();
     const stale = await repo.createHold(hold(propertyId, "2027-01-05", "2027-01-09", "s1"));
