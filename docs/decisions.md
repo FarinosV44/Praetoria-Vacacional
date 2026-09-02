@@ -668,3 +668,18 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   (rate-limited, tiny schema, browser stack is context only) + explicit
   `reportError` in the Stripe webhook catch.
 - **No new required env.** Absent DSN → logs only; the app is unchanged.
+
+## D-032 — #62 — distributed rate limiting + anti-abuse
+**Date:** 2026-09-02 · issue #62
+- **Pluggable store behind pure math.** `windowBucket` / `evaluate` are pure and
+  tested; the store is `memory` (a Map — correct for one instance) or `redis`
+  (Upstash REST `/pipeline`: `INCR` + `PEXPIRE NX`). Redis is picked up from
+  `UPSTASH_REDIS_REST_*` or the `KV_REST_API_*` aliases.
+- **Fail open for limiting, safe for denylist.** A Redis timeout falls back to
+  the in-memory store rather than 500-ing or locking users out; an unknown
+  denylist lookup returns "not denied".
+- **Escalation.** `enforceRateLimit` counts over-limit breaches per IP; ≥25 in
+  5 min → a 15-minute denylist flag, reported to observability (#66). Every 429
+  carries `Retry-After`.
+- **Not required for launch.** One Hostinger node → the in-memory limiter is
+  correct; Redis only matters when the deployment scales horizontally.

@@ -11,7 +11,7 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ property: string }> },
 ) {
-  const limited = enforceRateLimit(req, "availability-insight", 60, 60_000);
+  const limited = await enforceRateLimit(req, "availability-insight", 60, 60_000);
   if (limited) return limited;
 
   const { property } = await params;

@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const limited = enforceRateLimit(req, "checkout-guest", 30, 60_000);
+  const limited = await enforceRateLimit(req, "checkout-guest", 30, 60_000);
   if (limited) return limited;
 
   const parsed = await parseJson(req, guestDetailsSchema);

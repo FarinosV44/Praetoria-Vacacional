@@ -42,7 +42,7 @@ metric — direct-booking conversion**. Visible product first; invisible infra
 | # | Title | Owner input needed |
 |---|---|---|
 | #61 | CI/CD: quality gates, previews, dep security, branch protection | GitHub settings / Vercel |
-| #62 | Distributed rate limiting + anti-abuse for Vercel/serverless | Upstash/KV provider choice |
+| #62 | ✅ code — `src/lib/rate-limit.ts` rebuilt: pure window math (`windowBucket`/`evaluate`) + a pluggable store — `memory` (Map) or `redis` (Upstash REST `/pipeline`, 2 s timeout, falls back to memory on error, fails **open** for limiting / **safe** for the denylist). `enforceRateLimit` is now async: per-IP fixed window + `Retry-After`, and ≥25 breaches in 5 min → 15-min temp denylist (`denyClient`/`isDenied`, reported to observability). All 8 API callers updated. Aliases `KV_REST_API_*`. `config-status` "rate_limit" feature. 7 unit tests. D-032. **Owner:** optional — set `UPSTASH_REDIS_REST_URL`/`_TOKEN` only if you run more than one instance. |
 | #63 | Production fail-closed: block DEMO_MODE + incomplete critical config | — (buildable) |
 | #64 | Internal endpoints + cron: strong auth, CRON_SECRET, service-to-service | — (buildable) |
 | #65 | Admin multiuser: Supabase Auth, MFA, revocable sessions, per-user RBAC | Supabase Auth + MFA decision |

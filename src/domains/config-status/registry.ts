@@ -154,6 +154,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const rateLimit: ConfigFeature = {
+    key: "rate_limit",
+    label: "Rate limiting distribuido",
+    impact:
+      "El límite de peticiones por IP y el denylist temporal por abuso están siempre activos. Sin Redis usan memoria local (correcto para un solo servidor); con varios servidores/regiones necesitas Upstash Redis para que el contador sea compartido.",
+    envVars: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    where: "Upstash → Redis database → REST API (o la integración KV de Vercel)",
+    state: env.rateLimitDistributed ? "configured" : "not_configured",
+    statusLine: env.rateLimitDistributed
+      ? "Distribuido (Upstash Redis). El contador se comparte entre instancias."
+      : "En memoria (una instancia). Añade Upstash Redis si escalas a varias.",
+    publicMessage: null,
+  };
+
   const observability: ConfigFeature = {
     key: "observability",
     label: "Observabilidad (errores y trazas)",
@@ -182,7 +196,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, observability, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

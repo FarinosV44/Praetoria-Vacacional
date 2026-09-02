@@ -11,7 +11,7 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  const limited = enforceRateLimit(req, "checkout-pay", 15, 60_000);
+  const limited = await enforceRateLimit(req, "checkout-pay", 15, 60_000);
   if (limited) return limited;
 
   const parsed = await parseJson(req, schema);

@@ -51,6 +51,14 @@ const schema = z.object({
    *  ready for admin / gestion / lectura; today there is one login. */
   ADMIN_ROLE: z.enum(["admin", "gestion", "lectura"]).default("admin"),
 
+  // Distributed rate limiting (issue #62). Optional — without it the limiter
+  // uses an in-memory store (correct for a single instance). Upstash Redis REST,
+  // or the KV_REST_API_* aliases a Vercel KV / Upstash integration injects.
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  KV_REST_API_URL: z.string().optional(),
+  KV_REST_API_TOKEN: z.string().optional(),
+
   // iCal sync — token that authenticates our public export feeds
   ICAL_EXPORT_TOKEN: z.string().optional(),
   /** Shared secret for cron / internal service-to-service calls (issue #64).
@@ -121,6 +129,17 @@ const supabaseSecretKey = isReal(raw.SUPABASE_SECRET_KEY)
     ? raw.SUPABASE_SERVICE_ROLE_KEY
     : undefined;
 
+const rateLimitRedisUrl = isReal(raw.UPSTASH_REDIS_REST_URL)
+  ? raw.UPSTASH_REDIS_REST_URL
+  : isReal(raw.KV_REST_API_URL)
+    ? raw.KV_REST_API_URL
+    : undefined;
+const rateLimitRedisToken = isReal(raw.UPSTASH_REDIS_REST_TOKEN)
+  ? raw.UPSTASH_REDIS_REST_TOKEN
+  : isReal(raw.KV_REST_API_TOKEN)
+    ? raw.KV_REST_API_TOKEN
+    : undefined;
+
 export const env = {
   ...raw,
   /** URL of the Supabase project (or undefined in DEMO mode). */
@@ -138,6 +157,9 @@ export const env = {
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
   analyticsConfigured: isReal(raw.NEXT_PUBLIC_GA4_ID),
   observabilityConfigured: isReal(raw.SENTRY_DSN),
+  rateLimitRedisUrl,
+  rateLimitRedisToken,
+  rateLimitDistributed: !!rateLimitRedisUrl && !!rateLimitRedisToken,
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
