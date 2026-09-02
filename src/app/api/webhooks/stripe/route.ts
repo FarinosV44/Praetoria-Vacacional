@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { getRepository } from "@/lib/repository";
 import { stripe, stripeWebhookEnabled } from "@/domains/payments/stripe";
 import { finalizeReservation, markPaymentFailed } from "@/domains/booking/checkout";
+import { reportError } from "@/lib/observability/report";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
         break;
     }
   } catch (err) {
-    console.error(`stripe webhook handler failed for ${event.type}`, err);
+    reportError(err, { scope: "webhook/stripe", tags: { eventType: event.type }, extra: { eventId: event.id } });
     return new Response("Handler error", { status: 500 });
   }
 

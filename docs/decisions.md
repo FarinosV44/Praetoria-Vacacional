@@ -650,3 +650,21 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 - **Worker.** `/api/cron/comms` (`CRON_SECRET`, every 15 min in `vercel.json`)
   sends due messages; idempotent (status flips off `planned`), 4 attempts with
   30-min backoff, then `failed` and visible at `/admin/comunicaciones`.
+
+## D-031 — #66 — observability without an SDK
+**Date:** 2026-09-02 · issue #66
+- **Structured logs always on.** `src/lib/observability/logger.ts` emits one JSON
+  object per line in production (parsed by any drain), pretty text in dev.
+  `scrubFields` redacts sensitive keys (email/phone/token/…) as a defensive
+  last pass — callers still shouldn't log PII.
+- **Sentry by DSN, no `@sentry/nextjs`.** The SDK's build footprint isn't worth
+  it for a two-property site. `sentry.ts` is pure: `parseDsn` → ingest URL,
+  `buildEnvelope` → the 3-line `type:event` envelope. `report.ts` POSTs it
+  fire-and-forget with a 2.5 s abort; a monitoring outage never reaches the
+  request path. Kept free of `node:*` so it bundles for the edge runtime that
+  `onRequestError` can run in.
+- **Every error path covered.** `instrumentation.ts` `onRequestError` (server) +
+  the route/global error boundaries → `/api/observability/client-error`
+  (rate-limited, tiny schema, browser stack is context only) + explicit
+  `reportError` in the Stripe webhook catch.
+- **No new required env.** Absent DSN → logs only; the app is unchanged.

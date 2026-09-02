@@ -61,6 +61,16 @@ const schema = z.object({
   NEXT_PUBLIC_GA4_ID: z.string().optional(),
   NEXT_PUBLIC_GSC_VERIFICATION: z.string().optional(),
 
+  // Observability (issue #66) — all optional; structured logging is always on.
+  // `SENTRY_DSN` turns on server-side error forwarding (no SDK, see
+  // src/lib/observability). `NEXT_PUBLIC_SENTRY_DSN` lets the browser report
+  // unhandled errors through /api/observability/client-error.
+  SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
+  OBSERVABILITY_ENV: z.string().optional(),
+  OBSERVABILITY_RELEASE: z.string().optional(),
+
   // WhatsApp concierge (issue #97) — E.164 digits only, e.g. 34600111222.
   // Absent → the floating WhatsApp button does not render.
   NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
@@ -127,6 +137,7 @@ export const env = {
   CRON_SECRET: isReal(raw.CRON_SECRET) ? raw.CRON_SECRET : undefined,
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
   analyticsConfigured: isReal(raw.NEXT_PUBLIC_GA4_ID),
+  observabilityConfigured: isReal(raw.SENTRY_DSN),
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
@@ -147,5 +158,6 @@ export const publicEnv = {
   gscVerification: isReal(raw.NEXT_PUBLIC_GSC_VERIFICATION)
     ? raw.NEXT_PUBLIC_GSC_VERIFICATION
     : undefined,
+  sentryDsn: isReal(raw.NEXT_PUBLIC_SENTRY_DSN) ? raw.NEXT_PUBLIC_SENTRY_DSN : undefined,
   stripePublishableKey: env.stripeConfigured ? env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY : undefined,
 } as const;

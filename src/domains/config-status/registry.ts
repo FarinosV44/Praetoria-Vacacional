@@ -154,6 +154,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const observability: ConfigFeature = {
+    key: "observability",
+    label: "Observabilidad (errores y trazas)",
+    impact:
+      "El registro estructurado (una línea JSON por evento) está siempre activo. Con un DSN de Sentry, además, cada error del servidor y del navegador se envía a Sentry sin SDK. Sin DSN, los errores solo quedan en los logs del servidor.",
+    envVars: ["SENTRY_DSN", "NEXT_PUBLIC_SENTRY_DSN", "LOG_LEVEL"],
+    where: "Sentry → Project Settings → Client Keys (DSN)",
+    state: env.observabilityConfigured ? "configured" : "not_configured",
+    statusLine: env.observabilityConfigured
+      ? "Activa. Errores de servidor y navegador se envían a Sentry; logs estructurados en stdout."
+      : "Solo logs locales. Añade SENTRY_DSN para centralizar errores y alertas.",
+    publicMessage: null,
+  };
+
   const whatsapp: ConfigFeature = {
     key: "whatsapp",
     label: "WhatsApp concierge",
@@ -168,7 +182,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

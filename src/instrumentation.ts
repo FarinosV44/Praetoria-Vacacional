@@ -47,3 +47,30 @@ export async function register() {
     }
   }
 }
+
+/**
+ * Next.js server-error hook (issue #66). Every uncaught error in a route,
+ * server component, action or route handler passes through here — we forward it
+ * to the observability sink. Must not throw.
+ */
+export async function onRequestError(
+  err: unknown,
+  request: { path?: string; method?: string },
+  context: { routerKind?: string; routePath?: string; renderSource?: string },
+) {
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  try {
+    const { reportError } = await import("@/lib/observability/report");
+    reportError(err, {
+      scope: "request",
+      tags: {
+        ...(request.method ? { method: request.method } : {}),
+        ...(context.routerKind ? { router: context.routerKind } : {}),
+        ...(context.renderSource ? { renderSource: context.renderSource } : {}),
+      },
+      extra: { path: request.path, routePath: context.routePath },
+    });
+  } catch {
+    // ignore — a broken reporter must not mask the original error
+  }
+}

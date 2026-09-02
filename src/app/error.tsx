@@ -2,14 +2,16 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { reportClientError } from "@/lib/observability/client";
 
 /**
  * Route-level error boundary (issue #42). Never shows a stack trace to the user;
- * logs the detail to the console for the operator.
+ * logs the detail to the console for the operator and reports it (issue #66).
  */
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("Route error:", error);
+    reportClientError(error, "route");
   }, [error]);
 
   return (
