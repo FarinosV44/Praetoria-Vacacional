@@ -648,6 +648,10 @@ export const memoryRepository: Repository = {
     return store.payments.find((p) => p.providerCheckoutSession === session) ?? null;
   },
 
+  async getPaymentByIntent(paymentIntent: string) {
+    return store.payments.find((p) => p.providerPaymentIntent === paymentIntent) ?? null;
+  },
+
   async listPayments(limit = 100) {
     return [...store.payments]
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

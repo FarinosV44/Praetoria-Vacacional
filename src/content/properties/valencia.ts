@@ -265,13 +265,13 @@ export const valencia: PropertyContent = {
 
   cancellationPolicy: {
     summary:
-      "Cancelación gratuita hasta 14 días antes de la entrada. Después, condiciones según la política del alojamiento.",
+      "Cancelación gratuita hasta 30 días antes de la entrada; reembolso del 50 % entre 29 y 7 días; sin reembolso en los 7 días previos.",
     tiers: [
-      { daysBefore: 14, refundPercent: 100 },
+      { daysBefore: 30, refundPercent: 100 },
       { daysBefore: 7, refundPercent: 50 },
       { daysBefore: 0, refundPercent: 0 },
     ],
-    status: "placeholder",
+    status: "authored",
   },
 
   seo: {

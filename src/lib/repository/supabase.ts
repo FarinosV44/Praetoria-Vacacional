@@ -602,6 +602,18 @@ export const supabaseRepository: Repository = {
     return data ? mapPayment(data) : null;
   },
 
+  async getPaymentByIntent(paymentIntent: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("payments")
+      .select()
+      .eq("provider_payment_intent", paymentIntent)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data ? mapPayment(data) : null;
+  },
+
   async listPayments(limit = 100) {
     const db = supabaseAdmin();
     const { data, error } = await db

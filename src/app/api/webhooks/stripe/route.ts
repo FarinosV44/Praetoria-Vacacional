@@ -65,6 +65,34 @@ export async function POST(req: Request) {
         if (reservationId) await markPaymentFailed(reservationId);
         break;
       }
+      case "charge.refunded": {
+        // Reconcile a refund issued anywhere (our code, or the Stripe dashboard).
+        const charge = event.data.object as Stripe.Charge;
+        const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+        if (pi) {
+          const payment = await repo.getPaymentByIntent(pi).catch(() => null);
+          const reservationId =
+            payment?.reservationId ?? (charge.metadata?.reservation_id as string | undefined);
+          if (reservationId) {
+            await repo.upsertPayment({
+              reservationId,
+              provider: "stripe",
+              providerPaymentIntent: pi,
+              providerCheckoutSession: payment?.providerCheckoutSession ?? null,
+              status: "refunded",
+              amountCents: payment?.amountCents ?? charge.amount,
+              currency: "EUR",
+              raw: { refundedViaWebhook: true, amountRefunded: charge.amount_refunded },
+            });
+            await repo
+              .updateReservation(reservationId, {
+                paymentState: charge.amount_refunded >= charge.amount ? "refunded" : "partial",
+              })
+              .catch(() => undefined);
+          }
+        }
+        break;
+      }
       default:
         break;
     }

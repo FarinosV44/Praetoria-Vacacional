@@ -15,6 +15,35 @@ export function stripe(): Stripe {
 export const stripeEnabled = env.stripeConfigured;
 export const stripeWebhookEnabled = env.stripeWebhookConfigured;
 
+export interface RefundResult {
+  id: string;
+  status: string | null;
+  amountCents: number;
+}
+
+/**
+ * Issue #67 — refund a captured payment. `idempotencyKey` makes a retry safe
+ * (Stripe returns the original refund). `amountCents` omitted = full refund.
+ */
+export async function createRefund(
+  paymentIntentId: string,
+  amountCents: number | null,
+  opts: { idempotencyKey: string; reason?: "requested_by_customer" | "duplicate" | "fraudulent" } = {
+    idempotencyKey: `refund_${paymentIntentId}`,
+  },
+): Promise<RefundResult> {
+  const s = stripe();
+  const refund = await s.refunds.create(
+    {
+      payment_intent: paymentIntentId,
+      ...(amountCents != null ? { amount: amountCents } : {}),
+      reason: opts.reason ?? "requested_by_customer",
+    },
+    { idempotencyKey: opts.idempotencyKey },
+  );
+  return { id: refund.id, status: refund.status, amountCents: refund.amount };
+}
+
 export interface CheckoutSessionInput {
   reservationId: string;
   propertyId: string;

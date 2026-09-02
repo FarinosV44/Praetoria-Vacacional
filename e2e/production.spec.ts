@@ -28,6 +28,7 @@ test("cron / internal endpoints reject an unauthenticated request (issue #64)", 
     "/api/cron/jobs",
     "/api/cron/comms",
     "/api/cron/privacy",
+    "/api/cron/reconcile",
   ]) {
     // no auth, a forged Vercel-cron header, and a wrong bearer must ALL be rejected
     // (401 when CRON_SECRET is set, 503 "not configured" otherwise — never 200).

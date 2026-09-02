@@ -724,3 +724,23 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   180 d, audit log 3 y. Owner reviews with the DPO.
 - **Accountability.** Export and erasure are audit-logged with a salted-short
   hash of the email, not the address itself.
+
+## D-035 — #67 — cancellation / refund / Stripe reconciliation
+**Date:** 2026-09-02 · issue #67 · user choice ("tiered by lead time")
+- **Policy.** 100 % refund ≥30 days before check-in, 50 % from 29 to 7 days,
+  0 % inside 7 days. Encoded in each property's `cancellationPolicy.tiers`;
+  pure `computeRefund` picks the first tier whose `daysBefore` ≤ the actual
+  lead time.
+- **One operation.** `cancelWithRefund` computes the amount (or takes an
+  override), issues the Stripe refund on the captured PaymentIntent
+  (idempotency key `refund_<reservationId>` so a retry is safe), updates the
+  payment row + `paymentState`, retires the guest lifecycle messages and emails
+  the guest. The reservation is always cancelled even if the refund call throws
+  — the amount is then picked up by reconciliation.
+- **Reconciliation cycle.** The webhook handles `charge.refunded` (catches
+  dashboard refunds). `/api/cron/reconcile` (every 6 h) walks recent
+  PaymentIntents that carry our `reservation_id` metadata and aligns our
+  payment/reservation state with Stripe — covering anything the webhook missed.
+- **No dedicated refunds table.** The Stripe refund object is the system of
+  record; we store its id/status on the `payments` row and in the reservation
+  notes.

@@ -103,7 +103,7 @@ All three must be present or the app stays in DEMO mode.
 |---|---|---|
 | `STRIPE_SECRET_KEY` | MISSING | `sk_test_…` for the test pass, then `sk_live_…`. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | MISSING | `pk_test_…` then `pk_live_…`. |
-| `STRIPE_WEBHOOK_SECRET` | MISSING | `whsec_…` from the webhook endpoint you create at `https://<domain>/api/webhooks/stripe` (events: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `checkout.session.expired`). Use the `stripe listen` secret for the test pass, the live endpoint secret for go-live. |
+| `STRIPE_WEBHOOK_SECRET` | MISSING | `whsec_…` from the webhook endpoint you create at `https://<domain>/api/webhooks/stripe` (events: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `checkout.session.expired`, `charge.refunded`). Use the `stripe listen` secret for the test pass, the live endpoint secret for go-live. |
 
 Until all three are set, the pay step uses the **demo simulator** (no charge).
 `PRODUCTION_STRICT=true` blocks boot until they are set, which is the point.
@@ -112,7 +112,7 @@ Until all three are set, the pay step uses the **demo simulator** (no charge).
 
 | Variable | Status | Value |
 |---|---|---|
-| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/comms`, `/api/cron/privacy`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking, scheduled guest messages (#69) are never sent, and the monthly data-retention sweep (#79) never runs. |
+| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/comms`, `/api/cron/privacy`, `/api/cron/reconcile`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking, scheduled guest messages (#69) are never sent, and the monthly data-retention sweep (#79) never runs. |
 
 ### 2e · iCal / Booking sync
 
@@ -219,11 +219,12 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 - [ ] Make a test block in Booking on Javalambre → after the next import it shows only on Javalambre. Re-import → no duplicates.
 
 ### E · Cron (Hostinger has no Vercel Cron)
-- [ ] Create five scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
+- [ ] Create six scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
   - every 2 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/jobs`
   - every 5 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/expire-holds`
   - every 15 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/comms`
   - monthly (day 1, 03:00): `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/privacy`
+  - every 6 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/reconcile`
   - every 3 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/ical/import`
 - [ ] Confirm each returns `200` (a `401`/`503` means the header or `CRON_SECRET` is wrong).
 - [ ] `/admin/procesos` shows an empty or all-`Completado` queue; no `Fallido (atascado)` rows.

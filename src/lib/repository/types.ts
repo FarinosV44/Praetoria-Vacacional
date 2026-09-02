@@ -286,6 +286,7 @@ export interface Repository {
   // --- Payments --------------------------------------------------------
   upsertPayment(input: UpsertPaymentInput): Promise<Payment>;
   getPaymentBySession(session: string): Promise<Payment | null>;
+  getPaymentByIntent(paymentIntent: string): Promise<Payment | null>;
   listPayments(limit?: number): Promise<Payment[]>;
 
   // --- Webhook idempotency -------------------------------------------
