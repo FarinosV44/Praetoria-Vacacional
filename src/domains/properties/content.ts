@@ -17,7 +17,16 @@ export type { PropertyOverride };
 const keyFor = (slug: string) => `property:${slug}`;
 
 export async function getPropertyOverride(slug: string): Promise<PropertyOverride | null> {
-  const row = await getRepository().getContentOverride(keyFor(slug));
+  let row;
+  try {
+    row = await getRepository().getContentOverride(keyFor(slug));
+  } catch (err) {
+    // A CMS override is a nice-to-have. If the database is unreachable the
+    // public pages must still render from static content — never 5xx the home
+    // or property page because an optional override read failed.
+    console.error(`[properties] override read failed for ${slug}; using static content`, err);
+    return null;
+  }
   if (!row) return null;
   const parsed = propertyOverrideSchema.safeParse(row.value);
   return parsed.success ? parsed.data : null;

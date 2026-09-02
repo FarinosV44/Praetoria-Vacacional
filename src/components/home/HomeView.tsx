@@ -82,6 +82,16 @@ const COPY = {
   },
 } as const;
 
+/** The blog strip is optional social proof — a database hiccup must not 5xx the home page. */
+async function safeRecentPosts() {
+  try {
+    return await listPublicPosts();
+  } catch (err) {
+    console.error("[home] recent posts read failed; hiding the blog strip", err);
+    return [];
+  }
+}
+
 export async function HomeView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const c = COPY[locale];
@@ -96,7 +106,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
 
   const skiHero = heroPhoto("javalambre");
   const seaHero = heroPhoto("valencia");
-  const recentPosts = locale === "es" ? (await listPublicPosts()).slice(0, 3) : [];
+  const recentPosts = locale === "es" ? (await safeRecentPosts()).slice(0, 3) : [];
 
   // A short, real review from each property for the social-proof strip.
   const reviewStrip: { property: PropertyContent; review: Review }[] = [];
