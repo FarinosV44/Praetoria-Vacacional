@@ -65,6 +65,8 @@ import type {
 } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
 import type { MediaAsset } from "@/domains/media/types";
+import type { OpsTask } from "@/domains/operations/types";
+import { compareTasks, planTurnovers } from "@/domains/operations/planning";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -126,6 +128,7 @@ interface Store {
   scheduledMessages: ScheduledMessage[];
   adminUsers: AdminUser[];
   media: MediaAsset[];
+  opsTasks: OpsTask[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -222,6 +225,7 @@ function seed(): Store {
     scheduledMessages: [],
     adminUsers: [],
     media: [],
+    opsTasks: [],
   };
 }
 
@@ -356,6 +360,7 @@ store.jobs ??= [];
 store.scheduledMessages ??= [];
 store.adminUsers ??= [];
 store.media ??= [];
+store.opsTasks ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1963,6 +1968,83 @@ export const memoryRepository: Repository = {
     store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
     save();
     return before - store.auditLog.length;
+  },
+
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  async listOpsTasks(filter) {
+    let out = [...store.opsTasks];
+    if (filter?.kind) out = out.filter((t) => t.kind === filter.kind);
+    if (filter?.status?.length) out = out.filter((t) => filter.status!.includes(t.status));
+    if (filter?.propertyId) out = out.filter((t) => t.propertyId === filter.propertyId);
+    out.sort((a, b) => compareTasks(a, b) || a.createdAt.localeCompare(b.createdAt));
+    return out.slice(0, filter?.limit ?? 300).map((t) => ({ ...t }));
+  },
+
+  async getOpsTask(id: string) {
+    const t = store.opsTasks.find((x) => x.id === id);
+    return t ? { ...t } : null;
+  },
+
+  async createOpsTask(input) {
+    const now = new Date().toISOString();
+    const row: OpsTask = {
+      id: randomUUID(),
+      propertyId: input.propertyId,
+      kind: input.kind,
+      title: input.title,
+      description: input.description ?? "",
+      status: input.status ?? "open",
+      priority: input.priority ?? "normal",
+      dueDate: input.dueDate ?? null,
+      assignee: input.assignee ?? null,
+      costCents: input.costCents ?? null,
+      reservationId: input.reservationId ?? null,
+      photos: input.photos ?? [],
+      createdBy: input.createdBy ?? null,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.opsTasks.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateOpsTask(id, patch) {
+    const t = store.opsTasks.find((x) => x.id === id);
+    if (!t) throw new Error("OPS_TASK_NOT_FOUND");
+    Object.assign(t, patch);
+    if (patch.status === "done" && !t.completedAt) t.completedAt = new Date().toISOString();
+    if (patch.status && patch.status !== "done") t.completedAt = null;
+    t.updatedAt = new Date().toISOString();
+    save();
+    return { ...t };
+  },
+
+  async deleteOpsTask(id: string) {
+    store.opsTasks = store.opsTasks.filter((t) => t.id !== id);
+    save();
+  },
+
+  async reconcileTurnovers(now = new Date()) {
+    const existing = new Set(
+      store.opsTasks.filter((t) => t.kind === "turnover" && t.reservationId).map((t) => t.reservationId!),
+    );
+    const plan = planTurnovers(
+      store.reservations.map((r) => ({
+        id: r.id,
+        propertyId: r.propertyId,
+        checkIn: r.checkIn,
+        checkOut: r.checkOut,
+        status: r.status,
+      })),
+      existing,
+      now,
+    );
+    for (const input of plan) {
+      await this.createOpsTask(input);
+    }
+    return plan.length;
   },
 
   // --- Media library (issue #81) --------------------------------

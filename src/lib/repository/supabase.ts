@@ -51,6 +51,8 @@ import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/j
 import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
 import type { MediaAsset } from "@/domains/media/types";
+import type { OpsTask } from "@/domains/operations/types";
+import { planTurnovers } from "@/domains/operations/planning";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -2169,6 +2171,121 @@ export const supabaseRepository: Repository = {
     return data?.length ?? 0;
   },
 
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  async listOpsTasks(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("operations_tasks").select().order("due_date", { ascending: true, nullsFirst: false });
+    if (filter?.kind) q = q.eq("kind", filter.kind);
+    if (filter?.status?.length) q = q.in("status", filter.status);
+    if (filter?.propertyId) q = q.eq("property_id", filter.propertyId);
+    q = q.limit(filter?.limit ?? 300);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapOpsTask);
+  },
+
+  async getOpsTask(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("operations_tasks").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    return data ? mapOpsTask(data) : null;
+  },
+
+  async createOpsTask(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("operations_tasks")
+      .insert({
+        property_id: input.propertyId,
+        kind: input.kind,
+        title: input.title,
+        description: input.description ?? "",
+        status: input.status ?? "open",
+        priority: input.priority ?? "normal",
+        due_date: input.dueDate ?? null,
+        assignee: input.assignee ?? null,
+        cost_cents: input.costCents ?? null,
+        reservation_id: input.reservationId ?? null,
+        photos: input.photos ?? [],
+        created_by: input.createdBy ?? null,
+      })
+      .select()
+      .single();
+    if (error) {
+      if ((error as { code?: string }).code === "23505") {
+        const existing = await db
+          .from("operations_tasks")
+          .select()
+          .eq("reservation_id", input.reservationId!)
+          .eq("kind", "turnover")
+          .maybeSingle();
+        if (existing.data) return mapOpsTask(existing.data);
+      }
+      throw error;
+    }
+    return mapOpsTask(data);
+  },
+
+  async updateOpsTask(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.title !== undefined) upd.title = patch.title;
+    if (patch.description !== undefined) upd.description = patch.description;
+    if (patch.status !== undefined) {
+      upd.status = patch.status;
+      upd.completed_at = patch.status === "done" ? new Date().toISOString() : null;
+    }
+    if (patch.priority !== undefined) upd.priority = patch.priority;
+    if (patch.dueDate !== undefined) upd.due_date = patch.dueDate;
+    if (patch.assignee !== undefined) upd.assignee = patch.assignee;
+    if (patch.costCents !== undefined) upd.cost_cents = patch.costCents;
+    if (patch.photos !== undefined) upd.photos = patch.photos;
+    const { data, error } = await db.from("operations_tasks").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapOpsTask(data);
+  },
+
+  async deleteOpsTask(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("operations_tasks").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async reconcileTurnovers(now = new Date()) {
+    const db = supabaseAdmin();
+    const { data: existingRows } = await db
+      .from("operations_tasks")
+      .select("reservation_id")
+      .eq("kind", "turnover")
+      .not("reservation_id", "is", null);
+    const existing = new Set((existingRows ?? []).map((r: { reservation_id: string }) => r.reservation_id));
+
+    const horizon = new Date(now.getTime() + 45 * 86_400_000).toISOString().slice(0, 10);
+    const today = now.toISOString().slice(0, 10);
+    const { data: reservations } = await db
+      .from("reservations")
+      .select("id,property_id,check_in,check_out,status")
+      .in("status", ["confirmed", "pending"])
+      .gte("check_out", today)
+      .lte("check_out", horizon);
+
+    const plan = planTurnovers(
+      (reservations ?? []).map((r: any) => ({
+        id: r.id,
+        propertyId: r.property_id,
+        checkIn: r.check_in,
+        checkOut: r.check_out,
+        status: r.status,
+      })),
+      existing,
+      now,
+    );
+    for (const input of plan) {
+      await this.createOpsTask(input);
+    }
+    return plan.length;
+  },
+
   // --- Media library (issue #81) --------------------------------
   async listMedia(filter) {
     const db = supabaseAdmin();
@@ -2237,6 +2354,27 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 };
+
+function mapOpsTask(row: any): OpsTask {
+  return {
+    id: row.id,
+    propertyId: row.property_id,
+    kind: row.kind,
+    title: row.title,
+    description: row.description ?? "",
+    status: row.status,
+    priority: row.priority,
+    dueDate: row.due_date ?? null,
+    assignee: row.assignee ?? null,
+    costCents: row.cost_cents ?? null,
+    reservationId: row.reservation_id ?? null,
+    photos: row.photos ?? [],
+    createdBy: row.created_by ?? null,
+    completedAt: row.completed_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 function mapMediaAsset(row: any): MediaAsset {
   return {

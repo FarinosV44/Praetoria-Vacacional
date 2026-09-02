@@ -778,3 +778,22 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   The guest route checks the invoice belongs to that reservation and is issued.
 - **noindex** via the middleware prefix list; linked from the footer and the
   confirmation email.
+
+## D-038 — #70 + #71 — one operations board
+**Date:** 2026-09-02 · issues #70, #71
+- **Housekeeping and maintenance are the same shape** — a task on a property
+  with a status, a priority, a due date and notes — so `operations_tasks` backs
+  both, distinguished by `kind` (turnover / cleaning / maintenance / incident).
+  Maintenance uses `cost_cents`; turnovers link `reservation_id`.
+- **Turnovers are derived, not entered.** Pure `planTurnovers` creates one
+  scheduled turnover per confirmed checkout inside a 45-day window; a stay that
+  starts the same day another ends is flagged `urgent`. `reconcileTurnovers`
+  (unique index on `reservation_id`) is idempotent and runs from
+  `/api/cron/turnovers` daily and an admin button.
+- **Photos** are just media-library URLs pasted onto a task — no separate
+  upload path, reuses #81.
+- **`operations.write`** capability, granted to admin + gestión (day-to-day
+  work), not lectura.
+- No owner workflow decision was needed for a first version — this is the
+  obvious shape; the owner can tell us later if their real turnover process
+  differs.

@@ -41,6 +41,7 @@ import type {
 } from "@/domains/comms/types";
 import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
 import type { MediaAsset, MediaUploadInput } from "@/domains/media/types";
+import type { OpsTask, OpsTaskInput, OpsFilter } from "@/domains/operations/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -522,6 +523,23 @@ export interface Repository {
   deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
   /** Delete audit rows created before `beforeIso`. Returns count. */
   deleteAuditLogBefore(beforeIso: string): Promise<number>;
+
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  listOpsTasks(filter?: OpsFilter): Promise<OpsTask[]>;
+  getOpsTask(id: string): Promise<OpsTask | null>;
+  createOpsTask(input: OpsTaskInput): Promise<OpsTask>;
+  updateOpsTask(
+    id: string,
+    patch: Partial<
+      Pick<
+        OpsTask,
+        "title" | "description" | "status" | "priority" | "dueDate" | "assignee" | "costCents" | "photos"
+      >
+    >,
+  ): Promise<OpsTask>;
+  deleteOpsTask(id: string): Promise<void>;
+  /** Auto-create a turnover task for every confirmed checkout in the window. */
+  reconcileTurnovers(now?: Date): Promise<number>;
 
   // --- Media library (issue #81) --------------------------------
   listMedia(filter?: { tag?: string; q?: string; limit?: number }): Promise<MediaAsset[]>;
