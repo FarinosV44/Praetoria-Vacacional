@@ -4,6 +4,11 @@
  * it logs a clear summary so a production deploy surfaces what is not configured.
  */
 export async function register() {
+  // Unmistakable proof, in the host's runtime logs, that the Next.js server
+  // process actually booted (and on which runtime).
+  console.log(
+    `### PRAETORIA instrumentation.register() · runtime=${process.env.NEXT_RUNTIME} · node=${process.version} · PORT=${process.env.PORT ?? "(unset)"} · ${new Date().toISOString()} ###`,
+  );
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   try {
     await registerImpl();
