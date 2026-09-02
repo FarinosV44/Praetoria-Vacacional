@@ -50,6 +50,7 @@ import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
 import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
+import type { MediaAsset } from "@/domains/media/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -2167,7 +2168,116 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
     return data?.length ?? 0;
   },
+
+  // --- Media library (issue #81) --------------------------------
+  async listMedia(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("media_assets").select().order("created_at", { ascending: false });
+    if (filter?.tag) q = q.contains("tags", [filter.tag]);
+    if (filter?.q) q = q.or(`filename.ilike.%${filter.q}%,alt.ilike.%${filter.q}%`);
+    q = q.limit(filter?.limit ?? 200);
+    const { data, error } = await q;
+    if (error) throw error;
+    const rows = (data ?? []).map(mapMediaAsset);
+    await attachSignedUrls(rows);
+    return rows;
+  },
+
+  async getMediaAsset(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("media_assets").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const row = mapMediaAsset(data);
+    await attachSignedUrls([row]);
+    return row;
+  },
+
+  async createMediaAsset(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("media_assets")
+      .insert({
+        bucket: "media",
+        path: input.path,
+        filename: input.filename,
+        mime: input.mime,
+        size_bytes: input.sizeBytes,
+        width: input.width ?? null,
+        height: input.height ?? null,
+        alt: input.alt ?? "",
+        tags: input.tags ?? [],
+        uploaded_by: input.uploadedBy ?? null,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapMediaAsset(data);
+  },
+
+  async updateMediaAsset(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.alt !== undefined) upd.alt = patch.alt;
+    if (patch.focalX !== undefined) upd.focal_x = patch.focalX;
+    if (patch.focalY !== undefined) upd.focal_y = patch.focalY;
+    if (patch.tags !== undefined) upd.tags = patch.tags;
+    const { data, error } = await db.from("media_assets").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapMediaAsset(data);
+  },
+
+  async deleteMediaAsset(id: string) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("media_assets").select("bucket,path").eq("id", id).maybeSingle();
+    if (data) {
+      await db.storage.from((data as { bucket: string }).bucket).remove([(data as { path: string }).path]);
+    }
+    const { error } = await db.from("media_assets").delete().eq("id", id);
+    if (error) throw error;
+  },
 };
+
+function mapMediaAsset(row: any): MediaAsset {
+  return {
+    id: row.id,
+    bucket: row.bucket ?? "media",
+    path: row.path,
+    filename: row.filename,
+    mime: row.mime,
+    sizeBytes: Number(row.size_bytes ?? 0),
+    width: row.width ?? null,
+    height: row.height ?? null,
+    alt: row.alt ?? "",
+    focalX: typeof row.focal_x === "number" ? row.focal_x : 0.5,
+    focalY: typeof row.focal_y === "number" ? row.focal_y : 0.5,
+    tags: row.tags ?? [],
+    uploadedBy: row.uploaded_by ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function attachSignedUrls(rows: MediaAsset[]): Promise<void> {
+  if (!rows.length) return;
+  const db = supabaseAdmin();
+  const byBucket = new Map<string, MediaAsset[]>();
+  for (const r of rows) {
+    const list = byBucket.get(r.bucket) ?? [];
+    list.push(r);
+    byBucket.set(r.bucket, list);
+  }
+  for (const [bucket, list] of byBucket) {
+    const { data } = await db.storage.from(bucket).createSignedUrls(
+      list.map((r) => r.path),
+      3600,
+    );
+    for (const entry of data ?? []) {
+      const match = list.find((r) => r.path === entry.path);
+      if (match && entry.signedUrl) match.signedUrl = entry.signedUrl;
+    }
+  }
+}
 
 function mapAdminUser(row: any): AdminUser {
   return {

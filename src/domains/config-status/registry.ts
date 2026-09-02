@@ -154,6 +154,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const media: ConfigFeature = {
+    key: "media",
+    label: "Biblioteca de medios",
+    impact:
+      "La biblioteca (subida, ALT, punto focal, etiquetas, reutilización) está implementada. Sin Supabase Storage no se pueden subir archivos.",
+    envVars: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    where: "Supabase → Storage → crear un bucket PRIVADO llamado «media»",
+    state: env.supabaseConfigured ? "configured" : "not_configured",
+    statusLine: env.supabaseConfigured
+      ? "Activa. Recuerda crear el bucket privado «media» en Supabase Storage."
+      : "Sin Storage. Configura Supabase y crea el bucket «media».",
+    publicMessage: null,
+  };
+
   const rateLimit: ConfigFeature = {
     key: "rate_limit",
     label: "Rate limiting distribuido",
@@ -196,7 +210,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

@@ -17,7 +17,7 @@ recreated as OS/scheduler cron (step 5).
 ## 1 · Pending database migrations (`supabase db push`)
 
 The production Supabase project has **never** had migrations applied (the site
-runs in DEMO mode today). So **all 18** migrations in `supabase/migrations/` are
+runs in DEMO mode today). So **all 19** migrations in `supabase/migrations/` are
 pending and apply in order:
 
 ```
@@ -30,10 +30,11 @@ pending and apply in order:
 20260828120000_coupon_10praetoria10       20260901120000_jobs
 20260829100000_intranet_crm               20260902120000_guest_comms
 20260829110000_reservation_external_status 20260902130000_admin_users
+20260902140000_media_library
 ```
 
 `supabase db push` reads `supabase_migrations.schema_migrations` and applies only
-what is missing — on a fresh project that is all 18. It is safe to re-run; every
+what is missing — on a fresh project that is all 19. It is safe to re-run; every
 migration is idempotent or tracked. (Or paste `supabase/apply-all-migrations.sql`
 into the SQL Editor.)
 
@@ -186,8 +187,9 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 
 ### A · Supabase
 - [ ] Create the production project. Copy URL + publishable + secret keys.
-- [ ] `supabase link` to it, then `supabase db push` (applies the 18 migrations).
+- [ ] `supabase link` to it, then `supabase db push` (applies the 19 migrations).
 - [ ] Run the two verify queries and the two `supabase/tests/*.sql` files (§1).
+- [ ] **Media library (issue #81):** Storage → New bucket → name `media`, **not public**. (The app serves files through signed URLs.) Nothing else to configure.
 - [ ] Database → Backups: confirm the plan's backup/PITR retention; do one test restore into a scratch project.
 - [ ] Add the 3 Supabase vars to Hostinger (§2b).
 - [ ] **Admin accounts (issue #65):** Authentication → Providers → enable **Email**;

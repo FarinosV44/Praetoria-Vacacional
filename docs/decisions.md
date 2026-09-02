@@ -744,3 +744,20 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 - **No dedicated refunds table.** The Stripe refund object is the system of
   record; we store its id/status on the `payments` row and in the reservation
   notes.
+
+## D-036 — #81 — media library
+**Date:** 2026-09-02 · issue #81
+- **Private bucket, signed URLs.** Files go to a Supabase Storage bucket `media`
+  the owner creates as private; `media_assets` rows hold the metadata and the
+  app mints short-lived signed URLs (batched via `createSignedUrls`) for the
+  admin grid. No public bucket, no guessable paths.
+- **Dimensions from the client.** No `sharp` in the build — the upload form
+  reads `naturalWidth/Height` from an `Image()` and posts them; width/height
+  stay optional.
+- **Focal point reuses the existing model.** `focal_x`/`focal_y` are 0–1
+  fractions → `object-position`, the same convention as `ResponsivePhoto`
+  (#93). Click the preview to set it.
+- **Optimisation** is left to `next/image` / Supabase's own render transforms
+  at point of use rather than a build step here.
+- **DEMO** keeps the metadata CRUD (so the UI renders) but blocks uploads —
+  there's nowhere to put the bytes without Storage.

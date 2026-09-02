@@ -40,6 +40,7 @@ import type {
   ScheduledMessageStatus,
 } from "@/domains/comms/types";
 import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
+import type { MediaAsset, MediaUploadInput } from "@/domains/media/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -521,4 +522,14 @@ export interface Repository {
   deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
   /** Delete audit rows created before `beforeIso`. Returns count. */
   deleteAuditLogBefore(beforeIso: string): Promise<number>;
+
+  // --- Media library (issue #81) --------------------------------
+  listMedia(filter?: { tag?: string; q?: string; limit?: number }): Promise<MediaAsset[]>;
+  getMediaAsset(id: string): Promise<MediaAsset | null>;
+  createMediaAsset(input: MediaUploadInput): Promise<MediaAsset>;
+  updateMediaAsset(
+    id: string,
+    patch: Partial<Pick<MediaAsset, "alt" | "focalX" | "focalY" | "tags">>,
+  ): Promise<MediaAsset>;
+  deleteMediaAsset(id: string): Promise<void>;
 }

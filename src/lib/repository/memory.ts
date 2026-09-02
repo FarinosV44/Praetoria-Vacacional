@@ -64,6 +64,7 @@ import type {
   ScheduledMessage,
 } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
+import type { MediaAsset } from "@/domains/media/types";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -124,6 +125,7 @@ interface Store {
   jobs: Job[];
   scheduledMessages: ScheduledMessage[];
   adminUsers: AdminUser[];
+  media: MediaAsset[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -219,6 +221,7 @@ function seed(): Store {
     jobs: [],
     scheduledMessages: [],
     adminUsers: [],
+    media: [],
   };
 }
 
@@ -352,6 +355,7 @@ store.auditLog ??= [];
 store.jobs ??= [];
 store.scheduledMessages ??= [];
 store.adminUsers ??= [];
+store.media ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1959,5 +1963,65 @@ export const memoryRepository: Repository = {
     store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
     save();
     return before - store.auditLog.length;
+  },
+
+  // --- Media library (issue #81) --------------------------------
+  async listMedia(filter) {
+    let out = [...store.media];
+    if (filter?.tag) out = out.filter((m) => m.tags.includes(filter.tag!));
+    if (filter?.q) {
+      const q = filter.q.toLowerCase();
+      out = out.filter(
+        (m) => m.filename.toLowerCase().includes(q) || m.alt.toLowerCase().includes(q),
+      );
+    }
+    out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return out.slice(0, filter?.limit ?? 200).map((m) => ({ ...m }));
+  },
+
+  async getMediaAsset(id: string) {
+    const m = store.media.find((x) => x.id === id);
+    return m ? { ...m } : null;
+  },
+
+  async createMediaAsset(input) {
+    const now = new Date().toISOString();
+    const row: MediaAsset = {
+      id: randomUUID(),
+      bucket: "media",
+      path: input.path,
+      filename: input.filename,
+      mime: input.mime,
+      sizeBytes: input.sizeBytes,
+      width: input.width ?? null,
+      height: input.height ?? null,
+      alt: input.alt ?? "",
+      focalX: 0.5,
+      focalY: 0.5,
+      tags: input.tags ?? [],
+      uploadedBy: input.uploadedBy ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.media.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateMediaAsset(id, patch) {
+    const m = store.media.find((x) => x.id === id);
+    if (!m) throw new Error("MEDIA_NOT_FOUND");
+    if (patch.alt !== undefined) m.alt = patch.alt;
+    if (patch.focalX !== undefined) m.focalX = patch.focalX;
+    if (patch.focalY !== undefined) m.focalY = patch.focalY;
+    if (patch.tags !== undefined) m.tags = patch.tags;
+    m.updatedAt = new Date().toISOString();
+    save();
+    return { ...m };
+  },
+
+  async deleteMediaAsset(id: string) {
+    store.media = store.media.filter((m) => m.id !== id);
+    save();
   },
 };
