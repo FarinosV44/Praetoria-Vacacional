@@ -258,6 +258,32 @@ commit. `next build` was unaffected.)
 
 ## Exact position
 
+**2026-09-02 (session: "do all the issues") — #66/#62/#65/#79/#67/#81/#69/#68/
+#70/#71/#73/#74/#72/#78/#85 + an env bugfix.** All merged to `main` in three
+batches. Highlights:
+- #66 observability (structured logs + Sentry, no SDK) · #62 distributed rate
+  limiting + denylist · #65 admin multi-user on Supabase Auth (per-user RBAC,
+  MFA, revocable sessions) · #79 GDPR retention sweep + data-subject
+  access/export/erasure · #67 tiered refunds + Stripe reconciliation cycle ·
+  #81 media library (private Storage, ALT, focal point) · #68 passwordless guest
+  portal (magic link, balance payment, invoice, arrival) · #70/#71 operations
+  board (auto turnovers, maintenance, incidents) · #73 campaigns send over
+  Resend (one-click unsubscribe, bounce suppression) · #74 explainable dynamic
+  pricing with guardrails · #72 digital check-in + SES.HOSPEDAJES parte
+  generation · #78 Lighthouse CI + perf budgets · #85 EN drafts of the guide
+  hubs (marked for review; `docs/i18n-status.md`).
+- **Bugfix D-043:** `supabaseConfigured` no longer depends on the build-time
+  `NEXT_PUBLIC_SUPABASE_URL` — new runtime `SUPABASE_URL`. Fixes the iCal import
+  URL being lost on redeploy. `/api/health` + `/admin/sincronizacion` now
+  diagnose it.
+- New migrations `20260902120000`…`20260902160000` (guest_comms, admin_users,
+  media_library, operations, traveller_registry). New crons: comms, privacy,
+  reconcile, turnovers, pricing.
+- Decisions D-030…D-044. `tsc` + `lint` + `build` clean · **375 unit** · e2e
+  green throughout. **Owner follow-ups** are per-issue in `docs/issues.md`
+  (mostly: apply migrations, create the `media` bucket, set optional env vars,
+  enable Supabase Auth, add the new cron jobs).
+
 **2026-09-02 (later) — #69 guest communications lifecycle, on `develop`:**
 `src/domains/comms/*` — pure `planReservationComms` (reservation + per-property
 `CommRule[]` → `pre_arrival`/`checkin_info`/`checkout_reminder`/`review_request`;

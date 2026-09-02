@@ -877,3 +877,15 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   presence + a `hint` when a key is set but the URL isn't resolving.
   `/admin/sincronizacion` shows a red banner for that exact situation and
   another when `channel_feeds` can't be read (missing migration).
+
+## D-044 — #85 — EN as reviewable drafts, not a big-bang translation
+**Date:** 2026-09-02 · user choice ("draft EN, mark for review")
+- **`en?` block per content object.** Present ≠ live: the `/en/...` route shows
+  a draft banner, sets `robots: noindex`, is excluded from `getIndexableRoutes`
+  and emits no `hreflang`. Approving a page = 4 small steps in
+  `docs/i18n-status.md`.
+- **Shipped now:** EN drafts of the two guide hubs (the pillar SEO pages).
+  Home / property pages / checkout were already bilingual (#29).
+- **Legal is explicitly not machine-translated** — the doc says to commission a
+  professional EN version and keep a "Spanish version prevails" notice.
+- Blog EN is the owner's job — the CMS model already carries a locale field.

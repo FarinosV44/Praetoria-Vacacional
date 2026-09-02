@@ -5,6 +5,17 @@
  *   /guias/javalambre/<slug> /guias/valencia-playa/<slug>
  */
 
+export interface GuideHubEn {
+  metaTitle: string;
+  metaDescription: string;
+  eyebrow: string;
+  h1: string;
+  lead: string;
+  quickFacts: { label: string; value: string }[];
+  sections: { heading: string; body: string[]; list?: string[] }[];
+  faq: { question: string; answer: string }[];
+}
+
 export interface GuideHub {
   slug: string; // URL segment
   propertySlug: "javalambre" | "valencia";
@@ -19,6 +30,12 @@ export interface GuideHub {
   sections: { heading: string; body: string[]; list?: string[] }[];
   faq: { question: string; answer: string }[];
   updated: string;
+  /**
+   * Issue #85 — English draft. Present ≠ published: the `/en/guias/<slug>` route
+   * renders it with a "draft, pending review" banner, `noindex`, and it is not
+   * in the sitemap or hreflang until the owner approves.
+   */
+  en?: GuideHubEn;
 }
 
 export const guideHubs: GuideHub[] = [
@@ -86,6 +103,67 @@ export const guideHubs: GuideHub[] = [
       },
     ],
     updated: "2026-08-27",
+    en: {
+      metaTitle: "Javalambre guide: skiing, Camarena de la Sierra and what to do",
+      metaDescription:
+        "A practical guide to a Javalambre getaway: the ski resort, the village of Camarena de la Sierra, how to get there, where to stay and what to do with or without snow.",
+      eyebrow: "Destination guide · Teruel",
+      h1: "Guide to Javalambre and Camarena de la Sierra",
+      lead: "Everything you need to plan a trip to the Javalambre mountains, in southern Teruel: the most convenient ski resort to reach from Valencia, the village of Camarena de la Sierra ten minutes from the slopes, how to get there and what to do all year round.",
+      quickFacts: [
+        { label: "Where", value: "Javalambre mountains, southern Teruel (Aragón)" },
+        { label: "Base village", value: "Camarena de la Sierra" },
+        { label: "To the slopes", value: "~10 min by car from Camarena" },
+        { label: "From Valencia / Zaragoza", value: "~2 h by car" },
+        { label: "Ski season", value: "December – March (snow permitting)" },
+        { label: "Nearest train", value: "Puebla de Valverde (15 km)" },
+      ],
+      sections: [
+        {
+          heading: "Where it is and how to get there",
+          body: [
+            "The Javalambre range sits at the far south of the province of Teruel, in the Gúdar-Javalambre district. You get there by car on the A-23 (Sagunto–Teruel) and then mountain roads up to Camarena de la Sierra, the village at the foot of the resort.",
+            "It is about two hours from Valencia, a little more from Zaragoza, and around 40 minutes from the city of Teruel. In winter it is worth carrying chains or winter tyres. The nearest train station is Puebla de Valverde, 15 km away.",
+          ],
+        },
+        {
+          heading: "The Javalambre ski resort",
+          body: [
+            "Javalambre is part of the Aramón group, together with Valdelinares. It is a mid-sized resort with wide pistes and a profile that is especially comfortable for families and for people who are still learning. The top station is above 2,000 m.",
+            "There is no accommodation at the foot of the slopes: most visitors stay in Camarena de la Sierra (about 10 minutes by car) or in the villages of the district.",
+          ],
+        },
+        {
+          heading: "Camarena de la Sierra, the village of springs",
+          body: [
+            "Camarena is a stone mountain village in a valley with numerous springs, about 10 minutes from the resort. It keeps the feel of a traditional mountain village — lanes, fountains and a pace far from the big ski resorts. As well as being the base for skiing, it is a starting point for hiking, mountain-biking and climbing routes, and it has a river walk that families can do.",
+          ],
+        },
+        {
+          heading: "A sky full of stars",
+          body: [
+            "The Gúdar-Javalambre district is certified as a Starlight Tourist Destination and has one of the darkest skies in Europe. The Javalambre Astrophysical Observatory is very close; on a clear night the Milky Way is visible to the naked eye.",
+          ],
+        },
+      ],
+      faq: [
+        {
+          question: "When does the Javalambre resort open?",
+          answer:
+            "The season usually runs from December to March, subject to snow conditions. Check Aramón's official calendar before planning the trip.",
+        },
+        {
+          question: "Where is it best to stay to ski at Javalambre?",
+          answer:
+            "In Camarena de la Sierra, the village closest to the resort (about 10 minutes by car), with services and a ski room.",
+        },
+        {
+          question: "Is Javalambre worth visiting without skiing?",
+          answer:
+            "Yes. Hiking, mountain biking, climbing, mushroom foraging, stargazing and the villages of Gúdar-Javalambre make it a year-round mountain destination.",
+        },
+      ],
+    },
   },
   {
     slug: "valencia-playa",
@@ -156,8 +234,83 @@ export const guideHubs: GuideHub[] = [
       },
     ],
     updated: "2026-08-28",
+    en: {
+      metaTitle: "La Llastra beach guide: El Perelló, Albufera and Valencia",
+      metaDescription:
+        "A practical guide to the southern Valencia coast: La Llastra beach between Les Palmeres and El Perelló, the Albufera nature park, Cullera and the rice fields, with the city of Valencia half an hour away.",
+      eyebrow: "Destination guide · Southern Valencia coast",
+      h1: "Guide to La Llastra beach and the southern Valencia coast",
+      lead: "Everything to plan a getaway to the southern coast of the province of Valencia: La Llastra beach between Les Palmeres and El Perelló, the Albufera Nature Park, Cullera and the rice fields, with the city of Valencia half an hour away.",
+      quickFacts: [
+        { label: "Where", value: "La Llastra beach (Sueca), southern Valencia coast" },
+        { label: "Beach", value: "La Llastra: pale sand, uncrowded" },
+        { label: "To Valencia city", value: "~30 min by car" },
+        { label: "To the Albufera", value: "8 km" },
+        { label: "To Cullera", value: "~9 km" },
+        { label: "Nearest train", value: "Sueca (8 km) / Cullera (11 km)" },
+      ],
+      sections: [
+        {
+          heading: "Where it is and how to get there",
+          body: [
+            "La Llastra beach is on the southern coast of the province of Valencia, between Les Palmeres and El Perelló, in the municipality of Sueca and next to the Albufera Nature Park.",
+            "By car from Valencia it is about 30 minutes via the V-31 and the CV-500. The train stations of Sueca (8 km) and Cullera (11 km) are on Cercanías line C-1. Valencia airport is 34 km away.",
+          ],
+        },
+        {
+          heading: "The beach and its character",
+          body: [
+            "La Llastra is a stretch of pale sand with generally clean water, uncrowded and away from the large tourist complexes. It is a part of the Valencian coast that keeps a more traditional scale, with low houses tied to the sea and a family atmosphere, far from the bustle of the city beach in Valencia.",
+            "To the south is El Perelló, with its marina and its rice restaurants; to the north, Les Palmeres and El Perellonet; and beyond, the long Cullera beach with its lighthouse and castle.",
+          ],
+        },
+        {
+          heading: "The Albufera",
+          body: [
+            "The Albufera Nature Park, 8 km away, is the largest freshwater lake in Spain, surrounded by rice fields. A boat trip at sunset from El Palmar or El Perellonet is one of the essential things to do, and it ends with rice in the village.",
+          ],
+        },
+        {
+          heading: "The city of Valencia, half an hour away",
+          body: [
+            "The city of Valencia — old town, Central Market, the Silk Exchange, the City of Arts and Sciences and the Oceanogràfic — is about 30 minutes by car or by train from Sueca. Beach in the morning and city in the afternoon is a perfectly workable plan from here.",
+          ],
+        },
+      ],
+      faq: [
+        {
+          question: "Is La Llastra beach crowded?",
+          answer:
+            "No. It is a quiet stretch of the southern Valencia coast, with pale sand and generally clean water, very different from the city beach and away from the large tourist complexes.",
+        },
+        {
+          question: "Where exactly is La Llastra beach?",
+          answer:
+            "In the municipality of Sueca, between Les Palmeres and El Perelló, on the southern coast of the province of Valencia, next to the Albufera. The city of Valencia is about half an hour away by car.",
+        },
+        {
+          question: "Can you get to the city of Valencia from here without a car?",
+          answer:
+            "Yes, by Cercanías train from Sueca or Cullera (about 40–50 minutes to Valencia Nord station), though you will need a taxi or local bus to reach the station from the beach.",
+        },
+        {
+          question: "Where do you eat the best rice in the area?",
+          answer:
+            "In the restaurants of El Perelló and around, and above all in El Palmar, in the heart of the Albufera.",
+        },
+      ],
+    },
   },
 ];
+
+/** Issue #85 — the EN draft merged onto the hub, or null. */
+export function getGuideHubEn(slug: string): (GuideHub & { en: GuideHubEn }) | null {
+  const h = guideHubs.find((x) => x.slug === slug);
+  return h?.en ? (h as GuideHub & { en: GuideHubEn }) : null;
+}
+export function guideHubsWithEn(): GuideHub[] {
+  return guideHubs.filter((h) => h.en);
+}
 
 export function getGuideHub(slug: string): GuideHub | undefined {
   return guideHubs.find((h) => h.slug === slug);
