@@ -849,3 +849,15 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   of check-ins with a completeness badge; the reservation detail has the parte
   download + submit/mark-sent.
 - No `payments`-style webhook — this registry is push-only to the Ministry.
+
+## D-042 — #78 — Lighthouse CI + performance budgets
+**Date:** 2026-09-02 · issue #78
+- **Budgets in `lighthouserc.json`, enforced by CI.** A new `lighthouse` job
+  builds + `next start`s the app and audits 5 representative URLs (3 runs,
+  median).
+- **Hard gates vs. annotations.** Accessibility ≥ 0.95, SEO ≥ 0.95 and CLS ≤ 0.1
+  fail the job; performance / LCP / TBT / bundle size are `warn` — Lighthouse on
+  a shared GitHub runner is too noisy to gate a merge on the perf score, but the
+  trend is visible on every PR and the stable checks are real gates.
+- **Field CWV stays a manual gate** (Search Console + PageSpeed Insights on the
+  live domain) — documented in `docs/perf-budget.md` and the final audit.
