@@ -83,6 +83,13 @@ const schema = z.object({
   OBSERVABILITY_ENV: z.string().optional(),
   OBSERVABILITY_RELEASE: z.string().optional(),
 
+  // SES.HOSPEDAJES — Spain traveller registry (issue #72). Obtain from the
+  // Guardia Civil / Policía Nacional portal. Absent → the parte is generated and
+  // the owner submits it manually on the official portal.
+  SES_HOSPEDAJES_USER: z.string().optional(),
+  SES_HOSPEDAJES_PASSWORD: z.string().optional(),
+  SES_HOSPEDAJES_ESTABLISHMENT: z.string().optional(),
+
   // WhatsApp concierge (issue #97) — E.164 digits only, e.g. 34600111222.
   // Absent → the floating WhatsApp button does not render.
   NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
@@ -167,6 +174,11 @@ export const env = {
   rateLimitRedisToken,
   rateLimitDistributed: !!rateLimitRedisUrl && !!rateLimitRedisToken,
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
+  SES_HOSPEDAJES_USER: isReal(raw.SES_HOSPEDAJES_USER) ? raw.SES_HOSPEDAJES_USER : undefined,
+  SES_HOSPEDAJES_PASSWORD: isReal(raw.SES_HOSPEDAJES_PASSWORD) ? raw.SES_HOSPEDAJES_PASSWORD : undefined,
+  SES_HOSPEDAJES_ESTABLISHMENT: isReal(raw.SES_HOSPEDAJES_ESTABLISHMENT)
+    ? raw.SES_HOSPEDAJES_ESTABLISHMENT
+    : undefined,
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
   /** Resolved boolean — see `isFlagOn`. Overrides the raw string from `...raw`. */

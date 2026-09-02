@@ -197,6 +197,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const travellerRegistry: ConfigFeature = {
+    key: "traveller_registry",
+    label: "Registro de viajeros (SES.HOSPEDAJES)",
+    impact:
+      "El check-in online, la validación de datos (RD 933/2021), la generación del parte y el registro manual del envío están implementados. La transmisión automática necesita las credenciales del portal del Ministerio del Interior.",
+    envVars: ["SES_HOSPEDAJES_USER", "SES_HOSPEDAJES_PASSWORD", "SES_HOSPEDAJES_ESTABLISHMENT"],
+    where: "Portal SES.HOSPEDAJES (Guardia Civil / Policía Nacional) — alta de arrendador y credenciales",
+    state: env.SES_HOSPEDAJES_ESTABLISHMENT ? "configured" : "not_configured",
+    statusLine: env.SES_HOSPEDAJES_ESTABLISHMENT
+      ? "Datos de establecimiento configurados. La conexión al web service se finaliza con el WSDL/certificado."
+      : "Sin configurar: el parte se genera y se sube manualmente al portal oficial.",
+    publicMessage: null,
+  };
+
   const whatsapp: ConfigFeature = {
     key: "whatsapp",
     label: "WhatsApp concierge",
@@ -211,7 +225,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, travellerRegistry, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

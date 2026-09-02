@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { cancelReservationAction } from "@/domains/admin/actions";
 import { CancelWithRefund } from "./CancelWithRefund";
+import { PartePanel } from "./PartePanel";
 import { ReservationForm } from "../ReservationForm";
 import { updateReservationAction } from "@/domains/reservations/actions";
 import { draftInvoiceFromReservationAction } from "@/domains/invoicing/actions";
@@ -182,6 +183,16 @@ export default async function ReservaDetailPage({ params }: { params: Promise<{ 
           )}
         </section>
       </div>
+
+      {(reservation.status === "confirmed" || reservation.status === "pending") && (
+        <PartePanel
+          reservationId={reservation.id}
+          code={reservation.code}
+          guests={reservation.guests}
+          checkIn={reservation.checkIn}
+          travellers={await repo.listTravellers(reservation.id)}
+        />
+      )}
 
       <section className="admin-card p-4">
         <h2 className="mb-3 text-sm font-semibold">Editar datos</h2>

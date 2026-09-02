@@ -121,6 +121,17 @@ export default async function PortalPage({
       )}
 
       <section className="mt-8">
+        <h2 className="font-display text-lg">Check-in online (obligatorio)</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+          Antes de tu llegada, registra los datos de todas las personas que se alojan (normativa
+          RD 933/2021).
+        </p>
+        <Link href={`/mi-reserva/${token}/checkin`} className="pv-btn pv-btn--primary mt-3 inline-flex">
+          Completar el check-in
+        </Link>
+      </section>
+
+      <section className="mt-8">
         <h2 className="font-display text-lg">Tu llegada y peticiones</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
           Indícanos a qué hora prevés llegar y cuéntanos cualquier petición (cuna, llegada tardía,

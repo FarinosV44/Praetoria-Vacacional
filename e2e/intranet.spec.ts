@@ -30,6 +30,7 @@ const PRIVATE_ROUTES = [
   "/admin/media",
   "/admin/operaciones",
   "/admin/precios-dinamicos",
+  "/admin/registro-viajeros",
 ];
 
 test("every intranet route redirects an unauthenticated visitor to the login", async ({ request }) => {

@@ -832,3 +832,20 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   whose owner has ticked `enabled` (default off). `/api/cron/pricing` runs
   daily; `applyDynamicPricing(slug, {force:true})` is the manual "apply now".
   Everything is audit-logged.
+
+## D-041 — #72 — traveller registry (SES.HOSPEDAJES)
+**Date:** 2026-09-02 · issue #72
+- **Collect + generate now, transmit when credentialed.** RD 933/2021 data is
+  gathered through the guest portal's check-in (`/mi-reserva/[token]/checkin`),
+  validated (`validateTraveller`: DNI/NIE format, mandatory payment method,
+  Spanish-resident municipality/province), and assembled into the parte
+  (`buildParte`). The SES.HOSPEDAJES web-service binding needs the owner's WSDL
+  and certificate, so `submitParte` returns a clear "not configured / binding
+  pending" and the owner uploads the generated parte on the official portal,
+  then records it with "marcar enviado".
+- **Lead traveller = first added.** Minors are detected (`isMinor` at the stay
+  date) so the form can ask for `parentesco`.
+- **Admin surfaces the gap.** `/admin/registro-viajeros` lists the next 14 days
+  of check-ins with a completeness badge; the reservation detail has the parte
+  download + submit/mark-sent.
+- No `payments`-style webhook — this registry is push-only to the Ministry.

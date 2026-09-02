@@ -66,6 +66,7 @@ import type {
 import type { AdminUser } from "@/domains/admin/users";
 import type { MediaAsset } from "@/domains/media/types";
 import type { OpsTask } from "@/domains/operations/types";
+import type { Traveller } from "@/domains/registry/types";
 import { compareTasks, planTurnovers } from "@/domains/operations/planning";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
@@ -129,6 +130,7 @@ interface Store {
   adminUsers: AdminUser[];
   media: MediaAsset[];
   opsTasks: OpsTask[];
+  travellers: Traveller[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -226,6 +228,7 @@ function seed(): Store {
     adminUsers: [],
     media: [],
     opsTasks: [],
+    travellers: [],
   };
 }
 
@@ -361,6 +364,7 @@ store.scheduledMessages ??= [];
 store.adminUsers ??= [];
 store.media ??= [];
 store.opsTasks ??= [];
+store.travellers ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1988,6 +1992,90 @@ export const memoryRepository: Repository = {
     store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
     save();
     return before - store.auditLog.length;
+  },
+
+  // --- Traveller registry / SES.HOSPEDAJES (issue #72) ----------
+  async listTravellers(reservationId: string) {
+    return store.travellers
+      .filter((t) => t.reservationId === reservationId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map((t) => ({ ...t }));
+  },
+
+  async upcomingTravellerRegistrations(days: number) {
+    const today = todayIso();
+    const until = addDays(today, days);
+    const out: { reservation: Reservation; travellers: Traveller[] }[] = [];
+    for (const r of store.reservations) {
+      if (r.status !== "confirmed") continue;
+      if (r.checkIn < today || r.checkIn > until) continue;
+      out.push({
+        reservation: { ...r },
+        travellers: store.travellers.filter((t) => t.reservationId === r.id).map((t) => ({ ...t })),
+      });
+    }
+    return out.sort((a, b) => a.reservation.checkIn.localeCompare(b.reservation.checkIn));
+  },
+
+  async addTraveller(input) {
+    const now = new Date().toISOString();
+    const row: Traveller = {
+      id: randomUUID(),
+      reservationId: input.reservationId,
+      fullName: input.fullName,
+      firstSurname: input.firstSurname ?? null,
+      secondSurname: input.secondSurname ?? null,
+      docType: input.docType,
+      docNumber: input.docNumber,
+      docSupport: input.docSupport ?? null,
+      nationality: input.nationality ?? "ESP",
+      birthDate: input.birthDate ?? null,
+      gender: input.gender ?? null,
+      phone: input.phone ?? null,
+      email: input.email ?? null,
+      addressCountry: input.addressCountry ?? "ESP",
+      addressLine: input.addressLine ?? null,
+      municipality: input.municipality ?? null,
+      province: input.province ?? null,
+      postalCode: input.postalCode ?? null,
+      kinship: input.kinship ?? null,
+      isLead: input.isLead ?? false,
+      paymentMethod: input.paymentMethod ?? null,
+      signedAt: now,
+      sentAt: null,
+      sentRef: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.travellers.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateTraveller(id, patch) {
+    const t = store.travellers.find((x) => x.id === id);
+    if (!t) throw new Error("TRAVELLER_NOT_FOUND");
+    Object.assign(t, patch);
+    t.updatedAt = new Date().toISOString();
+    save();
+    return { ...t };
+  },
+
+  async deleteTraveller(id: string) {
+    store.travellers = store.travellers.filter((t) => t.id !== id);
+    save();
+  },
+
+  async markTravellersSent(reservationId: string, ref: string) {
+    const now = new Date().toISOString();
+    for (const t of store.travellers) {
+      if (t.reservationId === reservationId) {
+        t.sentAt = now;
+        t.sentRef = ref;
+        t.updatedAt = now;
+      }
+    }
+    save();
   },
 
   // --- Operations: housekeeping + maintenance (issues #70, #71) --

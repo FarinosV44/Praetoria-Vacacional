@@ -42,6 +42,7 @@ import type {
 import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
 import type { MediaAsset, MediaUploadInput } from "@/domains/media/types";
 import type { OpsTask, OpsTaskInput, OpsFilter } from "@/domains/operations/types";
+import type { Traveller, TravellerInput } from "@/domains/registry/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -532,6 +533,15 @@ export interface Repository {
   deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
   /** Delete audit rows created before `beforeIso`. Returns count. */
   deleteAuditLogBefore(beforeIso: string): Promise<number>;
+
+  // --- Traveller registry / SES.HOSPEDAJES (issue #72) ----------
+  listTravellers(reservationId: string): Promise<Traveller[]>;
+  /** Every traveller across reservations checking in within `days`. */
+  upcomingTravellerRegistrations(days: number): Promise<{ reservation: Reservation; travellers: Traveller[] }[]>;
+  addTraveller(input: TravellerInput): Promise<Traveller>;
+  updateTraveller(id: string, patch: Partial<TravellerInput>): Promise<Traveller>;
+  deleteTraveller(id: string): Promise<void>;
+  markTravellersSent(reservationId: string, ref: string): Promise<void>;
 
   // --- Operations: housekeeping + maintenance (issues #70, #71) --
   listOpsTasks(filter?: OpsFilter): Promise<OpsTask[]>;
