@@ -34,6 +34,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const started = Date.now();
+  console.log(`### PRAETORIA /api/health hit @ ${new Date().toISOString()} ###`);
   const checks: Record<string, "ok" | "demo" | "error"> = {};
 
   // Data layer round-trip.

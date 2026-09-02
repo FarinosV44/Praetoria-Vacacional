@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node .next/standalone/server.js",
+    "start": "node scripts/start.mjs",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -19,8 +19,7 @@
     "db:reset": "supabase db reset",
     "format": "prettier --write .",
     "db:bundle": "node scripts/build-setup-sql.mjs",
-    "postbuild": "node scripts/postbuild-standalone.mjs",
-    "start:next": "next start"
+    "start:plain": "next start"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
