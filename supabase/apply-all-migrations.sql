@@ -627,9 +627,9 @@ do $$ begin
 end $$;
 
 alter table reservations
-  add column coupon_code          text,
-  add column original_total_cents bigint,
-  add column discount_cents       bigint not null default 0;
+  add column if not exists coupon_code          text,
+  add column if not exists original_total_cents bigint,
+  add column if not exists discount_cents       bigint not null default 0;
 
 create table if not exists coupon_redemptions (
   id             uuid primary key default gen_random_uuid(),
@@ -827,19 +827,19 @@ end $$;
 -- reservations enrichment
 -- ---------------------------------------------------------------------------
 alter table reservations
-  add column customer_id        uuid references customers(id) on delete set null,
-  add column channel_detail     text,          -- free text ("Booking.com", "Airbnb", ...)
-  add column guest_doc_type     text,
-  add column guest_doc_number   text,
-  add column guest_address      text,
-  add column guest_postal_code  text,
-  add column guest_city         text,
-  add column guest_province     text,
-  add column guest_country      text,
-  add column external_locator   text,          -- Booking/Airbnb confirmation code
-  add column invoice_number     text,          -- manually assigned PRAETORIA number
-  add column payment_method     text,
-  add column payment_state      text not null default 'pending'
+  add column if not exists customer_id        uuid references customers(id) on delete set null,
+  add column if not exists channel_detail     text,          -- free text ("Booking.com", "Airbnb", ...)
+  add column if not exists guest_doc_type     text,
+  add column if not exists guest_doc_number   text,
+  add column if not exists guest_address      text,
+  add column if not exists guest_postal_code  text,
+  add column if not exists guest_city         text,
+  add column if not exists guest_province     text,
+  add column if not exists guest_country      text,
+  add column if not exists external_locator   text,          -- Booking/Airbnb confirmation code
+  add column if not exists invoice_number     text,          -- manually assigned PRAETORIA number
+  add column if not exists payment_method     text,
+  add column if not exists payment_state      text not null default 'pending'
     check (payment_state in ('pending', 'partial', 'paid', 'refunded'));
 
 create index if not exists reservations_customer_idx on reservations (customer_id);
