@@ -45,6 +45,10 @@ function idempotent(sql) {
   // create table NAME (        -> add "if not exists"
   sql = sql.replace(/^create table (?!if not exists)(\w+)\s*\(/gim, "create table if not exists $1 (");
 
+  // alter table … add column NAME …  -> add column if not exists NAME …
+  // (per-clause, so a multi-column ALTER is safe even if some columns exist)
+  sql = sql.replace(/\badd column (?!if not exists)(\w+)/gi, "add column if not exists $1");
+
   // create [unique] index NAME on ...  -> add "if not exists"
   sql = sql.replace(
     /^create (unique )?index (?!if not exists)(\w+)\s+on/gim,
