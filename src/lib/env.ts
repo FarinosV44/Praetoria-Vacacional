@@ -39,6 +39,10 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("Praetoria Vacacional <reservas@example.com>"),
   EMAIL_REPLY_TO: z.string().optional(),
+  /** Optional separate From for marketing campaigns (issue #73). */
+  MARKETING_FROM: z.string().optional(),
+  /** Resend webhook signing secret for bounce/complaint suppression (issue #73). */
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
 
   // Admin
   ADMIN_EMAILS: z.string().default(""),
@@ -152,6 +156,8 @@ export const env = {
   stripeConfigured: isReal(raw.STRIPE_SECRET_KEY) && isReal(raw.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),
+  MARKETING_FROM: isReal(raw.MARKETING_FROM) ? raw.MARKETING_FROM : undefined,
+  RESEND_WEBHOOK_SECRET: isReal(raw.RESEND_WEBHOOK_SECRET) ? raw.RESEND_WEBHOOK_SECRET : undefined,
   icalExportConfigured: isReal(raw.ICAL_EXPORT_TOKEN),
   CRON_SECRET: isReal(raw.CRON_SECRET) ? raw.CRON_SECRET : undefined,
   adminConfigured: isReal(raw.ADMIN_PASSWORD),

@@ -849,6 +849,26 @@ export const supabaseRepository: Repository = {
     return mapCampaign(data);
   },
 
+  async markCampaignRecipient(recipientId, status, error) {
+    const db = supabaseAdmin();
+    await db
+      .from("campaign_recipients")
+      .update({ status, error: error ?? null })
+      .eq("id", recipientId);
+  },
+
+  async finishCampaign(campaignId, sentCount) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "sent", sent_at: new Date().toISOString(), recipient_count: sentCount })
+      .eq("id", campaignId)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+
   async addUnsubscribe(email, source) {
     const db = supabaseAdmin();
     const e = email.trim().toLowerCase();

@@ -838,6 +838,26 @@ export const memoryRepository: Repository = {
     return store.campaignRecipients.filter((r) => r.campaignId === id);
   },
 
+  async markCampaignRecipient(recipientId, status, error) {
+    const r = store.campaignRecipients.find((x) => x.id === recipientId);
+    if (!r) return;
+    r.status = status;
+    r.error = error ?? null;
+    save();
+  },
+
+  async finishCampaign(campaignId, sentCount) {
+    const campaign = store.campaigns.find((c) => c.id === campaignId);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    const now = new Date().toISOString();
+    campaign.status = "sent";
+    campaign.sentAt = now;
+    campaign.recipientCount = sentCount;
+    campaign.updatedAt = now;
+    save();
+    return campaign;
+  },
+
   async markCampaignSent(id) {
     const campaign = store.campaigns.find((c) => c.id === id);
     if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");

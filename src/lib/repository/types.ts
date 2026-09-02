@@ -209,6 +209,7 @@ export interface EmailLogEntry {
     | "confirmation"
     | "payment_failed"
     | "internal"
+    | "marketing"
     | "pre_arrival"
     | "checkin_info"
     | "checkout_reminder"
@@ -405,8 +406,16 @@ export interface Repository {
   /** Materialise the recipient list from the segment, honouring consent + unsubscribes. */
   prepareCampaign(id: string): Promise<{ campaign: Campaign; recipients: number; skipped: number }>;
   listCampaignRecipients(id: string): Promise<CampaignRecipient[]>;
-  /** Records the send intent. Real bulk send is not wired (Aún no configurado). */
+  /** Records the send intent (channels without a live sender stay "skipped"). */
   markCampaignSent(id: string): Promise<Campaign>;
+  /** Issue #73 — per-recipient outcome during a real send. */
+  markCampaignRecipient(
+    recipientId: string,
+    status: CampaignRecipient["status"],
+    error?: string | null,
+  ): Promise<void>;
+  /** Issue #73 — close a campaign after a real send with the delivered count. */
+  finishCampaign(campaignId: string, sentCount: number): Promise<Campaign>;
 
   addUnsubscribe(email: string, source?: string): Promise<void>;
   isUnsubscribed(email: string): Promise<boolean>;

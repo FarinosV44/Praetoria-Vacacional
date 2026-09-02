@@ -797,3 +797,21 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 - No owner workflow decision was needed for a first version — this is the
   obvious shape; the owner can tell us later if their real turnover process
   differs.
+
+## D-039 — #73 — marketing in production over Resend
+**Date:** 2026-09-02 · user choice (Resend, the existing email provider)
+- **No new provider.** Campaigns send through the same Resend account as the
+  transactional email. Not Resend Broadcasts/Audiences — we already own the
+  segment engine, consent gate and suppression list (#56 §6), so `sendCampaign`
+  just iterates the prepared recipients and calls `emails.send`.
+- **Deliverability basics baked in.** RFC-8058 `List-Unsubscribe` +
+  `List-Unsubscribe-Post: One-Click` headers, a visible unsubscribe link, an
+  optional dedicated `MARKETING_FROM`, and a per-recipient suppression re-check
+  at send time (not only at prepare time).
+- **Stateless unsubscribe.** HMAC token of the email → `/baja` (human) and
+  `/api/marketing/unsubscribe` (mail-client one-click POST). No expiry.
+- **Bounces & complaints.** `/api/webhooks/resend` verifies the Svix signature
+  and adds `email.bounced` / `email.complained` / `email.failed` recipients to
+  the suppression list.
+- WhatsApp bulk send is still unconfigured — that channel keeps the
+  intent-only `markCampaignSent` path.

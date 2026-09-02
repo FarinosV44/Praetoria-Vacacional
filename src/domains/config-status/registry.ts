@@ -143,14 +143,15 @@ export function getConfigFeatures(): ConfigFeature[] {
 
   const campaigns: ConfigFeature = {
     key: "campaigns",
-    label: "Envío de campañas (email/WhatsApp masivo)",
+    label: "Envío de campañas por email",
     impact:
-      "Los segmentos, las listas guardadas, la exportación CSV de contactos y la preparación de campañas (con consentimiento y bajas) están implementados. El envío masivo real necesita activar un proveedor.",
-    envVars: ["MARKETING_SENDER_PROVIDER"],
-    where: "Pendiente de decisión de proveedor (Resend Broadcasts u otro)",
-    state: "not_configured",
-    statusLine:
-      "Aún no configurado. Puedes segmentar, exportar y preparar campañas; el botón de envío registra la intención pero no envía nada.",
+      "Segmentos, listas, exportación CSV, preparación con consentimiento y bajas, y el envío real por Resend (con cabecera de baja en un clic RFC-8058 y supresión por rebote) están implementados. El envío de WhatsApp masivo sigue pendiente de proveedor.",
+    envVars: ["RESEND_API_KEY", "MARKETING_FROM", "RESEND_WEBHOOK_SECRET"],
+    where: "Resend (misma cuenta que los correos transaccionales) · webhook a /api/webhooks/resend",
+    state: env.emailConfigured ? "configured" : "not_configured",
+    statusLine: env.emailConfigured
+      ? "Activo por email vía Resend. Configura el webhook de Resend para suprimir rebotes automáticamente."
+      : "Email sin configurar: las campañas se preparan pero el envío queda registrado como intención.",
     publicMessage: null,
   };
 

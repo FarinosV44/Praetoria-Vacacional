@@ -27,7 +27,12 @@ export async function sendEmail(
   subject: string,
   html: string,
   text: string,
-  meta: { kind: EmailLogEntry["kind"]; reservationId?: string | null },
+  meta: {
+    kind: EmailLogEntry["kind"];
+    reservationId?: string | null;
+    from?: string;
+    headers?: Record<string, string>;
+  },
 ): Promise<SendResult> {
   const c = client();
   const log = (status: EmailLogEntry["status"], providerId?: string | null, error?: string | null) =>
@@ -49,12 +54,13 @@ export async function sendEmail(
   }
   try {
     const { data, error } = await c.emails.send({
-      from: env.EMAIL_FROM,
+      from: meta.from ?? env.EMAIL_FROM,
       to,
       replyTo: env.EMAIL_REPLY_TO,
       subject,
       html,
       text,
+      ...(meta.headers ? { headers: meta.headers } : {}),
     });
     if (error) {
       await log("failed", null, error.message);

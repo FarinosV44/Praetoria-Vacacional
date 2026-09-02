@@ -131,6 +131,8 @@ Until all three are set, the pay step uses the **demo simulator** (no charge).
 | `RESEND_API_KEY` | MISSING | Resend → API Keys. |
 | `EMAIL_FROM` | MISSING | e.g. `Praetoria Vacacional <reservas@tudominio.com>` — the domain must be verified in Resend. |
 | `EMAIL_REPLY_TO` | OPTIONAL | e.g. `hola@tudominio.com`. |
+| `MARKETING_FROM` | OPTIONAL | separate From for campaigns (#73), e.g. `Praetoria Vacacional <ofertas@tudominio.com>`. Defaults to `EMAIL_FROM`. |
+| `RESEND_WEBHOOK_SECRET` | OPTIONAL | Resend → Webhooks → add an endpoint at `https://<domain>/api/webhooks/resend` (events: `email.bounced`, `email.complained`, `email.failed`) → copy the signing secret. Without it, bounced addresses are not auto-suppressed. |
 
 If Resend is not configured, **a booking still completes and is confirmed** — the
 guest just doesn't get an automatic email; every attempt is logged in
