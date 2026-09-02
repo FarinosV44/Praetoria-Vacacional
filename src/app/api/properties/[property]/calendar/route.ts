@@ -9,7 +9,7 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ property: string }> },
 ) {
-  const limited = enforceRateLimit(req, "calendar", 60, 60_000);
+  const limited = await enforceRateLimit(req, "calendar", 60, 60_000);
   if (limited) return limited;
 
   const { property } = await params;

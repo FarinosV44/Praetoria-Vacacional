@@ -33,6 +33,14 @@ import type {
   JobFilter,
   JobSettlement,
 } from "@/domains/jobs/types";
+import type {
+  CommsFilter,
+  DesiredMessage,
+  ScheduledMessage,
+  ScheduledMessageStatus,
+} from "@/domains/comms/types";
+import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
+import type { MediaAsset, MediaUploadInput } from "@/domains/media/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -196,7 +204,14 @@ export interface UpsertPaymentInput {
 
 export interface EmailLogEntry {
   reservationId?: string | null;
-  kind: "confirmation" | "payment_failed" | "internal";
+  kind:
+    | "confirmation"
+    | "payment_failed"
+    | "internal"
+    | "pre_arrival"
+    | "checkin_info"
+    | "checkout_reminder"
+    | "review_request";
   recipient: string;
   status: "sent" | "failed" | "skipped";
   providerId?: string | null;
@@ -272,6 +287,7 @@ export interface Repository {
   // --- Payments --------------------------------------------------------
   upsertPayment(input: UpsertPaymentInput): Promise<Payment>;
   getPaymentBySession(session: string): Promise<Payment | null>;
+  getPaymentByIntent(paymentIntent: string): Promise<Payment | null>;
   listPayments(limit?: number): Promise<Payment[]>;
 
   // --- Webhook idempotency -------------------------------------------
@@ -442,4 +458,78 @@ export interface Repository {
   retryJob(id: string): Promise<Job>;
   /** Admin: stop a job that has not finished. */
   cancelJob(id: string): Promise<Job>;
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  /**
+   * Reconcile the scheduled messages for a reservation to `desired`: upsert by
+   * kind (moving the `send_at` of a still-`planned` row), and retire any
+   * `planned` row whose kind is no longer desired. Rows already sent/queued are
+   * left alone.
+   */
+  syncReservationMessages(reservationId: string, desired: DesiredMessage[]): Promise<void>;
+  /** Retire every still-`planned` message for a reservation (on cancellation). */
+  cancelReservationMessages(reservationId: string): Promise<void>;
+  listScheduledMessages(filter?: CommsFilter): Promise<ScheduledMessage[]>;
+  listReservationMessages(reservationId: string): Promise<ScheduledMessage[]>;
+  /** `planned` messages whose `send_at` has passed. */
+  dueScheduledMessages(nowIso: string, limit: number): Promise<ScheduledMessage[]>;
+  markScheduledMessage(
+    id: string,
+    patch: {
+      status: ScheduledMessageStatus;
+      attempts?: number;
+      sendAt?: string;
+      sentAt?: string | null;
+      lastError?: string | null;
+      providerId?: string | null;
+    },
+  ): Promise<void>;
+  /** Admin manual resend: back to `planned`, `send_at` now. */
+  resetScheduledMessage(id: string): Promise<ScheduledMessage>;
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  listAdminUsers(): Promise<AdminUser[]>;
+  getAdminUserById(id: string): Promise<AdminUser | null>;
+  getAdminUserByEmail(email: string): Promise<AdminUser | null>;
+  /** Create an operator. When `inviteTokenHash` is given the row is "pending". */
+  createAdminUser(
+    input: AdminUserInput & {
+      id?: string;
+      inviteTokenHash?: string | null;
+      inviteExpiresAt?: string | null;
+    },
+  ): Promise<AdminUser>;
+  updateAdminUser(
+    id: string,
+    patch: Partial<Pick<AdminUser, "role" | "active" | "fullName" | "mfaRequired">>,
+  ): Promise<AdminUser>;
+  /** Bump `sessionsValidFrom` to now — revokes every existing session. */
+  revokeAdminUserSessions(id: string): Promise<void>;
+  /** Consume a pending invite: clears the token, activates the row. */
+  acceptAdminInvite(id: string): Promise<AdminUser>;
+  deleteAdminUser(id: string): Promise<void>;
+  /** Best-effort last-seen touch; never throws on the hot path. */
+  touchAdminUser(id: string): Promise<void>;
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  /** Null the contact fields on a reservation, keep the booking/accounting row. */
+  anonymizeReservationContact(id: string): Promise<void>;
+  /** Blank a customer's identifying fields, keep the row for linkage integrity. */
+  anonymizeCustomerContact(id: string): Promise<void>;
+  /** Hard-delete a reservation and its dependent rows (no legal hold applies). */
+  deleteReservationHard(id: string): Promise<void>;
+  /** Delete finished lifecycle messages updated before `beforeIso`. Returns count. */
+  deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
+  /** Delete audit rows created before `beforeIso`. Returns count. */
+  deleteAuditLogBefore(beforeIso: string): Promise<number>;
+
+  // --- Media library (issue #81) --------------------------------
+  listMedia(filter?: { tag?: string; q?: string; limit?: number }): Promise<MediaAsset[]>;
+  getMediaAsset(id: string): Promise<MediaAsset | null>;
+  createMediaAsset(input: MediaUploadInput): Promise<MediaAsset>;
+  updateMediaAsset(
+    id: string,
+    patch: Partial<Pick<MediaAsset, "alt" | "focalX" | "focalY" | "tags">>,
+  ): Promise<MediaAsset>;
+  deleteMediaAsset(id: string): Promise<void>;
 }

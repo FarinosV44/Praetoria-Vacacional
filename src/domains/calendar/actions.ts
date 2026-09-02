@@ -15,8 +15,8 @@ async function assertAdmin() {
   if (!(await isAdminAuthenticated())) throw new Error("No autorizado");
 }
 
-function guard() {
-  assertCapability("calendar.write");
+async function guard() {
+  await assertCapability("calendar.write");
 }
 
 function selectedDates(formData: FormData): string[] {
@@ -59,7 +59,7 @@ const minNightsSchema = z.coerce.number().int().min(1).max(60);
 
 export async function applyDayPriceAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -80,7 +80,7 @@ export async function applyDayPricePercentAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -114,7 +114,7 @@ export async function applyDayMinNightsAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -127,7 +127,7 @@ export async function applyDayMinNightsAction(
 
 export async function clearDayRatesAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (dates.length) await getRepository().clearDailyRates(property.id, dates);
@@ -136,7 +136,7 @@ export async function clearDayRatesAction(formData: FormData): Promise<void> {
 
 export async function closeDatesAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = selectedDates(formData);
   if (!dates.length) return { ok: false, error: "Selecciona al menos un día" };
@@ -169,7 +169,7 @@ export async function closeDatesAction(_prev: unknown, formData: FormData): Prom
 
 export async function openDatesAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  guard();
+  await guard();
   const property = await propertyFromForm(formData);
   const dates = new Set(selectedDates(formData));
   const repo = getRepository();

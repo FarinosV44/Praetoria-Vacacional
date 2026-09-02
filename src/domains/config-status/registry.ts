@@ -154,6 +154,48 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const media: ConfigFeature = {
+    key: "media",
+    label: "Biblioteca de medios",
+    impact:
+      "La biblioteca (subida, ALT, punto focal, etiquetas, reutilización) está implementada. Sin Supabase Storage no se pueden subir archivos.",
+    envVars: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    where: "Supabase → Storage → crear un bucket PRIVADO llamado «media»",
+    state: env.supabaseConfigured ? "configured" : "not_configured",
+    statusLine: env.supabaseConfigured
+      ? "Activa. Recuerda crear el bucket privado «media» en Supabase Storage."
+      : "Sin Storage. Configura Supabase y crea el bucket «media».",
+    publicMessage: null,
+  };
+
+  const rateLimit: ConfigFeature = {
+    key: "rate_limit",
+    label: "Rate limiting distribuido",
+    impact:
+      "El límite de peticiones por IP y el denylist temporal por abuso están siempre activos. Sin Redis usan memoria local (correcto para un solo servidor); con varios servidores/regiones necesitas Upstash Redis para que el contador sea compartido.",
+    envVars: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    where: "Upstash → Redis database → REST API (o la integración KV de Vercel)",
+    state: env.rateLimitDistributed ? "configured" : "not_configured",
+    statusLine: env.rateLimitDistributed
+      ? "Distribuido (Upstash Redis). El contador se comparte entre instancias."
+      : "En memoria (una instancia). Añade Upstash Redis si escalas a varias.",
+    publicMessage: null,
+  };
+
+  const observability: ConfigFeature = {
+    key: "observability",
+    label: "Observabilidad (errores y trazas)",
+    impact:
+      "El registro estructurado (una línea JSON por evento) está siempre activo. Con un DSN de Sentry, además, cada error del servidor y del navegador se envía a Sentry sin SDK. Sin DSN, los errores solo quedan en los logs del servidor.",
+    envVars: ["SENTRY_DSN", "NEXT_PUBLIC_SENTRY_DSN", "LOG_LEVEL"],
+    where: "Sentry → Project Settings → Client Keys (DSN)",
+    state: env.observabilityConfigured ? "configured" : "not_configured",
+    statusLine: env.observabilityConfigured
+      ? "Activa. Errores de servidor y navegador se envían a Sentry; logs estructurados en stdout."
+      : "Solo logs locales. Añade SENTRY_DSN para centralizar errores y alertas.",
+    publicMessage: null,
+  };
+
   const whatsapp: ConfigFeature = {
     key: "whatsapp",
     label: "WhatsApp concierge",
@@ -168,7 +210,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

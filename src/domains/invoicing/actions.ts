@@ -163,7 +163,7 @@ export async function saveInvoiceDraftAction(
 
 export async function issueInvoiceAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("invoices.write");
+  await assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     const inv = await getRepository().issueInvoice(id);
@@ -175,7 +175,7 @@ export async function issueInvoiceAction(formData: FormData): Promise<void> {
 
 export async function setInvoiceStatusAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("invoices.write");
+  await assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as InvoiceStatus;
   if (id && status) {
@@ -188,7 +188,7 @@ export async function setInvoiceStatusAction(formData: FormData): Promise<void> 
 
 export async function deleteInvoiceDraftAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("invoices.write");
+  await assertCapability("invoices.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     await getRepository().deleteInvoiceDraft(id);

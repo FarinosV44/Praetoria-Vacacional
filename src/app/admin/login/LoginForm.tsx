@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { loginAction } from "@/domains/admin/actions";
 import { Button } from "@/components/ui/Button";
 
-export function LoginForm() {
+export function LoginForm({ supabaseAuth = false }: { supabaseAuth?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const [state, action, pending] = useActionState(loginAction, null);
@@ -16,6 +16,17 @@ export function LoginForm() {
 
   return (
     <form action={action} className="mt-4 space-y-3">
+      {supabaseAuth && (
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Correo</span>
+          <input
+            type="email"
+            name="email"
+            autoComplete="username"
+            className="h-11 w-full rounded-xl border border-[var(--color-line)] px-3"
+          />
+        </label>
+      )}
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-[var(--color-ink-soft)]">Contraseña</span>
         <input

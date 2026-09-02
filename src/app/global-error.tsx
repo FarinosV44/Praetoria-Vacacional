@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
+import { reportClientError } from "@/lib/observability/client";
+
 /**
  * Last-resort error boundary (issue #42) — used when the root layout itself
  * throws. Must render its own <html>/<body>. No stack trace for the user.
  */
-export default function GlobalError({ reset }: { error: Error; reset: () => void }) {
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    reportClientError(error, "global");
+  }, [error]);
+
   return (
     <html lang="es">
       <body

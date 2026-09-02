@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodSchema } from "zod";
-import { clientIp, rateLimit } from "./rate-limit";
+import { clientIp, denyClient, isDenied, rateLimit, recordBreach } from "./rate-limit";
 import { timingSafeEqual } from "node:crypto";
 import { env } from "./env";
+import { reportMessage } from "./observability/report";
 
 /** Consistent JSON error shape. Never leaks internals (issue #21). */
 export function apiError(message: string, status = 400, extra?: Record<string, unknown>) {
@@ -72,15 +73,49 @@ export async function parseJson<T>(
   }
 }
 
-export function enforceRateLimit(
+/** Repeat rate-limit breaches inside this window escalate to a temp denylist. */
+const ABUSE_BREACHES = 25;
+const ABUSE_WINDOW_MS = 5 * 60_000;
+const DENY_TTL_MS = 15 * 60_000;
+
+/**
+ * Per-IP fixed-window rate limit (issue #21, #62). Distributed when Redis is
+ * configured, in-memory otherwise. A client that keeps hammering past the limit
+ * is denylisted for {@link DENY_TTL_MS}. Returns a 429 response to send back, or
+ * `null` when the request may proceed.
+ */
+export async function enforceRateLimit(
   req: Request,
   name: string,
   limit: number,
   windowMs: number,
-): NextResponse | null {
-  const res = rateLimit(`${name}:${clientIp(req)}`, limit, windowMs);
-  if (!res.ok) {
-    return apiError("Demasiadas solicitudes. Inténtalo de nuevo en unos segundos.", 429);
+): Promise<NextResponse | null> {
+  const ip = clientIp(req);
+
+  if (ip !== "unknown" && (await isDenied(ip))) {
+    return tooMany("Acceso temporalmente bloqueado por actividad anómala.", DENY_TTL_MS / 1000);
   }
-  return null;
+
+  const res = await rateLimit(`${name}:${ip}`, limit, windowMs);
+  if (res.ok) return null;
+
+  if (ip !== "unknown" && (await recordBreach(ip, ABUSE_BREACHES, ABUSE_WINDOW_MS))) {
+    await denyClient(ip, DENY_TTL_MS);
+    reportMessage("client denylisted for repeated rate-limit breaches", "warning", {
+      scope: "rate-limit",
+      extra: { route: name },
+    });
+    return tooMany("Acceso temporalmente bloqueado por actividad anómala.", DENY_TTL_MS / 1000);
+  }
+
+  return tooMany(
+    "Demasiadas solicitudes. Inténtalo de nuevo en unos segundos.",
+    Math.max(1, Math.ceil((res.resetAt - Date.now()) / 1000)),
+  );
+}
+
+function tooMany(message: string, retryAfterSeconds: number): NextResponse {
+  const res = apiError(message, 429);
+  res.headers.set("Retry-After", String(Math.ceil(retryAfterSeconds)));
+  return res;
 }

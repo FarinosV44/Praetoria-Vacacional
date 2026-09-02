@@ -56,7 +56,7 @@ export async function createReservationAndRedirect(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const parsed = createSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -149,7 +149,7 @@ export async function updateReservationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const parsed = patchSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -175,4 +175,47 @@ export async function linkCustomerFromReservationAction(formData: FormData): Pro
   const id = String(formData.get("id") ?? "");
   if (id) await getRepository().linkOrCreateCustomerFromReservation(id);
   revalidatePath(`/admin/reservas/${id}`);
+}
+
+/**
+ * Issue #67 — cancel a reservation and settle the refund (policy amount, or an
+ * explicit euro override). Issues the Stripe refund when a payment was captured.
+ */
+export async function cancelWithRefundAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<ActionResult> {
+  await assertAdmin();
+  await assertCapability("reservations.write");
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { ok: false, error: "Falta la reserva" };
+  const reason = String(formData.get("reason") || "Cancelada desde administración").slice(0, 200);
+  const overrideRaw = String(formData.get("overrideRefundEuros") ?? "").trim();
+  const overrideRefundCents =
+    overrideRaw === "" ? null : Math.round(Number(overrideRaw.replace(",", ".")) * 100);
+  if (overrideRefundCents != null && (!Number.isFinite(overrideRefundCents) || overrideRefundCents < 0)) {
+    return { ok: false, error: "Importe de reembolso no válido" };
+  }
+
+  const { cancelWithRefund } = await import("@/domains/booking/cancellation");
+  try {
+    const outcome = await cancelWithRefund(id, { reason, overrideRefundCents });
+    await logAction("reservation.cancel_refund", {
+      entity: "reservation",
+      entityId: id,
+      meta: {
+        reason,
+        refundCents: outcome.refundCents,
+        refundPercent: outcome.refund.refundPercent,
+        method: outcome.method,
+        stripeRefundId: outcome.stripeRefundId,
+      },
+    });
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "No se pudo cancelar" };
+  }
+  revalidatePath(`/admin/reservas/${id}`);
+  revalidatePath("/admin/reservas");
+  revalidatePath("/admin");
+  return { ok: true, id };
 }

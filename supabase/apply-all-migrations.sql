@@ -1419,3 +1419,166 @@ grant  all on jobs to service_role;
 
 revoke all on function claim_jobs(text, int, int) from public, anon, authenticated;
 grant execute on function claim_jobs(text, int, int) to service_role;
+
+
+-- ----------------------------------------------------------------------------
+-- 20260902120000_guest_comms.sql
+-- ----------------------------------------------------------------------------
+-- =============================================================================
+-- Issue #69 — guest communications lifecycle
+-- =============================================================================
+-- Transactional messages scheduled relative to a reservation's stay
+-- (pre-arrival, check-in info, check-out reminder, review request). One row per
+-- (reservation, kind); the planner reconciles it, so a date change re-plans and
+-- a cancellation retires the pending rows without duplicates.
+--
+-- These are NOT marketing — no consent gate; they are needed to execute the
+-- booking. Marketing lives in segments/campaigns and is consent-gated.
+--
+-- Idempotent. Safe to re-run.
+-- =============================================================================
+
+create table if not exists scheduled_messages (
+  id             uuid primary key default gen_random_uuid(),
+  reservation_id uuid not null references reservations(id) on delete cascade,
+  kind           text not null
+                   check (kind in ('pre_arrival','checkin_info','checkout_reminder','review_request')),
+  send_at        timestamptz not null,
+  status         text not null default 'planned'
+                   check (status in ('planned','queued','sent','failed','cancelled','skipped')),
+  attempts       int not null default 0,
+  sent_at        timestamptz,
+  last_error     text,
+  provider_id    text,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now(),
+  unique (reservation_id, kind)
+);
+
+create index if not exists scheduled_messages_due_idx
+  on scheduled_messages (send_at)
+  where status = 'planned';
+
+create index if not exists scheduled_messages_reservation_idx
+  on scheduled_messages (reservation_id);
+
+do $$
+begin
+  if not exists (select 1 from pg_trigger where tgname = 'scheduled_messages_touch') then
+    create trigger scheduled_messages_touch before update on scheduled_messages
+      for each row execute function touch_updated_at();
+  end if;
+end $$;
+
+alter table scheduled_messages enable row level security;
+alter table scheduled_messages force  row level security;
+revoke all on scheduled_messages from anon, authenticated;
+grant  all on scheduled_messages to service_role;
+
+
+-- ----------------------------------------------------------------------------
+-- 20260902130000_admin_users.sql
+-- ----------------------------------------------------------------------------
+-- =============================================================================
+-- Issue #65 — admin multi-user: per-user roles, revocable sessions, MFA flag
+-- =============================================================================
+-- One row per admin operator. `id` equals the Supabase Auth user id once the
+-- owner enables Auth on the project; until then the password login uses the
+-- first row (seeded from ADMIN_EMAILS) or a synthetic context from ADMIN_ROLE.
+--
+--   role                 admin | gestion | lectura  (capability matrix in code)
+--   active               false = locked out immediately, even with a live JWT
+--   sessions_valid_from  bump to now() to revoke every existing session
+--   mfa_required         sensitive capabilities then need an AAL2 session
+--   invite_token_hash    sha256 of the pending invite token; null once accepted
+--
+-- RLS forced, service_role only — the admin API reads/writes through the secret
+-- key behind the session gate (D-005).
+--
+-- Idempotent. Safe to re-run.
+-- =============================================================================
+
+create table if not exists admin_users (
+  id                   uuid primary key default gen_random_uuid(),
+  email                text not null unique,
+  full_name            text,
+  role                 text not null default 'lectura'
+                         check (role in ('admin','gestion','lectura')),
+  active               boolean not null default true,
+  sessions_valid_from  timestamptz not null default now(),
+  mfa_required         boolean not null default false,
+  invited_by           uuid,
+  invite_token_hash    text,
+  invite_expires_at    timestamptz,
+  last_seen_at         timestamptz,
+  created_at           timestamptz not null default now(),
+  updated_at           timestamptz not null default now()
+);
+
+create index if not exists admin_users_email_idx on admin_users (lower(email));
+
+do $$
+begin
+  if not exists (select 1 from pg_trigger where tgname = 'admin_users_touch') then
+    create trigger admin_users_touch before update on admin_users
+      for each row execute function touch_updated_at();
+  end if;
+end $$;
+
+alter table admin_users enable row level security;
+alter table admin_users force  row level security;
+revoke all on admin_users from anon, authenticated;
+grant  all on admin_users to service_role;
+
+
+-- ----------------------------------------------------------------------------
+-- 20260902140000_media_library.sql
+-- ----------------------------------------------------------------------------
+-- =============================================================================
+-- Issue #81 — media library
+-- =============================================================================
+-- One row per uploaded asset. The file itself lives in the Storage bucket
+-- `media` (create it as a PRIVATE bucket; the app serves files through signed
+-- URLs minted server-side). `focal_x`/`focal_y` are 0–1 fractions used for
+-- object-position when the image is cropped (reuses the ResponsivePhoto model).
+--
+-- RLS forced, service_role only — every read/write goes through the admin API
+-- behind the session gate (D-005).
+--
+-- Idempotent. Safe to re-run.
+-- =============================================================================
+
+create table if not exists media_assets (
+  id           uuid primary key default gen_random_uuid(),
+  bucket       text not null default 'media',
+  path         text not null unique,
+  filename     text not null,
+  mime         text not null,
+  size_bytes   bigint not null default 0,
+  width        int,
+  height       int,
+  alt          text not null default '',
+  focal_x      real not null default 0.5,
+  focal_y      real not null default 0.5,
+  tags         text[] not null default '{}',
+  uploaded_by  uuid,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+create index if not exists media_assets_created_idx on media_assets (created_at desc);
+create index if not exists media_assets_tags_idx on media_assets using gin (tags);
+
+do $$
+begin
+  if not exists (select 1 from pg_trigger where tgname = 'media_assets_touch') then
+    create trigger media_assets_touch before update on media_assets
+      for each row execute function touch_updated_at();
+  end if;
+end $$;
+
+alter table media_assets enable row level security;
+alter table media_assets force  row level security;
+revoke all on media_assets from anon, authenticated;
+grant  all on media_assets to service_role;
+

@@ -9,6 +9,7 @@ import {
   enqueuePaymentFailedEmail,
   drainJobsSafely,
 } from "@/domains/jobs/enqueue";
+import { syncReservationComms } from "@/domains/comms/dispatch";
 import { createCheckoutSession, stripeEnabled } from "@/domains/payments/stripe";
 import type { Reservation } from "./types";
 import type { GuestDetailsInput, StartCheckoutInput } from "@/lib/validation";
@@ -228,6 +229,10 @@ export async function finalizeReservation(
     // Best-effort: send synchronously now so the guest doesn't wait for a cron
     // tick. If this throws or the process dies, the queued job is the guarantee.
     await drainJobsSafely();
+    // Schedule the lifecycle messages (pre-arrival … review). Issue #69.
+    await syncReservationComms(reservation.id).catch((err) =>
+      console.error("comms scheduling failed (reservation still confirmed)", err),
+    );
   }
 
   return { ok: true, reservation };

@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { getRepository } from "@/lib/repository";
 import { stripe, stripeWebhookEnabled } from "@/domains/payments/stripe";
 import { finalizeReservation, markPaymentFailed } from "@/domains/booking/checkout";
+import { reportError } from "@/lib/observability/report";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,11 +65,39 @@ export async function POST(req: Request) {
         if (reservationId) await markPaymentFailed(reservationId);
         break;
       }
+      case "charge.refunded": {
+        // Reconcile a refund issued anywhere (our code, or the Stripe dashboard).
+        const charge = event.data.object as Stripe.Charge;
+        const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+        if (pi) {
+          const payment = await repo.getPaymentByIntent(pi).catch(() => null);
+          const reservationId =
+            payment?.reservationId ?? (charge.metadata?.reservation_id as string | undefined);
+          if (reservationId) {
+            await repo.upsertPayment({
+              reservationId,
+              provider: "stripe",
+              providerPaymentIntent: pi,
+              providerCheckoutSession: payment?.providerCheckoutSession ?? null,
+              status: "refunded",
+              amountCents: payment?.amountCents ?? charge.amount,
+              currency: "EUR",
+              raw: { refundedViaWebhook: true, amountRefunded: charge.amount_refunded },
+            });
+            await repo
+              .updateReservation(reservationId, {
+                paymentState: charge.amount_refunded >= charge.amount ? "refunded" : "partial",
+              })
+              .catch(() => undefined);
+          }
+        }
+        break;
+      }
       default:
         break;
     }
   } catch (err) {
-    console.error(`stripe webhook handler failed for ${event.type}`, err);
+    reportError(err, { scope: "webhook/stripe", tags: { eventType: event.type }, extra: { eventId: event.id } });
     return new Response("Handler error", { status: 500 });
   }
 

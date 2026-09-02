@@ -258,6 +258,23 @@ commit. `next build` was unaffected.)
 
 ## Exact position
 
+**2026-09-02 (later) — #69 guest communications lifecycle, on `develop`:**
+`src/domains/comms/*` — pure `planReservationComms` (reservation + per-property
+`CommRule[]` → `pre_arrival`/`checkin_info`/`checkout_reminder`/`review_request`;
+anything under a 24 h lead is dropped; 8 tests) + ES/EN templates that invent no
+access details (L-008). `scheduled_messages` table (migration `20260902120000`,
+one row per (reservation, kind), RLS forced, service_role only) + 7 `Repository`
+methods (memory + supabase, parity test green). `syncReservationComms` reconciles
+on `finalizeReservation` + an admin "re-planificar"; cancel retires the pending
+rows. `/api/cron/comms` (`CRON_SECRET`, every 15 min) sends due messages through
+the existing Resend pipeline — idempotent, 4 attempts × 30-min backoff →
+dead-letter at `/admin/comunicaciones`. `/admin/comunicaciones/ajustes` edits the
+per-property rules + arrival/departure notes. Audited. **No new provider.** D-030.
+`tsc` + `next lint` + `next build` clean · **308 unit** · e2e (production incl.
+`/api/cron/comms` auth, intranet incl. both `/admin/comunicaciones` routes) 14
+green. **Owner:** apply migration `20260902120000`; the `/api/cron/comms` cron is
+already in `vercel.json`.
+
 **2026-09-02 — #76 durable jobs + transactional outbox, on `develop`:**
 Persisted `jobs` queue backs the confirmation / internal-notice / payment-failed
 emails (and, as registered types, iCal import + hold expiry). `finalizeReservation`
@@ -332,7 +349,7 @@ screenshots (regenerate baselines with `npx playwright test visual
 - **Owner-decision-gated (per the issues.md table) — cannot be built without the
   owner's input on vendors / legal / credentials:** #65 (Supabase Auth + MFA),
   #66 (observability vendor), #67 (refund policy + Stripe live), #68 (guest
-  portal), #69 (guest comms provider), #70/#71 (ops workflows), #72 (SES.
+  portal), #70/#71 (ops workflows), #72 (SES.
   HOSPEDAJES Guardia Civil creds), #73 (marketing provider), #74 (revenue
   strategy), #79 (DPO/legal), #81 (storage bucket), #85 (ES/EN translation
   effort). Phase-1 polish items #86–#88/#93 still 🟡 (need eyes on real photos /

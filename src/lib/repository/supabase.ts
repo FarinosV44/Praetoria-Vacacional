@@ -48,6 +48,9 @@ import type {
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
+import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
+import type { AdminUser } from "@/domains/admin/users";
+import type { MediaAsset } from "@/domains/media/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -596,6 +599,18 @@ export const supabaseRepository: Repository = {
       .from("payments")
       .select()
       .eq("provider_checkout_session", session)
+      .maybeSingle();
+    return data ? mapPayment(data) : null;
+  },
+
+  async getPaymentByIntent(paymentIntent: string) {
+    const db = supabaseAdmin();
+    const { data } = await db
+      .from("payments")
+      .select()
+      .eq("provider_payment_intent", paymentIntent)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     return data ? mapPayment(data) : null;
   },
@@ -1888,7 +1903,415 @@ export const supabaseRepository: Repository = {
     const current = await db.from("jobs").select().eq("id", id).single();
     return mapJob(current.data);
   },
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  async syncReservationMessages(reservationId: string, desired: DesiredMessage[]) {
+    const db = supabaseAdmin();
+    const { data: existing } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("reservation_id", reservationId);
+    const rows = (existing ?? []) as any[];
+    const wanted = new Map(desired.map((d) => [d.kind, d.sendAt]));
+
+    const inserts: any[] = [];
+    for (const [kind, sendAt] of wanted) {
+      const row = rows.find((r) => r.kind === kind);
+      if (!row) {
+        inserts.push({ reservation_id: reservationId, kind, send_at: sendAt, status: "planned" });
+      } else if (row.status === "planned" && row.send_at !== sendAt) {
+        await db.from("scheduled_messages").update({ send_at: sendAt }).eq("id", row.id);
+      }
+    }
+    if (inserts.length) {
+      const { error } = await db.from("scheduled_messages").insert(inserts);
+      if (error && error.code !== "23505") throw error;
+    }
+    const retire = rows
+      .filter((r) => r.status === "planned" && !wanted.has(r.kind))
+      .map((r) => r.id);
+    if (retire.length) {
+      await db.from("scheduled_messages").update({ status: "cancelled" }).in("id", retire);
+    }
+  },
+
+  async cancelReservationMessages(reservationId: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("scheduled_messages")
+      .update({ status: "cancelled" })
+      .eq("reservation_id", reservationId)
+      .eq("status", "planned");
+    if (error) throw error;
+  },
+
+  async listScheduledMessages(filter?: CommsFilter) {
+    const db = supabaseAdmin();
+    let q = db.from("scheduled_messages").select().order("send_at", { ascending: false });
+    if (filter?.status?.length) q = q.in("status", filter.status);
+    if (filter?.kind) q = q.eq("kind", filter.kind);
+    q = q.limit(filter?.limit ?? 200);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async listReservationMessages(reservationId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("reservation_id", reservationId)
+      .order("send_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async dueScheduledMessages(nowIso: string, limit: number) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .select()
+      .eq("status", "planned")
+      .lte("send_at", nowIso)
+      .order("send_at", { ascending: true })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []).map(mapScheduledMessage);
+  },
+
+  async markScheduledMessage(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = { status: patch.status };
+    if (patch.attempts != null) upd.attempts = patch.attempts;
+    if (patch.sendAt !== undefined) upd.send_at = patch.sendAt;
+    if (patch.sentAt !== undefined) upd.sent_at = patch.sentAt;
+    if (patch.lastError !== undefined) upd.last_error = patch.lastError;
+    if (patch.providerId !== undefined) upd.provider_id = patch.providerId;
+    const { error } = await db.from("scheduled_messages").update(upd).eq("id", id);
+    if (error) throw error;
+  },
+
+  async resetScheduledMessage(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .update({ status: "planned", send_at: new Date().toISOString(), last_error: null })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapScheduledMessage(data);
+  },
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  async listAdminUsers() {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("admin_users").select().order("email");
+    if (error) throw error;
+    return (data ?? []).map(mapAdminUser);
+  },
+
+  async getAdminUserById(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("admin_users").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    return data ? mapAdminUser(data) : null;
+  },
+
+  async getAdminUserByEmail(email: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_users")
+      .select()
+      .ilike("email", email.trim())
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapAdminUser(data) : null;
+  },
+
+  async createAdminUser(input) {
+    const db = supabaseAdmin();
+    const insert: Record<string, unknown> = {
+      email: input.email.trim(),
+      full_name: input.fullName ?? null,
+      role: input.role,
+      active: !input.inviteTokenHash,
+      invited_by: input.invitedBy ?? null,
+      invite_token_hash: input.inviteTokenHash ?? null,
+      invite_expires_at: input.inviteExpiresAt ?? null,
+    };
+    if (input.id) insert.id = input.id;
+    const { data, error } = await db.from("admin_users").insert(insert).select().single();
+    if (error) {
+      if ((error as { code?: string }).code === "23505") throw new Error("ADMIN_USER_EMAIL_TAKEN");
+      throw error;
+    }
+    return mapAdminUser(data);
+  },
+
+  async updateAdminUser(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.role !== undefined) upd.role = patch.role;
+    if (patch.active !== undefined) upd.active = patch.active;
+    if (patch.fullName !== undefined) upd.full_name = patch.fullName;
+    if (patch.mfaRequired !== undefined) upd.mfa_required = patch.mfaRequired;
+    const { data, error } = await db.from("admin_users").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapAdminUser(data);
+  },
+
+  async revokeAdminUserSessions(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("admin_users")
+      .update({ sessions_valid_from: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async acceptAdminInvite(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_users")
+      .update({ invite_token_hash: null, invite_expires_at: null, active: true })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapAdminUser(data);
+  },
+
+  async deleteAdminUser(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("admin_users").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async touchAdminUser(id: string) {
+    const db = supabaseAdmin();
+    await db.from("admin_users").update({ last_seen_at: new Date().toISOString() }).eq("id", id);
+  },
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  async anonymizeReservationContact(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("reservations")
+      .update({
+        guest_name: "[borrado a petición]",
+        guest_email: null,
+        guest_phone: null,
+        guest_doc_number: null,
+        guest_doc_type: null,
+        guest_address: null,
+        guest_city: null,
+        guest_postal_code: null,
+        external_locator: null,
+        notes: null,
+      })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async anonymizeCustomerContact(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("customers")
+      .update({
+        first_name: "[borrado]",
+        last_name: "",
+        email: null,
+        phone: null,
+        whatsapp: null,
+        doc_number: null,
+        address: null,
+        postal_code: null,
+        notes: null,
+        marketing_consent: false,
+        marketing_consent_at: null,
+        marketing_consent_source: null,
+      })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async deleteReservationHard(id: string) {
+    const db = supabaseAdmin();
+    await db.from("invoices").update({ reservation_id: null }).eq("reservation_id", id);
+    await db.from("scheduled_messages").delete().eq("reservation_id", id);
+    await db.from("payments").delete().eq("reservation_id", id);
+    const { error } = await db.from("reservations").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async deleteScheduledMessagesBefore(beforeIso: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .delete()
+      .in("status", ["sent", "failed", "cancelled", "skipped"])
+      .lt("updated_at", beforeIso)
+      .select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
+  async deleteAuditLogBefore(beforeIso: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_audit_log")
+      .delete()
+      .lt("created_at", beforeIso)
+      .select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
+  // --- Media library (issue #81) --------------------------------
+  async listMedia(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("media_assets").select().order("created_at", { ascending: false });
+    if (filter?.tag) q = q.contains("tags", [filter.tag]);
+    if (filter?.q) q = q.or(`filename.ilike.%${filter.q}%,alt.ilike.%${filter.q}%`);
+    q = q.limit(filter?.limit ?? 200);
+    const { data, error } = await q;
+    if (error) throw error;
+    const rows = (data ?? []).map(mapMediaAsset);
+    await attachSignedUrls(rows);
+    return rows;
+  },
+
+  async getMediaAsset(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("media_assets").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const row = mapMediaAsset(data);
+    await attachSignedUrls([row]);
+    return row;
+  },
+
+  async createMediaAsset(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("media_assets")
+      .insert({
+        bucket: "media",
+        path: input.path,
+        filename: input.filename,
+        mime: input.mime,
+        size_bytes: input.sizeBytes,
+        width: input.width ?? null,
+        height: input.height ?? null,
+        alt: input.alt ?? "",
+        tags: input.tags ?? [],
+        uploaded_by: input.uploadedBy ?? null,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapMediaAsset(data);
+  },
+
+  async updateMediaAsset(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.alt !== undefined) upd.alt = patch.alt;
+    if (patch.focalX !== undefined) upd.focal_x = patch.focalX;
+    if (patch.focalY !== undefined) upd.focal_y = patch.focalY;
+    if (patch.tags !== undefined) upd.tags = patch.tags;
+    const { data, error } = await db.from("media_assets").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapMediaAsset(data);
+  },
+
+  async deleteMediaAsset(id: string) {
+    const db = supabaseAdmin();
+    const { data } = await db.from("media_assets").select("bucket,path").eq("id", id).maybeSingle();
+    if (data) {
+      await db.storage.from((data as { bucket: string }).bucket).remove([(data as { path: string }).path]);
+    }
+    const { error } = await db.from("media_assets").delete().eq("id", id);
+    if (error) throw error;
+  },
 };
+
+function mapMediaAsset(row: any): MediaAsset {
+  return {
+    id: row.id,
+    bucket: row.bucket ?? "media",
+    path: row.path,
+    filename: row.filename,
+    mime: row.mime,
+    sizeBytes: Number(row.size_bytes ?? 0),
+    width: row.width ?? null,
+    height: row.height ?? null,
+    alt: row.alt ?? "",
+    focalX: typeof row.focal_x === "number" ? row.focal_x : 0.5,
+    focalY: typeof row.focal_y === "number" ? row.focal_y : 0.5,
+    tags: row.tags ?? [],
+    uploadedBy: row.uploaded_by ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function attachSignedUrls(rows: MediaAsset[]): Promise<void> {
+  if (!rows.length) return;
+  const db = supabaseAdmin();
+  const byBucket = new Map<string, MediaAsset[]>();
+  for (const r of rows) {
+    const list = byBucket.get(r.bucket) ?? [];
+    list.push(r);
+    byBucket.set(r.bucket, list);
+  }
+  for (const [bucket, list] of byBucket) {
+    const { data } = await db.storage.from(bucket).createSignedUrls(
+      list.map((r) => r.path),
+      3600,
+    );
+    for (const entry of data ?? []) {
+      const match = list.find((r) => r.path === entry.path);
+      if (match && entry.signedUrl) match.signedUrl = entry.signedUrl;
+    }
+  }
+}
+
+function mapAdminUser(row: any): AdminUser {
+  return {
+    id: row.id,
+    email: row.email,
+    fullName: row.full_name ?? null,
+    role: row.role,
+    active: !!row.active,
+    sessionsValidFrom: row.sessions_valid_from,
+    mfaRequired: !!row.mfa_required,
+    invitedBy: row.invited_by ?? null,
+    inviteTokenHash: row.invite_token_hash ?? null,
+    inviteExpiresAt: row.invite_expires_at ?? null,
+    lastSeenAt: row.last_seen_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapScheduledMessage(row: any): ScheduledMessage {
+  return {
+    id: row.id,
+    reservationId: row.reservation_id,
+    kind: row.kind,
+    sendAt: row.send_at,
+    status: row.status,
+    attempts: Number(row.attempts ?? 0),
+    sentAt: row.sent_at ?? null,
+    lastError: row.last_error ?? null,
+    providerId: row.provider_id ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 function mapJob(row: any): Job {
   return {

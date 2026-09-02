@@ -625,3 +625,139 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   are chosen. iCal import + hold expiry keep their existing dedicated cron
   endpoints *and* are registered job types, so they can move to the queue later
   with no new code.
+
+## D-030 — #69 — guest communications lifecycle
+**Date:** 2026-09-02 · issue #69
+- **Transactional, not marketing.** The pre-arrival / check-in / check-out /
+  review messages execute the booking, so they are *not* consent-gated (that
+  gate stays on `segments`/`campaigns`). They reuse the #12 Resend pipeline —
+  **no new email/WhatsApp provider**, so the issue's "owner input" blocker
+  didn't actually apply to a first version.
+- **Pure planner + repository reconcile.** `planReservationComms(reservation,
+  rules, now)` returns the desired message set; `scheduled_messages` holds one
+  row per `(reservation, kind)` and `syncReservationMessages` upserts by kind,
+  re-times still-`planned` rows and retires the rest. Re-running after a date
+  change re-plans with no duplicates; a cancellation retires every `planned`
+  row. Called from `finalizeReservation` (best-effort, never un-confirms a
+  reservation) and an admin "re-planificar".
+- **24-hour minimum lead.** A message under 24 h away is dropped, not fired
+  late — a last-minute booking simply misses the pre-stay sequence.
+- **Per-property rules + notes.** `CommRule[]` (enabled / anchor / offsetDays /
+  hour) overridable per property at `/admin/comunicaciones/ajustes`, plus
+  free-text arrival/departure notes. Templates invent no access details
+  (L-008): without an owner note they point the guest at the real contact
+  channels. ES/EN by guest country.
+- **Worker.** `/api/cron/comms` (`CRON_SECRET`, every 15 min in `vercel.json`)
+  sends due messages; idempotent (status flips off `planned`), 4 attempts with
+  30-min backoff, then `failed` and visible at `/admin/comunicaciones`.
+
+## D-031 — #66 — observability without an SDK
+**Date:** 2026-09-02 · issue #66
+- **Structured logs always on.** `src/lib/observability/logger.ts` emits one JSON
+  object per line in production (parsed by any drain), pretty text in dev.
+  `scrubFields` redacts sensitive keys (email/phone/token/…) as a defensive
+  last pass — callers still shouldn't log PII.
+- **Sentry by DSN, no `@sentry/nextjs`.** The SDK's build footprint isn't worth
+  it for a two-property site. `sentry.ts` is pure: `parseDsn` → ingest URL,
+  `buildEnvelope` → the 3-line `type:event` envelope. `report.ts` POSTs it
+  fire-and-forget with a 2.5 s abort; a monitoring outage never reaches the
+  request path. Kept free of `node:*` so it bundles for the edge runtime that
+  `onRequestError` can run in.
+- **Every error path covered.** `instrumentation.ts` `onRequestError` (server) +
+  the route/global error boundaries → `/api/observability/client-error`
+  (rate-limited, tiny schema, browser stack is context only) + explicit
+  `reportError` in the Stripe webhook catch.
+- **No new required env.** Absent DSN → logs only; the app is unchanged.
+
+## D-032 — #62 — distributed rate limiting + anti-abuse
+**Date:** 2026-09-02 · issue #62
+- **Pluggable store behind pure math.** `windowBucket` / `evaluate` are pure and
+  tested; the store is `memory` (a Map — correct for one instance) or `redis`
+  (Upstash REST `/pipeline`: `INCR` + `PEXPIRE NX`). Redis is picked up from
+  `UPSTASH_REDIS_REST_*` or the `KV_REST_API_*` aliases.
+- **Fail open for limiting, safe for denylist.** A Redis timeout falls back to
+  the in-memory store rather than 500-ing or locking users out; an unknown
+  denylist lookup returns "not denied".
+- **Escalation.** `enforceRateLimit` counts over-limit breaches per IP; ≥25 in
+  5 min → a 15-minute denylist flag, reported to observability (#66). Every 429
+  carries `Retry-After`.
+- **Not required for launch.** One Hostinger node → the in-memory limiter is
+  correct; Redis only matters when the deployment scales horizontally.
+
+## D-033 — #65 — admin multi-user on Supabase Auth
+**Date:** 2026-09-02 · issue #65 · user choice ("Full Supabase Auth now")
+- **Layered, degrades gracefully.** `getAdminContext()` (memoised per request)
+  resolves the operator from a Supabase Auth session + an `admin_users` row when
+  Supabase is configured; otherwise the existing signed password cookie, with a
+  synthetic `ADMIN_ROLE` context when there are no rows (DEMO / first boot). The
+  password path is untouched, so nothing breaks before the owner enables Auth.
+- **Per-user RBAC.** `assertCapability` became async and reads the context's
+  role. `MFA_GATED` caps (`settings.write`, `invoices.write`) additionally
+  require an AAL2 session when the user has `mfa_required`.
+- **Revocation is a watermark.** `sessions_valid_from` on the row; a "close all
+  sessions" bumps it to now and (Supabase mode) also calls
+  `auth.admin.signOut(id, 'global')`. `active=false` locks the user out on the
+  next request even with a live JWT.
+- **Invites.** `/admin/usuarios` → `auth.admin.inviteUserByEmail` + a pending
+  `admin_users` row (invite-token hash); first confirmed sign-in auto-activates
+  it. A bootstrap promotes any `ADMIN_EMAILS` address to `admin` on first visit.
+- **MFA** is Supabase Auth TOTP — enroll/manage at `/admin/seguridad`, and a
+  `MfaGate` replaces the panel body until the challenge is met.
+- **Live verification is the owner's** — no Supabase project/creds this session;
+  build + typecheck + unit + route-privacy e2e are green.
+
+## D-034 — #79 — privacy lifecycle / GDPR operational
+**Date:** 2026-09-02 · issue #79
+- **Pure verdicts, thin application.** `retention.ts` decides keep/anonymise/
+  delete per record; `erasure.ts` plans a data-subject erasure. Both are pure
+  and unit-tested; a monthly sweep and the admin console just apply the result.
+- **Legal holds win.** `planErasure` never deletes an invoice inside the
+  6-year Spanish fiscal window (art. 30 CdC / art. 66 LGT) or a reservation
+  linked to one — it anonymises the contact fields and keeps the accounting
+  row, and surfaces the reason. An active/future booking blocks erasure of that
+  reservation entirely.
+- **Anonymise in place, no schema change.** PII columns are overwritten with
+  tombstones (`guest_name = '[borrado a petición]'`, contact fields null). The
+  customer row is kept (referential integrity) but blanked.
+- **Retention windows** (`DEFAULT_RETENTION`): abandoned holds 7 d, cancelled
+  reservations 1 y, completed-stay contact 6 y, finished lifecycle messages
+  180 d, audit log 3 y. Owner reviews with the DPO.
+- **Accountability.** Export and erasure are audit-logged with a salted-short
+  hash of the email, not the address itself.
+
+## D-035 — #67 — cancellation / refund / Stripe reconciliation
+**Date:** 2026-09-02 · issue #67 · user choice ("tiered by lead time")
+- **Policy.** 100 % refund ≥30 days before check-in, 50 % from 29 to 7 days,
+  0 % inside 7 days. Encoded in each property's `cancellationPolicy.tiers`;
+  pure `computeRefund` picks the first tier whose `daysBefore` ≤ the actual
+  lead time.
+- **One operation.** `cancelWithRefund` computes the amount (or takes an
+  override), issues the Stripe refund on the captured PaymentIntent
+  (idempotency key `refund_<reservationId>` so a retry is safe), updates the
+  payment row + `paymentState`, retires the guest lifecycle messages and emails
+  the guest. The reservation is always cancelled even if the refund call throws
+  — the amount is then picked up by reconciliation.
+- **Reconciliation cycle.** The webhook handles `charge.refunded` (catches
+  dashboard refunds). `/api/cron/reconcile` (every 6 h) walks recent
+  PaymentIntents that carry our `reservation_id` metadata and aligns our
+  payment/reservation state with Stripe — covering anything the webhook missed.
+- **No dedicated refunds table.** The Stripe refund object is the system of
+  record; we store its id/status on the `payments` row and in the reservation
+  notes.
+
+## D-036 — #81 — media library
+**Date:** 2026-09-02 · issue #81
+- **Private bucket, signed URLs.** Files go to a Supabase Storage bucket `media`
+  the owner creates as private; `media_assets` rows hold the metadata and the
+  app mints short-lived signed URLs (batched via `createSignedUrls`) for the
+  admin grid. No public bucket, no guessable paths.
+- **Dimensions from the client.** No `sharp` in the build — the upload form
+  reads `naturalWidth/Height` from an `Image()` and posts them; width/height
+  stay optional.
+- **Focal point reuses the existing model.** `focal_x`/`focal_y` are 0–1
+  fractions → `object-position`, the same convention as `ResponsivePhoto`
+  (#93). Click the preview to set it.
+- **Optimisation** is left to `next/image` / Supabase's own render transforms
+  at point of use rather than a build step here.
+- **DEMO** keeps the metadata CRUD (so the UI renders) but blocks uploads —
+  there's nowhere to put the bytes without Storage.

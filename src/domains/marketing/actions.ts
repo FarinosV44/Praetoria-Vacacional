@@ -155,7 +155,7 @@ export async function prepareCampaignAction(formData: FormData): Promise<void> {
 
 export async function sendCampaignAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("marketing.write");
+  await assertCapability("marketing.write");
   const id = String(formData.get("id") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
   // Double confirmation: the form asks the admin to type ENVIAR.

@@ -17,22 +17,24 @@ recreated as OS/scheduler cron (step 5).
 ## 1 · Pending database migrations (`supabase db push`)
 
 The production Supabase project has **never** had migrations applied (the site
-runs in DEMO mode today). So **all 16** migrations in `supabase/migrations/` are
+runs in DEMO mode today). So **all 19** migrations in `supabase/migrations/` are
 pending and apply in order:
 
 ```
-20260827090000_init                       20260829110000_reservation_external_status
-20260827091000_booking_rpc                20260829120000_invoicing
-20260827092000_seed_properties            20260829130000_daily_rates
-20260827093000_production                 20260829140000_marketing
-20260827094000_coupons                    20260830090000_channel_feeds
-20260827160000_content_overrides          20260831120000_availability_rpc
-20260828120000_coupon_10praetoria10       20260831130000_rls_hardening
-20260829100000_intranet_crm               20260901120000_jobs
+20260827090000_init                       20260829120000_invoicing
+20260827091000_booking_rpc                20260829130000_daily_rates
+20260827092000_seed_properties            20260829140000_marketing
+20260827093000_production                 20260830090000_channel_feeds
+20260827094000_coupons                    20260831120000_availability_rpc
+20260827160000_content_overrides          20260831130000_rls_hardening
+20260828120000_coupon_10praetoria10       20260901120000_jobs
+20260829100000_intranet_crm               20260902120000_guest_comms
+20260829110000_reservation_external_status 20260902130000_admin_users
+20260902140000_media_library
 ```
 
 `supabase db push` reads `supabase_migrations.schema_migrations` and applies only
-what is missing — on a fresh project that is all 16. It is safe to re-run; every
+what is missing — on a fresh project that is all 19. It is safe to re-run; every
 migration is idempotent or tracked. (Or paste `supabase/apply-all-migrations.sql`
 into the SQL Editor.)
 
@@ -102,7 +104,7 @@ All three must be present or the app stays in DEMO mode.
 |---|---|---|
 | `STRIPE_SECRET_KEY` | MISSING | `sk_test_…` for the test pass, then `sk_live_…`. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | MISSING | `pk_test_…` then `pk_live_…`. |
-| `STRIPE_WEBHOOK_SECRET` | MISSING | `whsec_…` from the webhook endpoint you create at `https://<domain>/api/webhooks/stripe` (events: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `checkout.session.expired`). Use the `stripe listen` secret for the test pass, the live endpoint secret for go-live. |
+| `STRIPE_WEBHOOK_SECRET` | MISSING | `whsec_…` from the webhook endpoint you create at `https://<domain>/api/webhooks/stripe` (events: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `checkout.session.expired`, `charge.refunded`). Use the `stripe listen` secret for the test pass, the live endpoint secret for go-live. |
 
 Until all three are set, the pay step uses the **demo simulator** (no charge).
 `PRODUCTION_STRICT=true` blocks boot until they are set, which is the point.
@@ -111,7 +113,7 @@ Until all three are set, the pay step uses the **demo simulator** (no charge).
 
 | Variable | Status | Value |
 |---|---|---|
-| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking. |
+| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/comms`, `/api/cron/privacy`, `/api/cron/reconcile`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking, scheduled guest messages (#69) are never sent, and the monthly data-retention sweep (#79) never runs. |
 
 ### 2e · iCal / Booking sync
 
@@ -171,7 +173,7 @@ production**; each is also individually fail-closed once its integration is set:
 | Payment simulator (`/reserva/simular`, `/api/checkout/simulate`) | Page redirects to `/` and the API returns **403** the moment Stripe is configured. `beginPayment` only routes there when Stripe is unset. |
 | In-memory (DEMO) repository | Used only when Supabase is unconfigured. `PRODUCTION_STRICT` blocks that boot. |
 | Stripe webhook | **503** if `STRIPE_WEBHOOK_SECRET` unset; **400** on missing/invalid signature; idempotent; a reservation is confirmed **only** here, never from the success URL. |
-| Cron endpoints (`/api/cron/jobs`, `expire-holds`, `/api/ical/import`) | `requireServiceAuth`: **503** in production without `CRON_SECRET`, **401** on a wrong bearer. The `x-vercel-cron` header is accepted **only outside production**. |
+| Cron endpoints (`/api/cron/jobs`, `/api/cron/comms`, `expire-holds`, `/api/ical/import`) | `requireServiceAuth`: **503** in production without `CRON_SECRET`, **401** on a wrong bearer. The `x-vercel-cron` header is accepted **only outside production**. |
 | iCal export feed | **403** without a matching `ICAL_EXPORT_TOKEN` (constant-time compare). |
 | Admin login | `verifyPassword` returns false without `ADMIN_PASSWORD`; no session can be minted. HMAC-signed, 8 h, `Secure`+`HttpOnly` in production. |
 | Email failure | By design never blocks a booking; logged to `/admin/pagos`. Not a security fail-open. |
@@ -185,10 +187,18 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 
 ### A · Supabase
 - [ ] Create the production project. Copy URL + publishable + secret keys.
-- [ ] `supabase link` to it, then `supabase db push` (applies the 16 migrations).
+- [ ] `supabase link` to it, then `supabase db push` (applies the 19 migrations).
 - [ ] Run the two verify queries and the two `supabase/tests/*.sql` files (§1).
+- [ ] **Media library (issue #81):** Storage → New bucket → name `media`, **not public**. (The app serves files through signed URLs.) Nothing else to configure.
 - [ ] Database → Backups: confirm the plan's backup/PITR retention; do one test restore into a scratch project.
 - [ ] Add the 3 Supabase vars to Hostinger (§2b).
+- [ ] **Admin accounts (issue #65):** Authentication → Providers → enable **Email**;
+      Authentication → URL Configuration → add `https://<domain>/admin/login` as a
+      redirect URL. Set `ADMIN_EMAILS` to your address, deploy, then open
+      `/admin/login`, sign in with that email (use "restablecer contraseña" the
+      first time) — you become the first `admin`. Invite the rest from
+      `/admin/usuarios`; each sets their own password + 2FA at `/admin/seguridad`.
+      Until Auth is on, the `ADMIN_PASSWORD` login keeps working unchanged.
 
 ### B · Stripe (test first)
 - [ ] Test keys + `stripe listen --forward-to https://<domain>/api/webhooks/stripe` → copy `whsec_…`. Add the 3 Stripe vars.
@@ -211,9 +221,12 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 - [ ] Make a test block in Booking on Javalambre → after the next import it shows only on Javalambre. Re-import → no duplicates.
 
 ### E · Cron (Hostinger has no Vercel Cron)
-- [ ] Create three scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
+- [ ] Create six scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
   - every 2 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/jobs`
   - every 5 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/expire-holds`
+  - every 15 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/comms`
+  - monthly (day 1, 03:00): `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/privacy`
+  - every 6 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/reconcile`
   - every 3 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/ical/import`
 - [ ] Confirm each returns `200` (a `401`/`503` means the header or `CRON_SECRET` is wrong).
 - [ ] `/admin/procesos` shows an empty or all-`Completado` queue; no `Fallido (atascado)` rows.

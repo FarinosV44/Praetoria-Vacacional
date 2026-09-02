@@ -58,6 +58,13 @@ import type {
 import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segments";
 import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
+import type {
+  CommsFilter,
+  DesiredMessage,
+  ScheduledMessage,
+} from "@/domains/comms/types";
+import type { AdminUser } from "@/domains/admin/users";
+import type { MediaAsset } from "@/domains/media/types";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -116,6 +123,9 @@ interface Store {
   unsubscribes: { email: string; unsubscribedAt: string; source: string | null }[];
   auditLog: AuditRow[];
   jobs: Job[];
+  scheduledMessages: ScheduledMessage[];
+  adminUsers: AdminUser[];
+  media: MediaAsset[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -209,6 +219,9 @@ function seed(): Store {
     unsubscribes: [],
     auditLog: [],
     jobs: [],
+    scheduledMessages: [],
+    adminUsers: [],
+    media: [],
   };
 }
 
@@ -340,6 +353,9 @@ store.campaignRecipients ??= [];
 store.unsubscribes ??= [];
 store.auditLog ??= [];
 store.jobs ??= [];
+store.scheduledMessages ??= [];
+store.adminUsers ??= [];
+store.media ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -634,6 +650,10 @@ export const memoryRepository: Repository = {
 
   async getPaymentBySession(session) {
     return store.payments.find((p) => p.providerCheckoutSession === session) ?? null;
+  },
+
+  async getPaymentByIntent(paymentIntent: string) {
+    return store.payments.find((p) => p.providerPaymentIntent === paymentIntent) ?? null;
   },
 
   async listPayments(limit = 100) {
@@ -1702,5 +1722,306 @@ export const memoryRepository: Repository = {
     j.updatedAt = new Date().toISOString();
     save();
     return { ...j };
+  },
+
+  // --- Guest communications lifecycle (issue #69) -----------------
+  async syncReservationMessages(reservationId: string, desired: DesiredMessage[]) {
+    const now = new Date().toISOString();
+    const wanted = new Map(desired.map((d) => [d.kind, d.sendAt]));
+    for (const [kind, sendAt] of wanted) {
+      const row = store.scheduledMessages.find(
+        (m) => m.reservationId === reservationId && m.kind === kind,
+      );
+      if (!row) {
+        store.scheduledMessages.push({
+          id: randomUUID(),
+          reservationId,
+          kind,
+          sendAt,
+          status: "planned",
+          attempts: 0,
+          sentAt: null,
+          lastError: null,
+          providerId: null,
+          createdAt: now,
+          updatedAt: now,
+        });
+      } else if (row.status === "planned") {
+        row.sendAt = sendAt;
+        row.updatedAt = now;
+      }
+    }
+    // retire planned rows no longer desired
+    for (const m of store.scheduledMessages) {
+      if (m.reservationId === reservationId && m.status === "planned" && !wanted.has(m.kind)) {
+        m.status = "cancelled";
+        m.updatedAt = now;
+      }
+    }
+    save();
+  },
+
+  async cancelReservationMessages(reservationId: string) {
+    const now = new Date().toISOString();
+    for (const m of store.scheduledMessages) {
+      if (m.reservationId === reservationId && m.status === "planned") {
+        m.status = "cancelled";
+        m.updatedAt = now;
+      }
+    }
+    save();
+  },
+
+  async listScheduledMessages(filter?: CommsFilter) {
+    let out = [...store.scheduledMessages];
+    if (filter?.status?.length) out = out.filter((m) => filter.status!.includes(m.status));
+    if (filter?.kind) out = out.filter((m) => m.kind === filter.kind);
+    out.sort((a, b) => b.sendAt.localeCompare(a.sendAt));
+    return out.slice(0, filter?.limit ?? 200);
+  },
+
+  async listReservationMessages(reservationId: string) {
+    return store.scheduledMessages
+      .filter((m) => m.reservationId === reservationId)
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt));
+  },
+
+  async dueScheduledMessages(nowIso: string, limit: number) {
+    return store.scheduledMessages
+      .filter((m) => m.status === "planned" && m.sendAt <= nowIso)
+      .sort((a, b) => a.sendAt.localeCompare(b.sendAt))
+      .slice(0, Math.max(0, limit));
+  },
+
+  async markScheduledMessage(id, patch) {
+    const m = store.scheduledMessages.find((x) => x.id === id);
+    if (!m) return;
+    m.status = patch.status;
+    if (patch.attempts != null) m.attempts = patch.attempts;
+    if (patch.sendAt !== undefined) m.sendAt = patch.sendAt;
+    if (patch.sentAt !== undefined) m.sentAt = patch.sentAt;
+    if (patch.lastError !== undefined) m.lastError = patch.lastError;
+    if (patch.providerId !== undefined) m.providerId = patch.providerId;
+    m.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async resetScheduledMessage(id: string) {
+    const m = store.scheduledMessages.find((x) => x.id === id);
+    if (!m) throw new Error("MESSAGE_NOT_FOUND");
+    m.status = "planned";
+    m.sendAt = new Date().toISOString();
+    m.lastError = null;
+    m.updatedAt = new Date().toISOString();
+    save();
+    return { ...m };
+  },
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  async listAdminUsers() {
+    return store.adminUsers
+      .map((u) => ({ ...u }))
+      .sort((a, b) => a.email.localeCompare(b.email));
+  },
+
+  async getAdminUserById(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    return u ? { ...u } : null;
+  },
+
+  async getAdminUserByEmail(email: string) {
+    const e = email.trim().toLowerCase();
+    const u = store.adminUsers.find((x) => x.email.toLowerCase() === e);
+    return u ? { ...u } : null;
+  },
+
+  async createAdminUser(input) {
+    const now = new Date().toISOString();
+    if (store.adminUsers.some((x) => x.email.toLowerCase() === input.email.trim().toLowerCase())) {
+      throw new Error("ADMIN_USER_EMAIL_TAKEN");
+    }
+    const row: AdminUser = {
+      id: input.id ?? randomUUID(),
+      email: input.email.trim(),
+      fullName: input.fullName ?? null,
+      role: input.role,
+      active: !input.inviteTokenHash,
+      sessionsValidFrom: now,
+      mfaRequired: false,
+      invitedBy: input.invitedBy ?? null,
+      inviteTokenHash: input.inviteTokenHash ?? null,
+      inviteExpiresAt: input.inviteExpiresAt ?? null,
+      lastSeenAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.adminUsers.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateAdminUser(id, patch) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    if (patch.role !== undefined) u.role = patch.role;
+    if (patch.active !== undefined) u.active = patch.active;
+    if (patch.fullName !== undefined) u.fullName = patch.fullName;
+    if (patch.mfaRequired !== undefined) u.mfaRequired = patch.mfaRequired;
+    u.updatedAt = new Date().toISOString();
+    save();
+    return { ...u };
+  },
+
+  async revokeAdminUserSessions(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    u.sessionsValidFrom = new Date().toISOString();
+    u.updatedAt = u.sessionsValidFrom;
+    save();
+  },
+
+  async acceptAdminInvite(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    u.inviteTokenHash = null;
+    u.inviteExpiresAt = null;
+    u.active = true;
+    u.updatedAt = new Date().toISOString();
+    save();
+    return { ...u };
+  },
+
+  async deleteAdminUser(id: string) {
+    const i = store.adminUsers.findIndex((x) => x.id === id);
+    if (i >= 0) {
+      store.adminUsers.splice(i, 1);
+      save();
+    }
+  },
+
+  async touchAdminUser(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) return;
+    u.lastSeenAt = new Date().toISOString();
+    save();
+  },
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  async anonymizeReservationContact(id: string) {
+    const r = store.reservations.find((x) => x.id === id);
+    if (!r) return;
+    r.guestName = "[borrado a petición]";
+    r.guestEmail = null;
+    r.guestPhone = null;
+    const anon = r as unknown as Record<string, unknown>;
+    for (const k of ["guestDocNumber", "guestDocType", "guestAddress", "guestCity", "guestPostalCode", "externalLocator", "notes"]) {
+      if (k in anon) anon[k] = null;
+    }
+    r.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async anonymizeCustomerContact(id: string) {
+    const c = store.customers.find((x) => x.id === id);
+    if (!c) return;
+    c.firstName = "[borrado]";
+    c.lastName = "";
+    c.email = null;
+    c.phone = null;
+    c.whatsapp = null;
+    c.docNumber = null;
+    c.address = null;
+    c.postalCode = null;
+    c.notes = null;
+    c.marketingConsent = false;
+    c.marketingConsentAt = null;
+    c.marketingConsentSource = null;
+    c.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async deleteReservationHard(id: string) {
+    store.reservations = store.reservations.filter((r) => r.id !== id);
+    store.payments = store.payments.filter((p) => p.reservationId !== id);
+    store.scheduledMessages = store.scheduledMessages.filter((m) => m.reservationId !== id);
+    for (const inv of store.invoices) if (inv.reservationId === id) inv.reservationId = null;
+    save();
+  },
+
+  async deleteScheduledMessagesBefore(beforeIso: string) {
+    const before = store.scheduledMessages.length;
+    store.scheduledMessages = store.scheduledMessages.filter((m) => {
+      const finished = ["sent", "failed", "cancelled", "skipped"].includes(m.status);
+      return !(finished && m.updatedAt < beforeIso);
+    });
+    save();
+    return before - store.scheduledMessages.length;
+  },
+
+  async deleteAuditLogBefore(beforeIso: string) {
+    const before = store.auditLog.length;
+    store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
+    save();
+    return before - store.auditLog.length;
+  },
+
+  // --- Media library (issue #81) --------------------------------
+  async listMedia(filter) {
+    let out = [...store.media];
+    if (filter?.tag) out = out.filter((m) => m.tags.includes(filter.tag!));
+    if (filter?.q) {
+      const q = filter.q.toLowerCase();
+      out = out.filter(
+        (m) => m.filename.toLowerCase().includes(q) || m.alt.toLowerCase().includes(q),
+      );
+    }
+    out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return out.slice(0, filter?.limit ?? 200).map((m) => ({ ...m }));
+  },
+
+  async getMediaAsset(id: string) {
+    const m = store.media.find((x) => x.id === id);
+    return m ? { ...m } : null;
+  },
+
+  async createMediaAsset(input) {
+    const now = new Date().toISOString();
+    const row: MediaAsset = {
+      id: randomUUID(),
+      bucket: "media",
+      path: input.path,
+      filename: input.filename,
+      mime: input.mime,
+      sizeBytes: input.sizeBytes,
+      width: input.width ?? null,
+      height: input.height ?? null,
+      alt: input.alt ?? "",
+      focalX: 0.5,
+      focalY: 0.5,
+      tags: input.tags ?? [],
+      uploadedBy: input.uploadedBy ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.media.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateMediaAsset(id, patch) {
+    const m = store.media.find((x) => x.id === id);
+    if (!m) throw new Error("MEDIA_NOT_FOUND");
+    if (patch.alt !== undefined) m.alt = patch.alt;
+    if (patch.focalX !== undefined) m.focalX = patch.focalX;
+    if (patch.focalY !== undefined) m.focalY = patch.focalY;
+    if (patch.tags !== undefined) m.tags = patch.tags;
+    m.updatedAt = new Date().toISOString();
+    save();
+    return { ...m };
+  },
+
+  async deleteMediaAsset(id: string) {
+    store.media = store.media.filter((m) => m.id !== id);
+    save();
   },
 };

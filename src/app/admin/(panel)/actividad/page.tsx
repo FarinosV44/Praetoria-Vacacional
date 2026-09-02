@@ -1,5 +1,5 @@
 import { getRepository } from "@/lib/repository";
-import { currentRole, ROLE_LABEL } from "@/domains/admin/roles";
+import { getCurrentRole, ROLE_LABEL } from "@/domains/admin/roles";
 
 export const metadata = { title: "Actividad" };
 
@@ -17,10 +17,14 @@ const ACTION_LABEL: Record<string, string> = {
   "calendar.close_dates": "Fechas cerradas en el calendario",
   "job.retry": "Proceso reintentado",
   "job.cancel": "Proceso cancelado",
+  "comms.resend": "Comunicación reenviada",
+  "comms.replan": "Comunicaciones replanificadas",
+  "comms.settings": "Ajustes de comunicaciones guardados",
 };
 
 export default async function ActividadPage() {
   const log = await getRepository().listAuditLog(300);
+  const role = await getCurrentRole();
 
   return (
     <div className="space-y-6">
@@ -28,7 +32,7 @@ export default async function ActividadPage() {
         <h1 className="font-display text-2xl">Registro de actividad</h1>
         <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
           Acciones críticas (cancelaciones, emisión y anulación de facturas, fusiones de clientes,
-          envíos de campañas, cierres de calendario). Tu rol actual: <strong>{ROLE_LABEL[currentRole()]}</strong>.
+          envíos de campañas, cierres de calendario). Tu rol actual: <strong>{ROLE_LABEL[role]}</strong>.
         </p>
       </div>
       <div className="overflow-x-auto rounded-xl border border-[var(--color-line)] bg-white">

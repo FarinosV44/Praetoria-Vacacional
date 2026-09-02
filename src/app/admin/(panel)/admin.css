@@ -112,6 +112,8 @@
   .admin-btn[data-variant="ghost"]:hover { background: var(--a-surface-2); color: var(--a-text); }
   .admin-btn[data-variant="outline"] { border-color: var(--a-line); color: var(--a-text); background: var(--a-surface); }
   .admin-btn[data-variant="outline"]:hover { border-color: var(--a-accent); color: var(--a-accent-strong); }
+  .admin-btn[data-variant="danger"] { background: oklch(0.55 0.19 25); color: oklch(0.99 0 0); }
+  .admin-btn[data-variant="danger"]:hover { background: oklch(0.48 0.2 25); }
 
   /* ---- shell layout ------------------------------------------------------ */
 

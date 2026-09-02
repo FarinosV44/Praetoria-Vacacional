@@ -8,6 +8,7 @@ import { displayName } from "@/domains/crm/types";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmSubmit } from "@/components/admin/ConfirmSubmit";
 import { cancelReservationAction } from "@/domains/admin/actions";
+import { CancelWithRefund } from "./CancelWithRefund";
 import { ReservationForm } from "../ReservationForm";
 import { updateReservationAction } from "@/domains/reservations/actions";
 import { draftInvoiceFromReservationAction } from "@/domains/invoicing/actions";
@@ -128,17 +129,21 @@ export default async function ReservaDetailPage({ params }: { params: Promise<{ 
             </div>
           </dl>
 
-          {(reservation.status === "confirmed" ||
-            reservation.status === "pending" ||
-            reservation.status === "external") && (
+          {(reservation.status === "confirmed" || reservation.status === "pending") && (
+            <CancelWithRefund
+              reservationId={reservation.id}
+              code={reservation.code}
+              checkIn={reservation.checkIn}
+              totalCents={reservation.totalCents}
+              tiers={property?.cancellationPolicy.tiers ?? [{ daysBefore: 0, refundPercent: 0 }]}
+              policySummary={property?.cancellationPolicy.summary ?? "Sin política de cancelación definida."}
+            />
+          )}
+          {reservation.status === "external" && (
             <form action={cancelReservationAction} className="mt-4">
               <input type="hidden" name="id" value={reservation.id} />
               <ConfirmSubmit
-                message={`¿Cancelar la reserva ${reservation.code}? ${
-                  reservation.status === "external"
-                    ? "El registro se marca como cancelada (el bloqueo iCal no se toca)."
-                    : "Las fechas quedarán liberadas."
-                }`}
+                message={`¿Cancelar la reserva ${reservation.code}? El registro se marca como cancelada (el bloqueo iCal no se toca).`}
               >
                 Cancelar reserva
               </ConfirmSubmit>
