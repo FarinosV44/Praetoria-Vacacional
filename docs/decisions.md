@@ -705,3 +705,22 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   `MfaGate` replaces the panel body until the challenge is met.
 - **Live verification is the owner's** — no Supabase project/creds this session;
   build + typecheck + unit + route-privacy e2e are green.
+
+## D-034 — #79 — privacy lifecycle / GDPR operational
+**Date:** 2026-09-02 · issue #79
+- **Pure verdicts, thin application.** `retention.ts` decides keep/anonymise/
+  delete per record; `erasure.ts` plans a data-subject erasure. Both are pure
+  and unit-tested; a monthly sweep and the admin console just apply the result.
+- **Legal holds win.** `planErasure` never deletes an invoice inside the
+  6-year Spanish fiscal window (art. 30 CdC / art. 66 LGT) or a reservation
+  linked to one — it anonymises the contact fields and keeps the accounting
+  row, and surfaces the reason. An active/future booking blocks erasure of that
+  reservation entirely.
+- **Anonymise in place, no schema change.** PII columns are overwritten with
+  tombstones (`guest_name = '[borrado a petición]'`, contact fields null). The
+  customer row is kept (referential integrity) but blanked.
+- **Retention windows** (`DEFAULT_RETENTION`): abandoned holds 7 d, cancelled
+  reservations 1 y, completed-stay contact 6 y, finished lifecycle messages
+  180 d, audit log 3 y. Owner reviews with the DPO.
+- **Accountability.** Export and erasure are audit-logged with a salted-short
+  hash of the email, not the address itself.

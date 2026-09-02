@@ -60,6 +60,7 @@ const SECONDARY: Item[] = [
   { href: "/admin/actividad", label: "Actividad", icon: "dots" },
   { href: "/admin/usuarios", label: "Usuarios", icon: "users" },
   { href: "/admin/seguridad", label: "Seguridad", icon: "gear" },
+  { href: "/admin/privacidad", label: "Privacidad", icon: "gear" },
 ];
 
 function isActive(pathname: string, item: Item): boolean {

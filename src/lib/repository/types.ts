@@ -508,4 +508,16 @@ export interface Repository {
   deleteAdminUser(id: string): Promise<void>;
   /** Best-effort last-seen touch; never throws on the hot path. */
   touchAdminUser(id: string): Promise<void>;
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  /** Null the contact fields on a reservation, keep the booking/accounting row. */
+  anonymizeReservationContact(id: string): Promise<void>;
+  /** Blank a customer's identifying fields, keep the row for linkage integrity. */
+  anonymizeCustomerContact(id: string): Promise<void>;
+  /** Hard-delete a reservation and its dependent rows (no legal hold applies). */
+  deleteReservationHard(id: string): Promise<void>;
+  /** Delete finished lifecycle messages updated before `beforeIso`. Returns count. */
+  deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
+  /** Delete audit rows created before `beforeIso`. Returns count. */
+  deleteAuditLogBefore(beforeIso: string): Promise<number>;
 }

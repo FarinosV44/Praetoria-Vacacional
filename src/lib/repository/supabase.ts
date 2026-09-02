@@ -2080,6 +2080,81 @@ export const supabaseRepository: Repository = {
     const db = supabaseAdmin();
     await db.from("admin_users").update({ last_seen_at: new Date().toISOString() }).eq("id", id);
   },
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  async anonymizeReservationContact(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("reservations")
+      .update({
+        guest_name: "[borrado a petición]",
+        guest_email: null,
+        guest_phone: null,
+        guest_doc_number: null,
+        guest_doc_type: null,
+        guest_address: null,
+        guest_city: null,
+        guest_postal_code: null,
+        external_locator: null,
+        notes: null,
+      })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async anonymizeCustomerContact(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("customers")
+      .update({
+        first_name: "[borrado]",
+        last_name: "",
+        email: null,
+        phone: null,
+        whatsapp: null,
+        doc_number: null,
+        address: null,
+        postal_code: null,
+        notes: null,
+        marketing_consent: false,
+        marketing_consent_at: null,
+        marketing_consent_source: null,
+      })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async deleteReservationHard(id: string) {
+    const db = supabaseAdmin();
+    await db.from("invoices").update({ reservation_id: null }).eq("reservation_id", id);
+    await db.from("scheduled_messages").delete().eq("reservation_id", id);
+    await db.from("payments").delete().eq("reservation_id", id);
+    const { error } = await db.from("reservations").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async deleteScheduledMessagesBefore(beforeIso: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("scheduled_messages")
+      .delete()
+      .in("status", ["sent", "failed", "cancelled", "skipped"])
+      .lt("updated_at", beforeIso)
+      .select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
+  async deleteAuditLogBefore(beforeIso: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_audit_log")
+      .delete()
+      .lt("created_at", beforeIso)
+      .select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
 };
 
 function mapAdminUser(row: any): AdminUser {

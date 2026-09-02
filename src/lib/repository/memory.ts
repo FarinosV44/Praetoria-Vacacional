@@ -1897,4 +1897,63 @@ export const memoryRepository: Repository = {
     u.lastSeenAt = new Date().toISOString();
     save();
   },
+
+  // --- Privacy lifecycle / GDPR (issue #79) ----------------------
+  async anonymizeReservationContact(id: string) {
+    const r = store.reservations.find((x) => x.id === id);
+    if (!r) return;
+    r.guestName = "[borrado a petición]";
+    r.guestEmail = null;
+    r.guestPhone = null;
+    const anon = r as unknown as Record<string, unknown>;
+    for (const k of ["guestDocNumber", "guestDocType", "guestAddress", "guestCity", "guestPostalCode", "externalLocator", "notes"]) {
+      if (k in anon) anon[k] = null;
+    }
+    r.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async anonymizeCustomerContact(id: string) {
+    const c = store.customers.find((x) => x.id === id);
+    if (!c) return;
+    c.firstName = "[borrado]";
+    c.lastName = "";
+    c.email = null;
+    c.phone = null;
+    c.whatsapp = null;
+    c.docNumber = null;
+    c.address = null;
+    c.postalCode = null;
+    c.notes = null;
+    c.marketingConsent = false;
+    c.marketingConsentAt = null;
+    c.marketingConsentSource = null;
+    c.updatedAt = new Date().toISOString();
+    save();
+  },
+
+  async deleteReservationHard(id: string) {
+    store.reservations = store.reservations.filter((r) => r.id !== id);
+    store.payments = store.payments.filter((p) => p.reservationId !== id);
+    store.scheduledMessages = store.scheduledMessages.filter((m) => m.reservationId !== id);
+    for (const inv of store.invoices) if (inv.reservationId === id) inv.reservationId = null;
+    save();
+  },
+
+  async deleteScheduledMessagesBefore(beforeIso: string) {
+    const before = store.scheduledMessages.length;
+    store.scheduledMessages = store.scheduledMessages.filter((m) => {
+      const finished = ["sent", "failed", "cancelled", "skipped"].includes(m.status);
+      return !(finished && m.updatedAt < beforeIso);
+    });
+    save();
+    return before - store.scheduledMessages.length;
+  },
+
+  async deleteAuditLogBefore(beforeIso: string) {
+    const before = store.auditLog.length;
+    store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
+    save();
+    return before - store.auditLog.length;
+  },
 };
