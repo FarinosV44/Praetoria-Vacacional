@@ -35,6 +35,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // ESLint + its config live in devDependencies (CI runs them). A production
+  // host that installs with --omit=dev / NODE_ENV=production won't have eslint,
+  // and `next build` would otherwise fail looking for it. `tsc` still runs in CI.
+  eslint: { ignoreDuringBuilds: true },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
