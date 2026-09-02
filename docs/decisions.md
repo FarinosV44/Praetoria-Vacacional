@@ -815,3 +815,20 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   the suppression list.
 - WhatsApp bulk send is still unconfigured — that channel keeps the
   intent-only `markCampaignSent` path.
+
+## D-040 — #74 — explainable dynamic pricing
+**Date:** 2026-09-02 · user choice ("auto-apply within guardrails")
+- **Nudge the natural price, don't compound.** `suggestNightlyRate` starts from
+  what the static rate config (seasons + weekend) would charge — never the
+  resolved config with existing `daily_rates` — so running it daily converges
+  instead of ratcheting.
+- **Named factors, always shown.** Lead time, window demand (real occupancy),
+  orphan nights. Each carries a label + signed % + a plain reason; the admin
+  screen prints the full breakdown per date.
+- **Hard guardrails.** The recommendation is clamped to ±`bandPct` (default 25)
+  of the natural price and then floored at `floorCents` (default 60% of base).
+  The clamp reason is surfaced.
+- **"Auto-apply" = the cron writes without a click**, but only for a property
+  whose owner has ticked `enabled` (default off). `/api/cron/pricing` runs
+  daily; `applyDynamicPricing(slug, {force:true})` is the manual "apply now".
+  Everything is audit-logged.

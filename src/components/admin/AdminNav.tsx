@@ -41,6 +41,7 @@ const PRIMARY: Item[] = [
   { href: "/admin/calendario", label: "Calendario", icon: "calendar" },
   { href: "/admin/reservas", label: "Reservas", icon: "bookings" },
   { href: "/admin/precios", label: "Precios y reglas", icon: "price" },
+  { href: "/admin/precios-dinamicos", label: "Precios dinámicos", icon: "price" },
   { href: "/admin/alojamientos", label: "Alojamientos", icon: "home2", match: ["/admin/contenido"] },
   { href: "/admin/clientes", label: "Clientes", icon: "users" },
   { href: "/admin/facturas", label: "Facturas", icon: "invoice" },
