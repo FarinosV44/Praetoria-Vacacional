@@ -861,3 +861,19 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   trend is visible on every PR and the stable checks are real gates.
 - **Field CWV stays a manual gate** (Search Console + PageSpeed Insights on the
   live domain) — documented in `docs/perf-budget.md` and the final audit.
+
+## D-043 — bugfix — Supabase "configured" must not depend on a build-time var
+**Date:** 2026-09-02 · user report (calendar sync URL lost on redeploy despite Supabase configured)
+- **Root cause.** `supabaseConfigured` required `NEXT_PUBLIC_SUPABASE_URL`,
+  which Next inlines at **build** time. Setting it in the Hostinger panel and
+  restarting (no rebuild) left the value empty → the app silently ran in DEMO →
+  the iCal import URL went to `.data/demo.json` and was wiped on every redeploy.
+- **Fix.** New runtime-only `SUPABASE_URL` (no prefix), preferred over the
+  build-time one. `supabaseConfigured` now = URL + secret key only (the server
+  repo never uses the publishable key — D-005). Split out
+  `supabaseBrowserConfigured` (URL + publishable) for the Supabase-Auth login
+  path (#65), which genuinely needs the build-time key.
+- **Diagnostics.** `/api/health` gains a `supabase` block reporting runtime env
+  presence + a `hint` when a key is set but the URL isn't resolving.
+  `/admin/sincronizacion` shows a red banner for that exact situation and
+  another when `channel_feeds` can't be read (missing migration).

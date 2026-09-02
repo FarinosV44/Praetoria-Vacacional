@@ -11,8 +11,10 @@ import { env } from "@/lib/env";
  * which is why migration 20260831130000 revokes anon access to every table.
  */
 export async function supabaseServer() {
-  if (!env.supabaseConfigured) {
-    throw new Error("Supabase is not configured (running in DEMO mode).");
+  if (!env.supabaseBrowserConfigured) {
+    throw new Error(
+      "Supabase Auth needs NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or _ANON_KEY) at build time.",
+    );
   }
   const cookieStore = await cookies();
   return createServerClient(env.supabaseUrl!, env.supabasePublishableKey!, {

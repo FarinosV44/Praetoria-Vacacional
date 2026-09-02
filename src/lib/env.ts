@@ -24,6 +24,13 @@ const schema = z.object({
   // Supabase — both the legacy (JWT anon / service_role) and the new
   // (sb_publishable_… / sb_secret_…) key names are accepted; whichever is set
   // wins. The `@supabase/supabase-js` client treats them interchangeably.
+  //
+  // IMPORTANT: `NEXT_PUBLIC_*` values are inlined into the bundle at BUILD time,
+  // so setting them in a hosting panel without a rebuild leaves the app in DEMO
+  // mode. `SUPABASE_URL` (no prefix) is read at RUNTIME and is all the server
+  // needs — the publishable/anon key is only for the not-yet-live browser client
+  // (D-005). Prefer `SUPABASE_URL` + `SUPABASE_SECRET_KEY` on Hostinger.
+  SUPABASE_URL: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().optional(),
@@ -126,9 +133,14 @@ if (!parsed.success) {
 
 const raw = parsed.data;
 
-// Resolve the Supabase keys once, preferring the new sb_publishable_/sb_secret_
-// names and falling back to the legacy anon/service_role names.
-const supabaseUrl = isReal(raw.NEXT_PUBLIC_SUPABASE_URL) ? raw.NEXT_PUBLIC_SUPABASE_URL : undefined;
+// Resolve the Supabase config once. The runtime-only `SUPABASE_URL` wins over
+// the build-time `NEXT_PUBLIC_SUPABASE_URL` so a hosting-panel value works
+// without a rebuild.
+const supabaseUrl = isReal(raw.SUPABASE_URL)
+  ? raw.SUPABASE_URL
+  : isReal(raw.NEXT_PUBLIC_SUPABASE_URL)
+    ? raw.NEXT_PUBLIC_SUPABASE_URL
+    : undefined;
 const supabasePublishableKey = isReal(raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   ? raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   : isReal(raw.NEXT_PUBLIC_SUPABASE_ANON_KEY)
@@ -159,7 +171,13 @@ export const env = {
   supabasePublishableKey,
   /** Secret / service-role key — bypasses RLS, server-only. */
   supabaseSecretKey,
-  supabaseConfigured: !!supabaseUrl && !!supabasePublishableKey && !!supabaseSecretKey,
+  // The server repository only needs the URL + secret key (D-005 — the browser
+  // client / publishable key has no live read path yet). Requiring the
+  // publishable key here would silently drop the app to DEMO when only the
+  // build-time NEXT_PUBLIC value is missing.
+  supabaseConfigured: !!supabaseUrl && !!supabaseSecretKey,
+  /** True only when the browser SSR client (Supabase Auth, #65) can be built. */
+  supabaseBrowserConfigured: !!supabaseUrl && !!supabasePublishableKey,
   stripeConfigured: isReal(raw.STRIPE_SECRET_KEY) && isReal(raw.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),

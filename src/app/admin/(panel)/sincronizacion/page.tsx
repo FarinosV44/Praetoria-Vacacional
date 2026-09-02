@@ -21,6 +21,15 @@ const PLACEHOLDER: Record<string, string> = {
 export default async function AdminSyncPage() {
   const status = await getImportFeedStatus();
 
+  // Common footgun: a Supabase key is set in the hosting panel but the app still
+  // runs in DEMO because NEXT_PUBLIC_SUPABASE_URL is a build-time value.
+  const secretKeyPresent =
+    !!process.env.SUPABASE_SECRET_KEY || !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const looksMisconfigured = DEMO_MODE && secretKeyPresent;
+  const feedReadError = status
+    .flatMap((p) => p.channels)
+    .find((c) => c.readError)?.readError;
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl">Sincronización de calendarios (iCal)</h1>
@@ -31,7 +40,27 @@ export default async function AdminSyncPage() {
         <code>ICAL_IMPORT_&lt;ALOJAMIENTO&gt;_&lt;CANAL&gt;</code> → fichero de contenido.
       </p>
 
-      {DEMO_MODE && (
+      {looksMisconfigured && (
+        <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <strong>Parece que has configurado Supabase pero la app sigue en modo demostración.</strong>{" "}
+          Hay una clave secreta de Supabase, pero falta la URL en tiempo de ejecución.
+          <code>NEXT_PUBLIC_SUPABASE_URL</code> se compila en el build: cambiarla en el panel de
+          hosting no basta, hay que <strong>reconstruir</strong>. Solución rápida: define también{" "}
+          <code>SUPABASE_URL</code> (sin el prefijo <code>NEXT_PUBLIC_</code>) con el mismo valor —
+          se lee en caliente y no necesita rebuild. Comprueba <code>/api/health</code> → campo{" "}
+          <code>supabase</code>.
+        </div>
+      )}
+
+      {feedReadError && (
+        <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          <strong>No se puede leer la tabla <code>channel_feeds</code>:</strong> {feedReadError}. Casi
+          seguro faltan migraciones — ejecuta <code>supabase db push</code> (o pega{" "}
+          <code>supabase/apply-all-migrations.sql</code> en el SQL Editor).
+        </div>
+      )}
+
+      {DEMO_MODE && !looksMisconfigured && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           <strong>Modo demostración (sin base de datos).</strong> Lo que guardes aquí se escribe solo
           en un fichero local del servidor y <strong>se pierde en cada redespliegue</strong>. Para

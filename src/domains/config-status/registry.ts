@@ -38,11 +38,11 @@ export function getConfigFeatures(): ConfigFeature[] {
     impact:
       "Sin Supabase la web funciona en modo demostración: los datos viven en memoria y no persisten entre despliegues.",
     envVars: [
-      "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (o NEXT_PUBLIC_SUPABASE_ANON_KEY)",
+      "SUPABASE_URL (recomendado en Hostinger — se lee en caliente) o NEXT_PUBLIC_SUPABASE_URL (requiere rebuild)",
       "SUPABASE_SECRET_KEY (o SUPABASE_SERVICE_ROLE_KEY)",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY — solo para el login con Supabase Auth (#65)",
     ],
-    where: "Supabase → Project Settings → API Keys",
+    where: "Supabase → Project Settings → API Keys · define SUPABASE_URL sin el prefijo NEXT_PUBLIC_",
     state: env.supabaseConfigured ? "configured" : "not_configured",
     statusLine: env.supabaseConfigured
       ? "Conectada. Reservas y bloqueos persisten en Postgres."

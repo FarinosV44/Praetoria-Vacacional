@@ -93,11 +93,14 @@ you must add it · **OPTIONAL** = launch works without it.
 
 | Variable | Status | Value |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | MISSING | Project Settings → API → Project URL. |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | MISSING | the new `sb_publishable_…` key. (Legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also accepted — set one.) |
-| `SUPABASE_SECRET_KEY` | MISSING | the new `sb_secret_…` key — server-only, bypasses RLS. (Legacy `SUPABASE_SERVICE_ROLE_KEY` also accepted — set one.) |
+| `SUPABASE_URL` | MISSING | Project Settings → API → Project URL. **Set this one on Hostinger** — it is read at runtime, so a panel change takes effect on restart, no rebuild. |
+| `NEXT_PUBLIC_SUPABASE_URL` | OPTIONAL | same value; build-time. Set it too for parity, but on Hostinger it only updates on a rebuild. |
+| `SUPABASE_SECRET_KEY` | MISSING | the new `sb_secret_…` key — server-only, bypasses RLS. (Legacy `SUPABASE_SERVICE_ROLE_KEY` also accepted — set one.) Runtime var. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | OPTIONAL | the `sb_publishable_…` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) key. Only needed for the Supabase-Auth admin login (#65); build-time. |
 
-All three must be present or the app stays in DEMO mode.
+`SUPABASE_URL` + a secret key = the app leaves DEMO mode. Verify at
+`/api/health` → the `supabase` block (`resolved: "supabase"`, and a `hint` if a
+key is set but the URL isn't picked up).
 
 ### 2c · Stripe (payments)
 
