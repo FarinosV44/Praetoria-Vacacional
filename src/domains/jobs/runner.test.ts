@@ -170,7 +170,11 @@ describe("runDueJobs", () => {
     let s = await runDueJobs({ worker: "B", leaseSeconds: 120, handlers: { "test.orphan": async () => ({ ok: true }) } });
     expect(s.claimed).toBe(0);
 
-    // lease elapsed → B recovers it
+    // lease elapsed → B recovers it. `claimJobs` compares ISO timestamps at
+    // millisecond resolution, so give the clock a beat to move past A's lock —
+    // otherwise on a fast runner A's `lockedAt` and B's cutoff share the same
+    // millisecond and the strict `<` check misses.
+    await new Promise((r) => setTimeout(r, 5));
     s = await runDueJobs({
       worker: "B",
       leaseSeconds: 0,
