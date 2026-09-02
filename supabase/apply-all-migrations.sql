@@ -1,11 +1,12 @@
 -- =============================================================================
--- Praetoria Vacacional — TODAS las migraciones en un solo archivo
+-- Praetoria Vacacional — TODAS las migraciones en un solo archivo (IDEMPOTENTE)
 --
--- Uso: Supabase Dashboard → SQL Editor → New query → pega TODO esto → Run.
--- Es equivalente a `supabase db push` en una base de datos nueva.
--- Seguro de re-ejecutar salvo la primera vez (las tablas ya existirían).
+-- Uso: Supabase Dashboard -> SQL Editor -> New query -> pega TODO esto -> Run.
+-- Equivalente a `supabase db push`. SEGURO de ejecutar varias veces y sobre una
+-- base de datos parcialmente migrada: cada tipo/tabla/índice/trigger/constraint
+-- se crea solo si falta.
 --
--- NO editar a mano: se genera con  cat supabase/migrations/*.sql
+-- NO editar a mano: se genera con  node scripts/build-setup-sql.mjs
 -- =============================================================================
 
 
@@ -25,16 +26,36 @@ create extension if not exists "pgcrypto";
 -- ---------------------------------------------------------------------------
 -- Enums
 -- ---------------------------------------------------------------------------
-create type reservation_status as enum ('pending', 'confirmed', 'cancelled', 'expired');
-create type reservation_source as enum ('direct', 'booking', 'manual');
-create type block_source as enum ('booking', 'airbnb', 'manual', 'other');
-create type payment_status as enum ('created', 'processing', 'succeeded', 'failed', 'refunded', 'cancelled');
-create type sync_direction as enum ('import', 'export');
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'reservation_status') then
+    create type reservation_status as enum ('pending', 'confirmed', 'cancelled', 'expired');
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'reservation_source') then
+    create type reservation_source as enum ('direct', 'booking', 'manual');
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'block_source') then
+    create type block_source as enum ('booking', 'airbnb', 'manual', 'other');
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'payment_status') then
+    create type payment_status as enum ('created', 'processing', 'succeeded', 'failed', 'refunded', 'cancelled');
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'sync_direction') then
+    create type sync_direction as enum ('import', 'export');
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- properties
 -- ---------------------------------------------------------------------------
-create table properties (
+create table if not exists properties (
   id            uuid primary key default gen_random_uuid(),
   slug          text not null unique,
   name          text not null,
@@ -49,7 +70,7 @@ create table properties (
 -- and any content overrides live here as JSONB so the admin panel can edit
 -- them without a migration (issue #13).
 -- ---------------------------------------------------------------------------
-create table property_settings (
+create table if not exists property_settings (
   property_id         uuid primary key references properties(id) on delete cascade,
   rate_config         jsonb not null default '{}'::jsonb,
   cancellation_policy  jsonb not null default '{}'::jsonb,
@@ -61,7 +82,7 @@ create table property_settings (
 -- rate_rules — optional granular, admin-managed rules layered over rate_config.
 -- kind: 'date_override' | 'min_nights' | 'closed' | 'discount' ...
 -- ---------------------------------------------------------------------------
-create table rate_rules (
+create table if not exists rate_rules (
   id           uuid primary key default gen_random_uuid(),
   property_id  uuid not null references properties(id) on delete cascade,
   kind         text not null,
@@ -72,13 +93,13 @@ create table rate_rules (
   active       boolean not null default true,
   created_at   timestamptz not null default now()
 );
-create index rate_rules_property_idx on rate_rules (property_id, active);
+create index if not exists rate_rules_property_idx on rate_rules (property_id, active);
 
 -- ---------------------------------------------------------------------------
 -- reservations
 -- stay is the half-open night range [check_in, check_out).
 -- ---------------------------------------------------------------------------
-create table reservations (
+create table if not exists reservations (
   id               uuid primary key default gen_random_uuid(),
   property_id      uuid not null references properties(id) on delete restrict,
   code             text not null unique,
@@ -104,23 +125,26 @@ create table reservations (
   updated_at       timestamptz not null default now(),
   constraint reservations_range_ok check (check_out > check_in)
 );
-create index reservations_property_status_idx on reservations (property_id, status);
-create index reservations_stay_idx on reservations using gist (property_id, stay);
-create index reservations_hold_idx on reservations (hold_expires_at) where status = 'pending';
+create index if not exists reservations_property_status_idx on reservations (property_id, status);
+create index if not exists reservations_stay_idx on reservations using gist (property_id, stay);
+create index if not exists reservations_hold_idx on reservations (hold_expires_at) where status = 'pending';
 
 -- Block overlaps between two "occupying" reservations on the same property.
 -- pending + confirmed occupy; cancelled + expired do not.
-alter table reservations
-  add constraint reservations_no_overlap
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'reservations_no_overlap') then
+    alter table reservations add constraint reservations_no_overlap
   exclude using gist (
     property_id with =,
     stay with &&
   ) where (status in ('pending', 'confirmed'));
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- availability_blocks — external (iCal) or manual closures.
 -- ---------------------------------------------------------------------------
-create table availability_blocks (
+create table if not exists availability_blocks (
   id            uuid primary key default gen_random_uuid(),
   property_id   uuid not null references properties(id) on delete cascade,
   start_date    date not null,
@@ -134,11 +158,14 @@ create table availability_blocks (
   constraint availability_blocks_range_ok check (end_date > start_date),
   constraint availability_blocks_uid_unique unique (property_id, source, external_uid)
 );
-create index availability_blocks_stay_idx on availability_blocks using gist (property_id, stay);
+create index if not exists availability_blocks_stay_idx on availability_blocks using gist (property_id, stay);
 
-alter table availability_blocks
-  add constraint availability_blocks_no_overlap
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'availability_blocks_no_overlap') then
+    alter table availability_blocks add constraint availability_blocks_no_overlap
   exclude using gist (property_id with =, stay with &&);
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Cross-table overlap guard: a reservation must not collide with a block and
@@ -200,18 +227,26 @@ begin
 end;
 $$;
 
-create trigger reservations_free_guard
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'reservations_free_guard' and not tgisinternal) then
+    create trigger reservations_free_guard
   before insert or update of status, check_in, check_out, property_id on reservations
   for each row execute function assert_property_free();
+  end if;
+end $$;
 
-create trigger blocks_free_guard
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'blocks_free_guard' and not tgisinternal) then
+    create trigger blocks_free_guard
   before insert or update of start_date, end_date, property_id on availability_blocks
   for each row execute function assert_property_free();
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- payments
 -- ---------------------------------------------------------------------------
-create table payments (
+create table if not exists payments (
   id                        uuid primary key default gen_random_uuid(),
   reservation_id            uuid not null references reservations(id) on delete cascade,
   provider                  text not null default 'stripe',
@@ -226,13 +261,13 @@ create table payments (
   unique (provider, provider_checkout_session),
   unique (provider, provider_payment_intent)
 );
-create index payments_reservation_idx on payments (reservation_id);
+create index if not exists payments_reservation_idx on payments (reservation_id);
 
 -- ---------------------------------------------------------------------------
 -- calendar_syncs — one row per (property, channel, direction). Records the
 -- feed URL, last run, status and error so admin can see health (issue #9).
 -- ---------------------------------------------------------------------------
-create table calendar_syncs (
+create table if not exists calendar_syncs (
   id               uuid primary key default gen_random_uuid(),
   property_id      uuid not null references properties(id) on delete cascade,
   channel          text not null,
@@ -250,7 +285,7 @@ create table calendar_syncs (
 -- ---------------------------------------------------------------------------
 -- webhook_events — provider event de-duplication (Stripe + iCal fetch runs).
 -- ---------------------------------------------------------------------------
-create table webhook_events (
+create table if not exists webhook_events (
   id            uuid primary key default gen_random_uuid(),
   provider      text not null,
   event_id      text not null,
@@ -264,7 +299,7 @@ create table webhook_events (
 -- ---------------------------------------------------------------------------
 -- admin_audit_log — basic audit trail for destructive/price actions.
 -- ---------------------------------------------------------------------------
-create table admin_audit_log (
+create table if not exists admin_audit_log (
   id          uuid primary key default gen_random_uuid(),
   actor_email text,
   action      text not null,
@@ -285,18 +320,42 @@ begin
 end;
 $$;
 
-create trigger properties_touch before update on properties
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'properties_touch' and not tgisinternal) then
+    create trigger properties_touch before update on properties
   for each row execute function touch_updated_at();
-create trigger reservations_touch before update on reservations
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'reservations_touch' and not tgisinternal) then
+    create trigger reservations_touch before update on reservations
   for each row execute function touch_updated_at();
-create trigger availability_blocks_touch before update on availability_blocks
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'availability_blocks_touch' and not tgisinternal) then
+    create trigger availability_blocks_touch before update on availability_blocks
   for each row execute function touch_updated_at();
-create trigger payments_touch before update on payments
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'payments_touch' and not tgisinternal) then
+    create trigger payments_touch before update on payments
   for each row execute function touch_updated_at();
-create trigger calendar_syncs_touch before update on calendar_syncs
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'calendar_syncs_touch' and not tgisinternal) then
+    create trigger calendar_syncs_touch before update on calendar_syncs
   for each row execute function touch_updated_at();
-create trigger property_settings_touch before update on property_settings
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'property_settings_touch' and not tgisinternal) then
+    create trigger property_settings_touch before update on property_settings
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
@@ -317,7 +376,6 @@ alter table admin_audit_log       enable row level security;
 -- No permissive policies for anon/authenticated => only the service role
 -- (which bypasses RLS) can touch these tables. Admin UI uses the service role
 -- behind server-side auth checks (decision D-005).
-
 
 -- ----------------------------------------------------------------------------
 -- 20260827091000_booking_rpc.sql
@@ -458,7 +516,6 @@ begin
 end;
 $$;
 
-
 -- ----------------------------------------------------------------------------
 -- 20260827092000_seed_properties.sql
 -- ----------------------------------------------------------------------------
@@ -486,7 +543,6 @@ insert into calendar_syncs (property_id, channel, direction) values
   ('22222222-2222-4222-8222-222222222222', 'booking', 'export')
 on conflict (property_id, channel, direction) do nothing;
 
-
 -- ----------------------------------------------------------------------------
 -- 20260827093000_production.sql
 -- ----------------------------------------------------------------------------
@@ -499,9 +555,13 @@ on conflict (property_id, channel, direction) do nothing;
 --    that the import URL is now editable from the admin panel.
 -- =============================================================================
 
-create type email_status as enum ('sent', 'failed', 'skipped');
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'email_status') then
+    create type email_status as enum ('sent', 'failed', 'skipped');
+  end if;
+end $$;
 
-create table email_log (
+create table if not exists email_log (
   id             uuid primary key default gen_random_uuid(),
   reservation_id uuid references reservations(id) on delete set null,
   kind           text not null,           -- 'confirmation' | 'payment_failed' | 'internal'
@@ -512,15 +572,14 @@ create table email_log (
   attempts       int not null default 1,
   created_at     timestamptz not null default now()
 );
-create index email_log_reservation_idx on email_log (reservation_id);
-create index email_log_status_idx on email_log (status, created_at desc);
+create index if not exists email_log_reservation_idx on email_log (reservation_id);
+create index if not exists email_log_status_idx on email_log (status, created_at desc);
 
 alter table email_log enable row level security;
 -- service-role only (server-side), like every other operational table.
 
 comment on column calendar_syncs.feed_url is
   'For direction=import: the Booking.com iCal export URL, editable from /admin/sincronizacion. Falls back to src/content/properties/<slug>.ts when null.';
-
 
 -- ----------------------------------------------------------------------------
 -- 20260827094000_coupons.sql
@@ -532,9 +591,13 @@ comment on column calendar_syncs.feed_url is
 --  - coupon_redemptions: one row per successful use, for per-email limits & audit
 -- =============================================================================
 
-create type coupon_kind as enum ('percent', 'fixed');
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'coupon_kind') then
+    create type coupon_kind as enum ('percent', 'fixed');
+  end if;
+end $$;
 
-create table coupons (
+create table if not exists coupons (
   id                  uuid primary key default gen_random_uuid(),
   code                text not null unique,               -- stored UPPERCASE
   kind                coupon_kind not null,
@@ -554,17 +617,21 @@ create table coupons (
   updated_at          timestamptz not null default now(),
   constraint coupons_percent_range check (kind <> 'percent' or value between 1 and 100)
 );
-create index coupons_active_idx on coupons (active) where active;
+create index if not exists coupons_active_idx on coupons (active) where active;
 
-create trigger coupons_touch before update on coupons
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'coupons_touch' and not tgisinternal) then
+    create trigger coupons_touch before update on coupons
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 alter table reservations
   add column coupon_code          text,
   add column original_total_cents bigint,
   add column discount_cents       bigint not null default 0;
 
-create table coupon_redemptions (
+create table if not exists coupon_redemptions (
   id             uuid primary key default gen_random_uuid(),
   coupon_id      uuid not null references coupons(id) on delete cascade,
   reservation_id uuid not null references reservations(id) on delete cascade,
@@ -573,8 +640,8 @@ create table coupon_redemptions (
   created_at     timestamptz not null default now(),
   unique (coupon_id, reservation_id)
 );
-create index coupon_redemptions_coupon_idx on coupon_redemptions (coupon_id);
-create index coupon_redemptions_email_idx on coupon_redemptions (coupon_id, guest_email);
+create index if not exists coupon_redemptions_coupon_idx on coupon_redemptions (coupon_id);
+create index if not exists coupon_redemptions_email_idx on coupon_redemptions (coupon_id, guest_email);
 
 alter table coupons              enable row level security;
 alter table coupon_redemptions   enable row level security;
@@ -659,7 +726,6 @@ begin
 end;
 $$;
 
-
 -- ----------------------------------------------------------------------------
 -- 20260827160000_content_overrides.sql
 -- ----------------------------------------------------------------------------
@@ -678,7 +744,6 @@ create table if not exists content_overrides (
 
 comment on table content_overrides is
   'Admin-editable overrides deep-merged over static site content (issue #50).';
-
 
 -- ----------------------------------------------------------------------------
 -- 20260828120000_coupon_10praetoria10.sql
@@ -701,7 +766,6 @@ on conflict (code) do update
       description  = excluded.description,
       updated_at   = now();
 
-
 -- ----------------------------------------------------------------------------
 -- 20260829100000_intranet_crm.sql
 -- ----------------------------------------------------------------------------
@@ -722,7 +786,7 @@ alter type reservation_source add value if not exists 'other';
 -- ---------------------------------------------------------------------------
 -- customers
 -- ---------------------------------------------------------------------------
-create table customers (
+create table if not exists customers (
   id                       uuid primary key default gen_random_uuid(),
   first_name               text not null default '',
   last_name                text not null default '',
@@ -746,14 +810,18 @@ create table customers (
   created_at               timestamptz not null default now(),
   updated_at               timestamptz not null default now()
 );
-create index customers_email_idx  on customers (lower(email));
-create index customers_phone_idx  on customers (phone);
-create index customers_doc_idx    on customers (lower(doc_number));
-create index customers_name_idx   on customers (lower(last_name), lower(first_name));
-create index customers_active_idx on customers (merged_into) where merged_into is null;
+create index if not exists customers_email_idx on customers (lower(email));
+create index if not exists customers_phone_idx on customers (phone);
+create index if not exists customers_doc_idx on customers (lower(doc_number));
+create index if not exists customers_name_idx on customers (lower(last_name), lower(first_name));
+create index if not exists customers_active_idx on customers (merged_into) where merged_into is null;
 
-create trigger customers_touch before update on customers
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'customers_touch' and not tgisinternal) then
+    create trigger customers_touch before update on customers
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- reservations enrichment
@@ -774,15 +842,15 @@ alter table reservations
   add column payment_state      text not null default 'pending'
     check (payment_state in ('pending', 'partial', 'paid', 'refunded'));
 
-create index reservations_customer_idx    on reservations (customer_id);
-create index reservations_invoice_num_idx on reservations (invoice_number);
-create index reservations_locator_idx     on reservations (external_locator);
+create index if not exists reservations_customer_idx on reservations (customer_id);
+create index if not exists reservations_invoice_num_idx on reservations (invoice_number);
+create index if not exists reservations_locator_idx on reservations (external_locator);
 
 -- ---------------------------------------------------------------------------
 -- customer_merges — audit trail (reservations/invoices keep pointing at the
 -- surviving id; this records what was folded and when)
 -- ---------------------------------------------------------------------------
-create table customer_merges (
+create table if not exists customer_merges (
   id           uuid primary key default gen_random_uuid(),
   primary_id   uuid not null,
   merged_id    uuid not null,
@@ -796,7 +864,6 @@ create table customer_merges (
 -- ---------------------------------------------------------------------------
 alter table customers      enable row level security;
 alter table customer_merges enable row level security;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260829110000_reservation_external_status.sql
@@ -812,7 +879,6 @@ alter table customer_merges enable row level security;
 
 alter type reservation_status add value if not exists 'external';
 
-
 -- ----------------------------------------------------------------------------
 -- 20260829120000_invoicing.sql
 -- ----------------------------------------------------------------------------
@@ -824,9 +890,13 @@ alter type reservation_status add value if not exists 'external';
 --   is corrected by voiding and re-issuing, never by silently editing.
 -- =============================================================================
 
-create type invoice_status as enum ('draft', 'issued', 'paid', 'void', 'rectified');
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'invoice_status') then
+    create type invoice_status as enum ('draft', 'issued', 'paid', 'void', 'rectified');
+  end if;
+end $$;
 
-create table invoice_settings (
+create table if not exists invoice_settings (
   property_id  uuid primary key references properties(id) on delete cascade,
   series       text not null,
   tax_rate     numeric not null default 0,
@@ -836,7 +906,7 @@ create table invoice_settings (
   updated_at   timestamptz not null default now()
 );
 
-create table invoices (
+create table if not exists invoices (
   id               uuid primary key default gen_random_uuid(),
   property_id      uuid not null references properties(id) on delete restrict,
   reservation_id   uuid references reservations(id) on delete set null,
@@ -871,11 +941,11 @@ create table invoices (
 
   unique (series, number)
 );
-create index invoices_property_idx    on invoices (property_id, status);
-create index invoices_reservation_idx on invoices (reservation_id);
-create index invoices_customer_idx    on invoices (customer_id);
+create index if not exists invoices_property_idx on invoices (property_id, status);
+create index if not exists invoices_reservation_idx on invoices (reservation_id);
+create index if not exists invoices_customer_idx on invoices (customer_id);
 
-create table invoice_items (
+create table if not exists invoice_items (
   id            uuid primary key default gen_random_uuid(),
   invoice_id    uuid not null references invoices(id) on delete cascade,
   position      int not null default 0,
@@ -885,12 +955,20 @@ create table invoice_items (
   amount_cents  bigint not null default 0,
   created_at    timestamptz not null default now()
 );
-create index invoice_items_invoice_idx on invoice_items (invoice_id, position);
+create index if not exists invoice_items_invoice_idx on invoice_items (invoice_id, position);
 
-create trigger invoices_touch before update on invoices
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'invoices_touch' and not tgisinternal) then
+    create trigger invoices_touch before update on invoices
   for each row execute function touch_updated_at();
-create trigger invoice_settings_touch before update on invoice_settings
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'invoice_settings_touch' and not tgisinternal) then
+    create trigger invoice_settings_touch before update on invoice_settings
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Immutability: once an invoice leaves 'draft' its content is frozen. Status
@@ -925,9 +1003,13 @@ begin
 end;
 $$;
 
-create trigger invoices_immutability
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'invoices_immutability' and not tgisinternal) then
+    create trigger invoices_immutability
   before update or delete on invoices
   for each row execute function invoices_immutability_guard();
+  end if;
+end $$;
 
 -- Block edits to line items of a non-draft invoice.
 create or replace function invoice_items_immutability_guard() returns trigger
@@ -944,14 +1026,17 @@ begin
 end;
 $$;
 
-create trigger invoice_items_immutability
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'invoice_items_immutability' and not tgisinternal) then
+    create trigger invoice_items_immutability
   before insert or update or delete on invoice_items
   for each row execute function invoice_items_immutability_guard();
+  end if;
+end $$;
 
 alter table invoices          enable row level security;
 alter table invoice_items     enable row level security;
 alter table invoice_settings  enable row level security;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260829130000_daily_rates.sql
@@ -964,7 +1049,7 @@ alter table invoice_settings  enable row level security;
 --   not here — this table is purely about price and stay length.
 -- =============================================================================
 
-create table daily_rates (
+create table if not exists daily_rates (
   property_id   uuid not null references properties(id) on delete cascade,
   date          date not null,
   nightly_cents bigint,   -- null → no price override for this date
@@ -973,10 +1058,9 @@ create table daily_rates (
   primary key (property_id, date),
   constraint daily_rates_something check (nightly_cents is not null or min_nights is not null)
 );
-create index daily_rates_date_idx on daily_rates (property_id, date);
+create index if not exists daily_rates_date_idx on daily_rates (property_id, date);
 
 alter table daily_rates enable row level security;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260829140000_marketing.sql
@@ -990,7 +1074,7 @@ alter table daily_rates enable row level security;
 --   listed; the send step stays "Aún no configurado" (config-status: campaigns).
 -- =============================================================================
 
-create table segments (
+create table if not exists segments (
   id           uuid primary key default gen_random_uuid(),
   name         text not null,
   description  text,
@@ -999,7 +1083,7 @@ create table segments (
   updated_at   timestamptz not null default now()
 );
 
-create table campaigns (
+create table if not exists campaigns (
   id                uuid primary key default gen_random_uuid(),
   name              text not null,
   channel           text not null default 'email',   -- 'email' | 'whatsapp' | 'promo'
@@ -1015,9 +1099,9 @@ create table campaigns (
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );
-create index campaigns_status_idx on campaigns (status);
+create index if not exists campaigns_status_idx on campaigns (status);
 
-create table campaign_recipients (
+create table if not exists campaign_recipients (
   id           uuid primary key default gen_random_uuid(),
   campaign_id  uuid not null references campaigns(id) on delete cascade,
   customer_id  uuid references customers(id) on delete set null,
@@ -1027,24 +1111,31 @@ create table campaign_recipients (
   error        text,
   created_at   timestamptz not null default now()
 );
-create index campaign_recipients_campaign_idx on campaign_recipients (campaign_id);
+create index if not exists campaign_recipients_campaign_idx on campaign_recipients (campaign_id);
 
-create table marketing_unsubscribes (
+create table if not exists marketing_unsubscribes (
   email            text primary key,
   unsubscribed_at  timestamptz not null default now(),
   source           text
 );
 
-create trigger segments_touch before update on segments
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'segments_touch' and not tgisinternal) then
+    create trigger segments_touch before update on segments
   for each row execute function touch_updated_at();
-create trigger campaigns_touch before update on campaigns
+  end if;
+end $$;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'campaigns_touch' and not tgisinternal) then
+    create trigger campaigns_touch before update on campaigns
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 alter table segments               enable row level security;
 alter table campaigns              enable row level security;
 alter table campaign_recipients    enable row level security;
 alter table marketing_unsubscribes enable row level security;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260830090000_channel_feeds.sql
@@ -1061,7 +1152,7 @@ alter table marketing_unsubscribes enable row level security;
 -- SYNC TELEMETRY only. They must never share a write path again.
 -- =============================================================================
 
-create table channel_feeds (
+create table if not exists channel_feeds (
   property_id  uuid not null references properties(id) on delete cascade,
   channel      text not null,            -- 'booking' | 'airbnb'
   url          text not null check (url <> ''),
@@ -1079,15 +1170,18 @@ where direction = 'import'
   and feed_url <> ''
 on conflict (property_id, channel) do nothing;
 
-create trigger channel_feeds_touch before update on channel_feeds
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'channel_feeds_touch' and not tgisinternal) then
+    create trigger channel_feeds_touch before update on channel_feeds
   for each row execute function touch_updated_at();
+  end if;
+end $$;
 
 alter table channel_feeds enable row level security;
 -- Service-role only (like every other operational table, D-005).
 
 -- calendar_syncs.feed_url is now vestigial telemetry; recordSyncRun() no longer
 -- writes it. Leave the column (harmless) so getSyncRows() keeps mapping.
-
 
 -- ----------------------------------------------------------------------------
 -- 20260831120000_availability_rpc.sql
@@ -1222,7 +1316,6 @@ end $$;
 -- this migration is applied, without waiting for the periodic reload.
 notify pgrst, 'reload schema';
 
-
 -- ----------------------------------------------------------------------------
 -- 20260831130000_rls_hardening.sql
 -- ----------------------------------------------------------------------------
@@ -1323,7 +1416,6 @@ end $$;
 -- --- 6. Refresh PostgREST's schema cache -----------------------------------
 notify pgrst, 'reload schema';
 
-
 -- ----------------------------------------------------------------------------
 -- 20260901120000_jobs.sql
 -- ----------------------------------------------------------------------------
@@ -1420,7 +1512,6 @@ grant  all on jobs to service_role;
 revoke all on function claim_jobs(text, int, int) from public, anon, authenticated;
 grant execute on function claim_jobs(text, int, int) to service_role;
 
-
 -- ----------------------------------------------------------------------------
 -- 20260902120000_guest_comms.sql
 -- ----------------------------------------------------------------------------
@@ -1474,7 +1565,6 @@ alter table scheduled_messages enable row level security;
 alter table scheduled_messages force  row level security;
 revoke all on scheduled_messages from anon, authenticated;
 grant  all on scheduled_messages to service_role;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260902130000_admin_users.sql
@@ -1530,7 +1620,6 @@ alter table admin_users force  row level security;
 revoke all on admin_users from anon, authenticated;
 grant  all on admin_users to service_role;
 
-
 -- ----------------------------------------------------------------------------
 -- 20260902140000_media_library.sql
 -- ----------------------------------------------------------------------------
@@ -1581,7 +1670,6 @@ alter table media_assets enable row level security;
 alter table media_assets force  row level security;
 revoke all on media_assets from anon, authenticated;
 grant  all on media_assets to service_role;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260902150000_operations.sql
@@ -1641,7 +1729,6 @@ alter table operations_tasks enable row level security;
 alter table operations_tasks force  row level security;
 revoke all on operations_tasks from anon, authenticated;
 grant  all on operations_tasks to service_role;
-
 
 -- ----------------------------------------------------------------------------
 -- 20260902160000_traveller_registry.sql
@@ -1703,4 +1790,3 @@ alter table traveller_registrations enable row level security;
 alter table traveller_registrations force  row level security;
 revoke all on traveller_registrations from anon, authenticated;
 grant  all on traveller_registrations to service_role;
-
