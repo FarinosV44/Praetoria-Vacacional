@@ -49,6 +49,7 @@ import { evaluateSegment, type SegmentCriteria } from "@/domains/marketing/segme
 import { planExternalReservations } from "@/domains/integrations/reconcile";
 import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/jobs/types";
 import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
+import type { AdminUser } from "@/domains/admin/users";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -1989,7 +1990,115 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
     return mapScheduledMessage(data);
   },
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  async listAdminUsers() {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("admin_users").select().order("email");
+    if (error) throw error;
+    return (data ?? []).map(mapAdminUser);
+  },
+
+  async getAdminUserById(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("admin_users").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    return data ? mapAdminUser(data) : null;
+  },
+
+  async getAdminUserByEmail(email: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_users")
+      .select()
+      .ilike("email", email.trim())
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapAdminUser(data) : null;
+  },
+
+  async createAdminUser(input) {
+    const db = supabaseAdmin();
+    const insert: Record<string, unknown> = {
+      email: input.email.trim(),
+      full_name: input.fullName ?? null,
+      role: input.role,
+      active: !input.inviteTokenHash,
+      invited_by: input.invitedBy ?? null,
+      invite_token_hash: input.inviteTokenHash ?? null,
+      invite_expires_at: input.inviteExpiresAt ?? null,
+    };
+    if (input.id) insert.id = input.id;
+    const { data, error } = await db.from("admin_users").insert(insert).select().single();
+    if (error) {
+      if ((error as { code?: string }).code === "23505") throw new Error("ADMIN_USER_EMAIL_TAKEN");
+      throw error;
+    }
+    return mapAdminUser(data);
+  },
+
+  async updateAdminUser(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.role !== undefined) upd.role = patch.role;
+    if (patch.active !== undefined) upd.active = patch.active;
+    if (patch.fullName !== undefined) upd.full_name = patch.fullName;
+    if (patch.mfaRequired !== undefined) upd.mfa_required = patch.mfaRequired;
+    const { data, error } = await db.from("admin_users").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapAdminUser(data);
+  },
+
+  async revokeAdminUserSessions(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("admin_users")
+      .update({ sessions_valid_from: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+  },
+
+  async acceptAdminInvite(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("admin_users")
+      .update({ invite_token_hash: null, invite_expires_at: null, active: true })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapAdminUser(data);
+  },
+
+  async deleteAdminUser(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("admin_users").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async touchAdminUser(id: string) {
+    const db = supabaseAdmin();
+    await db.from("admin_users").update({ last_seen_at: new Date().toISOString() }).eq("id", id);
+  },
 };
+
+function mapAdminUser(row: any): AdminUser {
+  return {
+    id: row.id,
+    email: row.email,
+    fullName: row.full_name ?? null,
+    role: row.role,
+    active: !!row.active,
+    sessionsValidFrom: row.sessions_valid_from,
+    mfaRequired: !!row.mfa_required,
+    invitedBy: row.invited_by ?? null,
+    inviteTokenHash: row.invite_token_hash ?? null,
+    inviteExpiresAt: row.invite_expires_at ?? null,
+    lastSeenAt: row.last_seen_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 function mapScheduledMessage(row: any): ScheduledMessage {
   return {

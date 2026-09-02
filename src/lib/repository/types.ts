@@ -39,6 +39,7 @@ import type {
   ScheduledMessage,
   ScheduledMessageStatus,
 } from "@/domains/comms/types";
+import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -483,4 +484,28 @@ export interface Repository {
   ): Promise<void>;
   /** Admin manual resend: back to `planned`, `send_at` now. */
   resetScheduledMessage(id: string): Promise<ScheduledMessage>;
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  listAdminUsers(): Promise<AdminUser[]>;
+  getAdminUserById(id: string): Promise<AdminUser | null>;
+  getAdminUserByEmail(email: string): Promise<AdminUser | null>;
+  /** Create an operator. When `inviteTokenHash` is given the row is "pending". */
+  createAdminUser(
+    input: AdminUserInput & {
+      id?: string;
+      inviteTokenHash?: string | null;
+      inviteExpiresAt?: string | null;
+    },
+  ): Promise<AdminUser>;
+  updateAdminUser(
+    id: string,
+    patch: Partial<Pick<AdminUser, "role" | "active" | "fullName" | "mfaRequired">>,
+  ): Promise<AdminUser>;
+  /** Bump `sessionsValidFrom` to now — revokes every existing session. */
+  revokeAdminUserSessions(id: string): Promise<void>;
+  /** Consume a pending invite: clears the token, activates the row. */
+  acceptAdminInvite(id: string): Promise<AdminUser>;
+  deleteAdminUser(id: string): Promise<void>;
+  /** Best-effort last-seen touch; never throws on the hot path. */
+  touchAdminUser(id: string): Promise<void>;
 }

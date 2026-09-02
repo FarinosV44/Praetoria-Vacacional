@@ -16,7 +16,7 @@ async function assertAdmin() {
 
 export async function resendMessageAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const id = String(formData.get("id") ?? "");
   const reservationId = String(formData.get("reservationId") ?? "");
   if (id) {
@@ -30,7 +30,7 @@ export async function resendMessageAction(formData: FormData): Promise<void> {
 
 export async function replanReservationCommsAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const reservationId = String(formData.get("reservationId") ?? "");
   if (reservationId) {
     await syncReservationComms(reservationId);
@@ -49,7 +49,7 @@ const settingsSchema = z.object({
 
 export async function saveCommsSettingsAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("settings.write");
+  await assertCapability("settings.write");
   const parsed = settingsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return;
 

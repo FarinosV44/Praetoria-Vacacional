@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isAdminAuthenticated, createAdminSession, destroyAdminSession, verifyPassword } from "./auth";
+import { env } from "@/lib/env";
 import { getRepository, PropertyUnavailableError } from "@/lib/repository";
 import { getPropertyBySlug } from "@/domains/properties/registry";
 import { isIsoDate } from "@/lib/dates";
@@ -14,7 +15,30 @@ import { logAction } from "./audit";
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 export async function loginAction(_prev: unknown, formData: FormData): Promise<ActionResult> {
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+
+  // Supabase Auth path (issue #65) — used when Supabase is configured and the
+  // form supplied an email. Per-user accounts, MFA, revocable sessions.
+  if (env.supabaseConfigured && email) {
+    const { supabaseServer } = await import("@/lib/supabase/server");
+    const supabase = await supabaseServer();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) {
+      return { ok: false, error: "Credenciales incorrectas" };
+    }
+    const repo = getRepository();
+    const row =
+      (await repo.getAdminUserById(data.user.id).catch(() => null)) ??
+      (await repo.getAdminUserByEmail(email).catch(() => null));
+    if (!row || (!row.active && !row.inviteTokenHash)) {
+      await supabase.auth.signOut();
+      return { ok: false, error: "Esta cuenta no tiene acceso al panel" };
+    }
+    return { ok: true };
+  }
+
+  // Password-cookie path (DEMO, or single-login deployments).
   if (!verifyPassword(password)) return { ok: false, error: "Contraseña incorrecta" };
   await createAdminSession();
   return { ok: true };
@@ -22,6 +46,14 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<A
 
 export async function logoutAction(): Promise<void> {
   await destroyAdminSession();
+  if (env.supabaseConfigured) {
+    try {
+      const { supabaseServer } = await import("@/lib/supabase/server");
+      await (await supabaseServer()).auth.signOut();
+    } catch {
+      /* best effort */
+    }
+  }
 }
 
 async function assertAdmin() {
@@ -145,7 +177,7 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
 
 export async function cancelReservationAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const id = String(formData.get("id") ?? "");
   const reason = String(formData.get("reason") ?? "Cancelada desde administración");
   if (id) {
@@ -225,7 +257,7 @@ export async function toggleCouponAction(formData: FormData): Promise<void> {
 
 export async function deleteCouponAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("promotions.write");
+  await assertCapability("promotions.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     await getRepository().deleteCoupon(id);
@@ -250,7 +282,7 @@ export async function setImportFeedUrlAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("settings.write");
+  await assertCapability("settings.write");
   const parsed = feedSchema.safeParse({
     propertySlug: formData.get("propertySlug"),
     channel: formData.get("channel") || "booking",
@@ -300,7 +332,7 @@ export async function setImportFeedUrlAction(
 
 export async function retryJobAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("settings.write");
+  await assertCapability("settings.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     await getRepository().retryJob(id);
@@ -311,7 +343,7 @@ export async function retryJobAction(formData: FormData): Promise<void> {
 
 export async function cancelJobAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("settings.write");
+  await assertCapability("settings.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     await getRepository().cancelJob(id);
@@ -322,7 +354,7 @@ export async function cancelJobAction(formData: FormData): Promise<void> {
 
 export async function runJobsNowAction(): Promise<void> {
   await assertAdmin();
-  assertCapability("settings.write");
+  await assertCapability("settings.write");
   const { runDueJobs } = await import("@/domains/jobs/runner");
   await runDueJobs({ worker: "admin", batch: 25 });
   revalidatePath("/admin/procesos");

@@ -683,3 +683,25 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   carries `Retry-After`.
 - **Not required for launch.** One Hostinger node → the in-memory limiter is
   correct; Redis only matters when the deployment scales horizontally.
+
+## D-033 — #65 — admin multi-user on Supabase Auth
+**Date:** 2026-09-02 · issue #65 · user choice ("Full Supabase Auth now")
+- **Layered, degrades gracefully.** `getAdminContext()` (memoised per request)
+  resolves the operator from a Supabase Auth session + an `admin_users` row when
+  Supabase is configured; otherwise the existing signed password cookie, with a
+  synthetic `ADMIN_ROLE` context when there are no rows (DEMO / first boot). The
+  password path is untouched, so nothing breaks before the owner enables Auth.
+- **Per-user RBAC.** `assertCapability` became async and reads the context's
+  role. `MFA_GATED` caps (`settings.write`, `invoices.write`) additionally
+  require an AAL2 session when the user has `mfa_required`.
+- **Revocation is a watermark.** `sessions_valid_from` on the row; a "close all
+  sessions" bumps it to now and (Supabase mode) also calls
+  `auth.admin.signOut(id, 'global')`. `active=false` locks the user out on the
+  next request even with a live JWT.
+- **Invites.** `/admin/usuarios` → `auth.admin.inviteUserByEmail` + a pending
+  `admin_users` row (invite-token hash); first confirmed sign-in auto-activates
+  it. A bootstrap promotes any `ADMIN_EMAILS` address to `admin` on first visit.
+- **MFA** is Supabase Auth TOTP — enroll/manage at `/admin/seguridad`, and a
+  `MfaGate` replaces the panel body until the challenge is met.
+- **Live verification is the owner's** — no Supabase project/creds this session;
+  build + typecheck + unit + route-privacy e2e are green.

@@ -30,7 +30,7 @@ export async function saveBlogPostAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("content.write");
+  await assertCapability("content.write");
 
   const parsed = blogPostFormSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -116,7 +116,7 @@ export async function saveBlogPostAction(
 
 export async function deleteBlogPostAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("content.write");
+  await assertCapability("content.write");
   const id = String(formData.get("id") ?? "");
   if (id) {
     const post = await getPostById(id);

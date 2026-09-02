@@ -63,6 +63,7 @@ import type {
   DesiredMessage,
   ScheduledMessage,
 } from "@/domains/comms/types";
+import type { AdminUser } from "@/domains/admin/users";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -122,6 +123,7 @@ interface Store {
   auditLog: AuditRow[];
   jobs: Job[];
   scheduledMessages: ScheduledMessage[];
+  adminUsers: AdminUser[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -216,6 +218,7 @@ function seed(): Store {
     auditLog: [],
     jobs: [],
     scheduledMessages: [],
+    adminUsers: [],
   };
 }
 
@@ -348,6 +351,7 @@ store.unsubscribes ??= [];
 store.auditLog ??= [];
 store.jobs ??= [];
 store.scheduledMessages ??= [];
+store.adminUsers ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -1803,5 +1807,94 @@ export const memoryRepository: Repository = {
     m.updatedAt = new Date().toISOString();
     save();
     return { ...m };
+  },
+
+  // --- Admin users / RBAC (issue #65) ----------------------------
+  async listAdminUsers() {
+    return store.adminUsers
+      .map((u) => ({ ...u }))
+      .sort((a, b) => a.email.localeCompare(b.email));
+  },
+
+  async getAdminUserById(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    return u ? { ...u } : null;
+  },
+
+  async getAdminUserByEmail(email: string) {
+    const e = email.trim().toLowerCase();
+    const u = store.adminUsers.find((x) => x.email.toLowerCase() === e);
+    return u ? { ...u } : null;
+  },
+
+  async createAdminUser(input) {
+    const now = new Date().toISOString();
+    if (store.adminUsers.some((x) => x.email.toLowerCase() === input.email.trim().toLowerCase())) {
+      throw new Error("ADMIN_USER_EMAIL_TAKEN");
+    }
+    const row: AdminUser = {
+      id: input.id ?? randomUUID(),
+      email: input.email.trim(),
+      fullName: input.fullName ?? null,
+      role: input.role,
+      active: !input.inviteTokenHash,
+      sessionsValidFrom: now,
+      mfaRequired: false,
+      invitedBy: input.invitedBy ?? null,
+      inviteTokenHash: input.inviteTokenHash ?? null,
+      inviteExpiresAt: input.inviteExpiresAt ?? null,
+      lastSeenAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.adminUsers.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateAdminUser(id, patch) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    if (patch.role !== undefined) u.role = patch.role;
+    if (patch.active !== undefined) u.active = patch.active;
+    if (patch.fullName !== undefined) u.fullName = patch.fullName;
+    if (patch.mfaRequired !== undefined) u.mfaRequired = patch.mfaRequired;
+    u.updatedAt = new Date().toISOString();
+    save();
+    return { ...u };
+  },
+
+  async revokeAdminUserSessions(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    u.sessionsValidFrom = new Date().toISOString();
+    u.updatedAt = u.sessionsValidFrom;
+    save();
+  },
+
+  async acceptAdminInvite(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) throw new Error("ADMIN_USER_NOT_FOUND");
+    u.inviteTokenHash = null;
+    u.inviteExpiresAt = null;
+    u.active = true;
+    u.updatedAt = new Date().toISOString();
+    save();
+    return { ...u };
+  },
+
+  async deleteAdminUser(id: string) {
+    const i = store.adminUsers.findIndex((x) => x.id === id);
+    if (i >= 0) {
+      store.adminUsers.splice(i, 1);
+      save();
+    }
+  },
+
+  async touchAdminUser(id: string) {
+    const u = store.adminUsers.find((x) => x.id === id);
+    if (!u) return;
+    u.lastSeenAt = new Date().toISOString();
+    save();
   },
 };

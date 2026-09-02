@@ -3,9 +3,11 @@ import "./admin.css";
 import { requireAdmin } from "@/domains/admin/auth";
 import { logoutAction } from "@/domains/admin/actions";
 import { DEMO_MODE } from "@/lib/env";
-import { currentRole, ROLE_LABEL } from "@/domains/admin/roles";
+import { getCurrentRole, ROLE_LABEL } from "@/domains/admin/roles";
+import { getAdminContext } from "@/domains/admin/context";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
+import { MfaGate } from "./MfaGate";
 
 export const metadata: Metadata = {
   title: { default: "Administración", template: "%s · Administración" },
@@ -14,6 +16,8 @@ export const metadata: Metadata = {
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
+  const role = await getCurrentRole();
+  const ctx = await getAdminContext();
   return (
     <div className="admin-shell">
       <div className="admin-grid">
@@ -25,7 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               right={
                 <div className="flex items-center gap-2">
                   <span className="admin-chip hidden md:inline-flex" data-tone="accent">
-                    {ROLE_LABEL[currentRole()]}
+                    {ROLE_LABEL[role]}
                   </span>
                   {DEMO_MODE && (
                     <span
@@ -46,7 +50,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             />
           </header>
 
-          <main className="admin-main">{children}</main>
+          <main className="admin-main">{ctx?.needsMfa ? <MfaGate /> : children}</main>
         </div>
       </div>
     </div>

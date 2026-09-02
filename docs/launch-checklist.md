@@ -17,7 +17,7 @@ recreated as OS/scheduler cron (step 5).
 ## 1 · Pending database migrations (`supabase db push`)
 
 The production Supabase project has **never** had migrations applied (the site
-runs in DEMO mode today). So **all 17** migrations in `supabase/migrations/` are
+runs in DEMO mode today). So **all 18** migrations in `supabase/migrations/` are
 pending and apply in order:
 
 ```
@@ -29,11 +29,11 @@ pending and apply in order:
 20260827160000_content_overrides          20260831130000_rls_hardening
 20260828120000_coupon_10praetoria10       20260901120000_jobs
 20260829100000_intranet_crm               20260902120000_guest_comms
-20260829110000_reservation_external_status
+20260829110000_reservation_external_status 20260902130000_admin_users
 ```
 
 `supabase db push` reads `supabase_migrations.schema_migrations` and applies only
-what is missing — on a fresh project that is all 17. It is safe to re-run; every
+what is missing — on a fresh project that is all 18. It is safe to re-run; every
 migration is idempotent or tracked. (Or paste `supabase/apply-all-migrations.sql`
 into the SQL Editor.)
 
@@ -186,10 +186,17 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 
 ### A · Supabase
 - [ ] Create the production project. Copy URL + publishable + secret keys.
-- [ ] `supabase link` to it, then `supabase db push` (applies the 17 migrations).
+- [ ] `supabase link` to it, then `supabase db push` (applies the 18 migrations).
 - [ ] Run the two verify queries and the two `supabase/tests/*.sql` files (§1).
 - [ ] Database → Backups: confirm the plan's backup/PITR retention; do one test restore into a scratch project.
 - [ ] Add the 3 Supabase vars to Hostinger (§2b).
+- [ ] **Admin accounts (issue #65):** Authentication → Providers → enable **Email**;
+      Authentication → URL Configuration → add `https://<domain>/admin/login` as a
+      redirect URL. Set `ADMIN_EMAILS` to your address, deploy, then open
+      `/admin/login`, sign in with that email (use "restablecer contraseña" the
+      first time) — you become the first `admin`. Invite the rest from
+      `/admin/usuarios`; each sets their own password + 2FA at `/admin/seguridad`.
+      Until Auth is on, the `ADMIN_PASSWORD` login keeps working unchanged.
 
 ### B · Stripe (test first)
 - [ ] Test keys + `stripe listen --forward-to https://<domain>/api/webhooks/stripe` → copy `whsec_…`. Add the 3 Stripe vars.

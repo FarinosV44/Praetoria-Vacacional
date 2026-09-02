@@ -56,7 +56,7 @@ export async function createReservationAndRedirect(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const parsed = createSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -149,7 +149,7 @@ export async function updateReservationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("reservations.write");
+  await assertCapability("reservations.write");
   const parsed = patchSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };

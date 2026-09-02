@@ -1,18 +1,20 @@
 import "server-only";
-import { env } from "@/lib/env";
 import { getRepository } from "@/lib/repository";
+import { getAdminContext } from "./context";
 
 /**
- * Record a critical admin action (issue #56 §10). Never throws — an audit-log
- * failure must not block the operation it describes.
+ * Record a critical admin action (issue #56 §10; actor resolved per-user in
+ * issue #65). Never throws — an audit-log failure must not block the operation
+ * it describes.
  */
 export async function logAction(
   action: string,
   opts: { entity?: string; entityId?: string | null; meta?: unknown } = {},
 ): Promise<void> {
   try {
+    const ctx = await getAdminContext().catch(() => null);
     await getRepository().auditLog({
-      actorEmail: env.adminEmails[0] ?? "admin",
+      actorEmail: ctx?.email ?? "admin",
       action,
       entity: opts.entity ?? null,
       entityId: opts.entityId ?? null,

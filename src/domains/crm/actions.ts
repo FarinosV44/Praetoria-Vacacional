@@ -43,7 +43,7 @@ export async function saveCustomerAction(
   formData: FormData,
 ): Promise<ActionResult> {
   await assertAdmin();
-  assertCapability("customers.write");
+  await assertCapability("customers.write");
   const parsed = customerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos no válidos" };
@@ -93,7 +93,7 @@ export async function createCustomerAndRedirect(_prev: unknown, formData: FormDa
 
 export async function mergeCustomersAction(formData: FormData): Promise<void> {
   await assertAdmin();
-  assertCapability("customers.write");
+  await assertCapability("customers.write");
   const primaryId = String(formData.get("primaryId") ?? "");
   const duplicateId = String(formData.get("duplicateId") ?? "");
   if (primaryId && duplicateId && primaryId !== duplicateId) {
