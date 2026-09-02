@@ -41,6 +41,8 @@ import type {
 } from "@/domains/comms/types";
 import type { AdminUser, AdminUserInput } from "@/domains/admin/users";
 import type { MediaAsset, MediaUploadInput } from "@/domains/media/types";
+import type { OpsTask, OpsTaskInput, OpsFilter } from "@/domains/operations/types";
+import type { Traveller, TravellerInput } from "@/domains/registry/types";
 
 /** Thrown when an invoice number is already used by another invoice. */
 export class InvoiceNumberTakenError extends Error {
@@ -208,6 +210,7 @@ export interface EmailLogEntry {
     | "confirmation"
     | "payment_failed"
     | "internal"
+    | "marketing"
     | "pre_arrival"
     | "checkin_info"
     | "checkout_reminder"
@@ -404,8 +407,16 @@ export interface Repository {
   /** Materialise the recipient list from the segment, honouring consent + unsubscribes. */
   prepareCampaign(id: string): Promise<{ campaign: Campaign; recipients: number; skipped: number }>;
   listCampaignRecipients(id: string): Promise<CampaignRecipient[]>;
-  /** Records the send intent. Real bulk send is not wired (Aún no configurado). */
+  /** Records the send intent (channels without a live sender stay "skipped"). */
   markCampaignSent(id: string): Promise<Campaign>;
+  /** Issue #73 — per-recipient outcome during a real send. */
+  markCampaignRecipient(
+    recipientId: string,
+    status: CampaignRecipient["status"],
+    error?: string | null,
+  ): Promise<void>;
+  /** Issue #73 — close a campaign after a real send with the delivered count. */
+  finishCampaign(campaignId: string, sentCount: number): Promise<Campaign>;
 
   addUnsubscribe(email: string, source?: string): Promise<void>;
   isUnsubscribed(email: string): Promise<boolean>;
@@ -522,6 +533,32 @@ export interface Repository {
   deleteScheduledMessagesBefore(beforeIso: string): Promise<number>;
   /** Delete audit rows created before `beforeIso`. Returns count. */
   deleteAuditLogBefore(beforeIso: string): Promise<number>;
+
+  // --- Traveller registry / SES.HOSPEDAJES (issue #72) ----------
+  listTravellers(reservationId: string): Promise<Traveller[]>;
+  /** Every traveller across reservations checking in within `days`. */
+  upcomingTravellerRegistrations(days: number): Promise<{ reservation: Reservation; travellers: Traveller[] }[]>;
+  addTraveller(input: TravellerInput): Promise<Traveller>;
+  updateTraveller(id: string, patch: Partial<TravellerInput>): Promise<Traveller>;
+  deleteTraveller(id: string): Promise<void>;
+  markTravellersSent(reservationId: string, ref: string): Promise<void>;
+
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  listOpsTasks(filter?: OpsFilter): Promise<OpsTask[]>;
+  getOpsTask(id: string): Promise<OpsTask | null>;
+  createOpsTask(input: OpsTaskInput): Promise<OpsTask>;
+  updateOpsTask(
+    id: string,
+    patch: Partial<
+      Pick<
+        OpsTask,
+        "title" | "description" | "status" | "priority" | "dueDate" | "assignee" | "costCents" | "photos"
+      >
+    >,
+  ): Promise<OpsTask>;
+  deleteOpsTask(id: string): Promise<void>;
+  /** Auto-create a turnover task for every confirmed checkout in the window. */
+  reconcileTurnovers(now?: Date): Promise<number>;
 
   // --- Media library (issue #81) --------------------------------
   listMedia(filter?: { tag?: string; q?: string; limit?: number }): Promise<MediaAsset[]>;

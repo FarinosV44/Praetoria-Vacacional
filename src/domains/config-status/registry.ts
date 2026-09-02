@@ -38,11 +38,11 @@ export function getConfigFeatures(): ConfigFeature[] {
     impact:
       "Sin Supabase la web funciona en modo demostración: los datos viven en memoria y no persisten entre despliegues.",
     envVars: [
-      "NEXT_PUBLIC_SUPABASE_URL",
-      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (o NEXT_PUBLIC_SUPABASE_ANON_KEY)",
+      "SUPABASE_URL (recomendado en Hostinger — se lee en caliente) o NEXT_PUBLIC_SUPABASE_URL (requiere rebuild)",
       "SUPABASE_SECRET_KEY (o SUPABASE_SERVICE_ROLE_KEY)",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY — solo para el login con Supabase Auth (#65)",
     ],
-    where: "Supabase → Project Settings → API Keys",
+    where: "Supabase → Project Settings → API Keys · define SUPABASE_URL sin el prefijo NEXT_PUBLIC_",
     state: env.supabaseConfigured ? "configured" : "not_configured",
     statusLine: env.supabaseConfigured
       ? "Conectada. Reservas y bloqueos persisten en Postgres."
@@ -143,14 +143,15 @@ export function getConfigFeatures(): ConfigFeature[] {
 
   const campaigns: ConfigFeature = {
     key: "campaigns",
-    label: "Envío de campañas (email/WhatsApp masivo)",
+    label: "Envío de campañas por email",
     impact:
-      "Los segmentos, las listas guardadas, la exportación CSV de contactos y la preparación de campañas (con consentimiento y bajas) están implementados. El envío masivo real necesita activar un proveedor.",
-    envVars: ["MARKETING_SENDER_PROVIDER"],
-    where: "Pendiente de decisión de proveedor (Resend Broadcasts u otro)",
-    state: "not_configured",
-    statusLine:
-      "Aún no configurado. Puedes segmentar, exportar y preparar campañas; el botón de envío registra la intención pero no envía nada.",
+      "Segmentos, listas, exportación CSV, preparación con consentimiento y bajas, y el envío real por Resend (con cabecera de baja en un clic RFC-8058 y supresión por rebote) están implementados. El envío de WhatsApp masivo sigue pendiente de proveedor.",
+    envVars: ["RESEND_API_KEY", "MARKETING_FROM", "RESEND_WEBHOOK_SECRET"],
+    where: "Resend (misma cuenta que los correos transaccionales) · webhook a /api/webhooks/resend",
+    state: env.emailConfigured ? "configured" : "not_configured",
+    statusLine: env.emailConfigured
+      ? "Activo por email vía Resend. Configura el webhook de Resend para suprimir rebotes automáticamente."
+      : "Email sin configurar: las campañas se preparan pero el envío queda registrado como intención.",
     publicMessage: null,
   };
 
@@ -196,6 +197,20 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
+  const travellerRegistry: ConfigFeature = {
+    key: "traveller_registry",
+    label: "Registro de viajeros (SES.HOSPEDAJES)",
+    impact:
+      "El check-in online, la validación de datos (RD 933/2021), la generación del parte y el registro manual del envío están implementados. La transmisión automática necesita las credenciales del portal del Ministerio del Interior.",
+    envVars: ["SES_HOSPEDAJES_USER", "SES_HOSPEDAJES_PASSWORD", "SES_HOSPEDAJES_ESTABLISHMENT"],
+    where: "Portal SES.HOSPEDAJES (Guardia Civil / Policía Nacional) — alta de arrendador y credenciales",
+    state: env.SES_HOSPEDAJES_ESTABLISHMENT ? "configured" : "not_configured",
+    statusLine: env.SES_HOSPEDAJES_ESTABLISHMENT
+      ? "Datos de establecimiento configurados. La conexión al web service se finaliza con el WSDL/certificado."
+      : "Sin configurar: el parte se genera y se sube manualmente al portal oficial.",
+    publicMessage: null,
+  };
+
   const whatsapp: ConfigFeature = {
     key: "whatsapp",
     label: "WhatsApp concierge",
@@ -210,7 +225,7 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, campaigns, whatsapp];
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, travellerRegistry, campaigns, whatsapp];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

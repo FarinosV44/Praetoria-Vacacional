@@ -160,8 +160,16 @@ export async function sendCampaignAction(formData: FormData): Promise<void> {
   const confirm = String(formData.get("confirm") ?? "");
   // Double confirmation: the form asks the admin to type ENVIAR.
   if (id && confirm === "ENVIAR") {
-    await getRepository().markCampaignSent(id);
-    await logAction("campaign.send", { entity: "campaign", entityId: id });
+    const campaign = await getRepository().getCampaign(id);
+    if (campaign?.channel === "email" && (await import("@/lib/env")).env.emailConfigured) {
+      const { sendCampaignSafe } = await import("./sender");
+      const outcome = await sendCampaignSafe(id);
+      await logAction("campaign.send", { entity: "campaign", entityId: id, meta: outcome });
+    } else {
+      // No live sender for this channel — record the intent, recipients skipped.
+      await getRepository().markCampaignSent(id);
+      await logAction("campaign.send", { entity: "campaign", entityId: id, meta: { mode: "intent-only" } });
+    }
   }
   revalidatePath(`/admin/marketing/campanas/${id}`);
 }

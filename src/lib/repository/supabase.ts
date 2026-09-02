@@ -51,6 +51,9 @@ import type { EnqueueJobInput, Job, JobFilter, JobSettlement } from "@/domains/j
 import type { CommsFilter, DesiredMessage, ScheduledMessage } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
 import type { MediaAsset } from "@/domains/media/types";
+import type { OpsTask } from "@/domains/operations/types";
+import { planTurnovers } from "@/domains/operations/planning";
+import type { Traveller } from "@/domains/registry/types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -841,6 +844,26 @@ export const supabaseRepository: Repository = {
       .from("campaigns")
       .update({ status: "sent", sent_at: new Date().toISOString() })
       .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+
+  async markCampaignRecipient(recipientId, status, error) {
+    const db = supabaseAdmin();
+    await db
+      .from("campaign_recipients")
+      .update({ status, error: error ?? null })
+      .eq("id", recipientId);
+  },
+
+  async finishCampaign(campaignId, sentCount) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("campaigns")
+      .update({ status: "sent", sent_at: new Date().toISOString(), recipient_count: sentCount })
+      .eq("id", campaignId)
       .select()
       .single();
     if (error) throw error;
@@ -2169,6 +2192,245 @@ export const supabaseRepository: Repository = {
     return data?.length ?? 0;
   },
 
+  // --- Traveller registry / SES.HOSPEDAJES (issue #72) ----------
+  async listTravellers(reservationId: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("traveller_registrations")
+      .select()
+      .eq("reservation_id", reservationId)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map(mapTraveller);
+  },
+
+  async upcomingTravellerRegistrations(days: number) {
+    const db = supabaseAdmin();
+    const today = new Date().toISOString().slice(0, 10);
+    const until = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+    const { data: reservations } = await db
+      .from("reservations")
+      .select()
+      .eq("status", "confirmed")
+      .gte("check_in", today)
+      .lte("check_in", until)
+      .order("check_in", { ascending: true });
+    const rows = reservations ?? [];
+    if (!rows.length) return [];
+    const { data: travellers } = await db
+      .from("traveller_registrations")
+      .select()
+      .in("reservation_id", rows.map((r: { id: string }) => r.id));
+    const byRes = new Map<string, ReturnType<typeof mapTraveller>[]>();
+    for (const t of travellers ?? []) {
+      const m = mapTraveller(t);
+      const list = byRes.get(m.reservationId) ?? [];
+      list.push(m);
+      byRes.set(m.reservationId, list);
+    }
+    return rows.map((r: any) => ({ reservation: mapReservation(r), travellers: byRes.get(r.id) ?? [] }));
+  },
+
+  async addTraveller(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("traveller_registrations")
+      .insert({
+        reservation_id: input.reservationId,
+        full_name: input.fullName,
+        first_surname: input.firstSurname ?? null,
+        second_surname: input.secondSurname ?? null,
+        doc_type: input.docType,
+        doc_number: input.docNumber,
+        doc_support: input.docSupport ?? null,
+        nationality: input.nationality ?? "ESP",
+        birth_date: input.birthDate ?? null,
+        gender: input.gender ?? null,
+        phone: input.phone ?? null,
+        email: input.email ?? null,
+        address_country: input.addressCountry ?? "ESP",
+        address_line: input.addressLine ?? null,
+        municipality: input.municipality ?? null,
+        province: input.province ?? null,
+        postal_code: input.postalCode ?? null,
+        kinship: input.kinship ?? null,
+        is_lead: input.isLead ?? false,
+        payment_method: input.paymentMethod ?? null,
+        signed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return mapTraveller(data);
+  },
+
+  async updateTraveller(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    const map: Record<string, string> = {
+      fullName: "full_name",
+      firstSurname: "first_surname",
+      secondSurname: "second_surname",
+      docType: "doc_type",
+      docNumber: "doc_number",
+      docSupport: "doc_support",
+      nationality: "nationality",
+      birthDate: "birth_date",
+      gender: "gender",
+      phone: "phone",
+      email: "email",
+      addressCountry: "address_country",
+      addressLine: "address_line",
+      municipality: "municipality",
+      province: "province",
+      postalCode: "postal_code",
+      kinship: "kinship",
+      isLead: "is_lead",
+      paymentMethod: "payment_method",
+    };
+    for (const [k, v] of Object.entries(patch)) {
+      if (map[k]) upd[map[k]] = v;
+    }
+    const { data, error } = await db
+      .from("traveller_registrations")
+      .update(upd)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return mapTraveller(data);
+  },
+
+  async deleteTraveller(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("traveller_registrations").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async markTravellersSent(reservationId: string, ref: string) {
+    const db = supabaseAdmin();
+    const { error } = await db
+      .from("traveller_registrations")
+      .update({ sent_at: new Date().toISOString(), sent_ref: ref })
+      .eq("reservation_id", reservationId);
+    if (error) throw error;
+  },
+
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  async listOpsTasks(filter) {
+    const db = supabaseAdmin();
+    let q = db.from("operations_tasks").select().order("due_date", { ascending: true, nullsFirst: false });
+    if (filter?.kind) q = q.eq("kind", filter.kind);
+    if (filter?.status?.length) q = q.in("status", filter.status);
+    if (filter?.propertyId) q = q.eq("property_id", filter.propertyId);
+    q = q.limit(filter?.limit ?? 300);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(mapOpsTask);
+  },
+
+  async getOpsTask(id: string) {
+    const db = supabaseAdmin();
+    const { data, error } = await db.from("operations_tasks").select().eq("id", id).maybeSingle();
+    if (error) throw error;
+    return data ? mapOpsTask(data) : null;
+  },
+
+  async createOpsTask(input) {
+    const db = supabaseAdmin();
+    const { data, error } = await db
+      .from("operations_tasks")
+      .insert({
+        property_id: input.propertyId,
+        kind: input.kind,
+        title: input.title,
+        description: input.description ?? "",
+        status: input.status ?? "open",
+        priority: input.priority ?? "normal",
+        due_date: input.dueDate ?? null,
+        assignee: input.assignee ?? null,
+        cost_cents: input.costCents ?? null,
+        reservation_id: input.reservationId ?? null,
+        photos: input.photos ?? [],
+        created_by: input.createdBy ?? null,
+      })
+      .select()
+      .single();
+    if (error) {
+      if ((error as { code?: string }).code === "23505") {
+        const existing = await db
+          .from("operations_tasks")
+          .select()
+          .eq("reservation_id", input.reservationId!)
+          .eq("kind", "turnover")
+          .maybeSingle();
+        if (existing.data) return mapOpsTask(existing.data);
+      }
+      throw error;
+    }
+    return mapOpsTask(data);
+  },
+
+  async updateOpsTask(id, patch) {
+    const db = supabaseAdmin();
+    const upd: Record<string, unknown> = {};
+    if (patch.title !== undefined) upd.title = patch.title;
+    if (patch.description !== undefined) upd.description = patch.description;
+    if (patch.status !== undefined) {
+      upd.status = patch.status;
+      upd.completed_at = patch.status === "done" ? new Date().toISOString() : null;
+    }
+    if (patch.priority !== undefined) upd.priority = patch.priority;
+    if (patch.dueDate !== undefined) upd.due_date = patch.dueDate;
+    if (patch.assignee !== undefined) upd.assignee = patch.assignee;
+    if (patch.costCents !== undefined) upd.cost_cents = patch.costCents;
+    if (patch.photos !== undefined) upd.photos = patch.photos;
+    const { data, error } = await db.from("operations_tasks").update(upd).eq("id", id).select().single();
+    if (error) throw error;
+    return mapOpsTask(data);
+  },
+
+  async deleteOpsTask(id: string) {
+    const db = supabaseAdmin();
+    const { error } = await db.from("operations_tasks").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  async reconcileTurnovers(now = new Date()) {
+    const db = supabaseAdmin();
+    const { data: existingRows } = await db
+      .from("operations_tasks")
+      .select("reservation_id")
+      .eq("kind", "turnover")
+      .not("reservation_id", "is", null);
+    const existing = new Set((existingRows ?? []).map((r: { reservation_id: string }) => r.reservation_id));
+
+    const horizon = new Date(now.getTime() + 45 * 86_400_000).toISOString().slice(0, 10);
+    const today = now.toISOString().slice(0, 10);
+    const { data: reservations } = await db
+      .from("reservations")
+      .select("id,property_id,check_in,check_out,status")
+      .in("status", ["confirmed", "pending"])
+      .gte("check_out", today)
+      .lte("check_out", horizon);
+
+    const plan = planTurnovers(
+      (reservations ?? []).map((r: any) => ({
+        id: r.id,
+        propertyId: r.property_id,
+        checkIn: r.check_in,
+        checkOut: r.check_out,
+        status: r.status,
+      })),
+      existing,
+      now,
+    );
+    for (const input of plan) {
+      await this.createOpsTask(input);
+    }
+    return plan.length;
+  },
+
   // --- Media library (issue #81) --------------------------------
   async listMedia(filter) {
     const db = supabaseAdmin();
@@ -2237,6 +2499,58 @@ export const supabaseRepository: Repository = {
     if (error) throw error;
   },
 };
+
+function mapTraveller(row: any): Traveller {
+  return {
+    id: row.id,
+    reservationId: row.reservation_id,
+    fullName: row.full_name,
+    firstSurname: row.first_surname ?? null,
+    secondSurname: row.second_surname ?? null,
+    docType: row.doc_type,
+    docNumber: row.doc_number,
+    docSupport: row.doc_support ?? null,
+    nationality: row.nationality ?? "ESP",
+    birthDate: row.birth_date ?? null,
+    gender: row.gender ?? null,
+    phone: row.phone ?? null,
+    email: row.email ?? null,
+    addressCountry: row.address_country ?? "ESP",
+    addressLine: row.address_line ?? null,
+    municipality: row.municipality ?? null,
+    province: row.province ?? null,
+    postalCode: row.postal_code ?? null,
+    kinship: row.kinship ?? null,
+    isLead: !!row.is_lead,
+    paymentMethod: row.payment_method ?? null,
+    signedAt: row.signed_at ?? null,
+    sentAt: row.sent_at ?? null,
+    sentRef: row.sent_ref ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapOpsTask(row: any): OpsTask {
+  return {
+    id: row.id,
+    propertyId: row.property_id,
+    kind: row.kind,
+    title: row.title,
+    description: row.description ?? "",
+    status: row.status,
+    priority: row.priority,
+    dueDate: row.due_date ?? null,
+    assignee: row.assignee ?? null,
+    costCents: row.cost_cents ?? null,
+    reservationId: row.reservation_id ?? null,
+    photos: row.photos ?? [],
+    createdBy: row.created_by ?? null,
+    completedAt: row.completed_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 function mapMediaAsset(row: any): MediaAsset {
   return {

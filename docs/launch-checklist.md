@@ -17,7 +17,7 @@ recreated as OS/scheduler cron (step 5).
 ## 1 · Pending database migrations (`supabase db push`)
 
 The production Supabase project has **never** had migrations applied (the site
-runs in DEMO mode today). So **all 19** migrations in `supabase/migrations/` are
+runs in DEMO mode today). So **all 21** migrations in `supabase/migrations/` are
 pending and apply in order:
 
 ```
@@ -30,11 +30,12 @@ pending and apply in order:
 20260828120000_coupon_10praetoria10       20260901120000_jobs
 20260829100000_intranet_crm               20260902120000_guest_comms
 20260829110000_reservation_external_status 20260902130000_admin_users
-20260902140000_media_library
+20260902140000_media_library              20260902150000_operations
+20260902160000_traveller_registry
 ```
 
 `supabase db push` reads `supabase_migrations.schema_migrations` and applies only
-what is missing — on a fresh project that is all 19. It is safe to re-run; every
+what is missing — on a fresh project that is all 21. It is safe to re-run; every
 migration is idempotent or tracked. (Or paste `supabase/apply-all-migrations.sql`
 into the SQL Editor.)
 
@@ -92,11 +93,14 @@ you must add it · **OPTIONAL** = launch works without it.
 
 | Variable | Status | Value |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | MISSING | Project Settings → API → Project URL. |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | MISSING | the new `sb_publishable_…` key. (Legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also accepted — set one.) |
-| `SUPABASE_SECRET_KEY` | MISSING | the new `sb_secret_…` key — server-only, bypasses RLS. (Legacy `SUPABASE_SERVICE_ROLE_KEY` also accepted — set one.) |
+| `SUPABASE_URL` | MISSING | Project Settings → API → Project URL. **Set this one on Hostinger** — it is read at runtime, so a panel change takes effect on restart, no rebuild. |
+| `NEXT_PUBLIC_SUPABASE_URL` | OPTIONAL | same value; build-time. Set it too for parity, but on Hostinger it only updates on a rebuild. |
+| `SUPABASE_SECRET_KEY` | MISSING | the new `sb_secret_…` key — server-only, bypasses RLS. (Legacy `SUPABASE_SERVICE_ROLE_KEY` also accepted — set one.) Runtime var. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | OPTIONAL | the `sb_publishable_…` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) key. Only needed for the Supabase-Auth admin login (#65); build-time. |
 
-All three must be present or the app stays in DEMO mode.
+`SUPABASE_URL` + a secret key = the app leaves DEMO mode. Verify at
+`/api/health` → the `supabase` block (`resolved: "supabase"`, and a `hint` if a
+key is set but the URL isn't picked up).
 
 ### 2c · Stripe (payments)
 
@@ -113,7 +117,7 @@ Until all three are set, the pay step uses the **demo simulator** (no charge).
 
 | Variable | Status | Value |
 |---|---|---|
-| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/comms`, `/api/cron/privacy`, `/api/cron/reconcile`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking, scheduled guest messages (#69) are never sent, and the monthly data-retention sweep (#79) never runs. |
+| `CRON_SECRET` | MISSING | long random string. Guards `/api/cron/jobs`, `/api/cron/comms`, `/api/cron/privacy`, `/api/cron/reconcile`, `/api/cron/turnovers`, `/api/cron/pricing`, `/api/cron/expire-holds` and `/api/ical/import`. Without it, in production those endpoints return **503** (they never run) — the durable job queue then only advances opportunistically on each confirmed booking, scheduled guest messages (#69) are never sent, and the monthly data-retention sweep (#79) never runs. |
 
 ### 2e · iCal / Booking sync
 
@@ -131,6 +135,8 @@ Until all three are set, the pay step uses the **demo simulator** (no charge).
 | `RESEND_API_KEY` | MISSING | Resend → API Keys. |
 | `EMAIL_FROM` | MISSING | e.g. `Praetoria Vacacional <reservas@tudominio.com>` — the domain must be verified in Resend. |
 | `EMAIL_REPLY_TO` | OPTIONAL | e.g. `hola@tudominio.com`. |
+| `MARKETING_FROM` | OPTIONAL | separate From for campaigns (#73), e.g. `Praetoria Vacacional <ofertas@tudominio.com>`. Defaults to `EMAIL_FROM`. |
+| `RESEND_WEBHOOK_SECRET` | OPTIONAL | Resend → Webhooks → add an endpoint at `https://<domain>/api/webhooks/resend` (events: `email.bounced`, `email.complained`, `email.failed`) → copy the signing secret. Without it, bounced addresses are not auto-suppressed. |
 
 If Resend is not configured, **a booking still completes and is confirmed** — the
 guest just doesn't get an automatic email; every attempt is logged in
@@ -187,7 +193,7 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 
 ### A · Supabase
 - [ ] Create the production project. Copy URL + publishable + secret keys.
-- [ ] `supabase link` to it, then `supabase db push` (applies the 19 migrations).
+- [ ] `supabase link` to it, then `supabase db push` (applies the 21 migrations).
 - [ ] Run the two verify queries and the two `supabase/tests/*.sql` files (§1).
 - [ ] **Media library (issue #81):** Storage → New bucket → name `media`, **not public**. (The app serves files through signed URLs.) Nothing else to configure.
 - [ ] Database → Backups: confirm the plan's backup/PITR retention; do one test restore into a scratch project.
@@ -221,12 +227,14 @@ No `TODO`, mock, or hard-coded credential remains on a runtime path.
 - [ ] Make a test block in Booking on Javalambre → after the next import it shows only on Javalambre. Re-import → no duplicates.
 
 ### E · Cron (Hostinger has no Vercel Cron)
-- [ ] Create six scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
+- [ ] Create eight scheduled jobs (Hostinger cron, cron-job.org, or a systemd timer):
   - every 2 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/jobs`
   - every 5 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/expire-holds`
   - every 15 min: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/comms`
   - monthly (day 1, 03:00): `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/privacy`
   - every 6 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/reconcile`
+  - daily (06:00): `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/turnovers`
+  - daily (04:30): `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/cron/pricing`
   - every 3 h: `curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<domain>/api/ical/import`
 - [ ] Confirm each returns `200` (a `401`/`503` means the header or `CRON_SECRET` is wrong).
 - [ ] `/admin/procesos` shows an empty or all-`Completado` queue; no `Fallido (atascado)` rows.

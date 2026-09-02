@@ -24,6 +24,13 @@ const schema = z.object({
   // Supabase — both the legacy (JWT anon / service_role) and the new
   // (sb_publishable_… / sb_secret_…) key names are accepted; whichever is set
   // wins. The `@supabase/supabase-js` client treats them interchangeably.
+  //
+  // IMPORTANT: `NEXT_PUBLIC_*` values are inlined into the bundle at BUILD time,
+  // so setting them in a hosting panel without a rebuild leaves the app in DEMO
+  // mode. `SUPABASE_URL` (no prefix) is read at RUNTIME and is all the server
+  // needs — the publishable/anon key is only for the not-yet-live browser client
+  // (D-005). Prefer `SUPABASE_URL` + `SUPABASE_SECRET_KEY` on Hostinger.
+  SUPABASE_URL: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().optional(),
@@ -39,6 +46,10 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("Praetoria Vacacional <reservas@example.com>"),
   EMAIL_REPLY_TO: z.string().optional(),
+  /** Optional separate From for marketing campaigns (issue #73). */
+  MARKETING_FROM: z.string().optional(),
+  /** Resend webhook signing secret for bounce/complaint suppression (issue #73). */
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
 
   // Admin
   ADMIN_EMAILS: z.string().default(""),
@@ -79,6 +90,13 @@ const schema = z.object({
   OBSERVABILITY_ENV: z.string().optional(),
   OBSERVABILITY_RELEASE: z.string().optional(),
 
+  // SES.HOSPEDAJES — Spain traveller registry (issue #72). Obtain from the
+  // Guardia Civil / Policía Nacional portal. Absent → the parte is generated and
+  // the owner submits it manually on the official portal.
+  SES_HOSPEDAJES_USER: z.string().optional(),
+  SES_HOSPEDAJES_PASSWORD: z.string().optional(),
+  SES_HOSPEDAJES_ESTABLISHMENT: z.string().optional(),
+
   // WhatsApp concierge (issue #97) — E.164 digits only, e.g. 34600111222.
   // Absent → the floating WhatsApp button does not render.
   NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
@@ -115,9 +133,14 @@ if (!parsed.success) {
 
 const raw = parsed.data;
 
-// Resolve the Supabase keys once, preferring the new sb_publishable_/sb_secret_
-// names and falling back to the legacy anon/service_role names.
-const supabaseUrl = isReal(raw.NEXT_PUBLIC_SUPABASE_URL) ? raw.NEXT_PUBLIC_SUPABASE_URL : undefined;
+// Resolve the Supabase config once. The runtime-only `SUPABASE_URL` wins over
+// the build-time `NEXT_PUBLIC_SUPABASE_URL` so a hosting-panel value works
+// without a rebuild.
+const supabaseUrl = isReal(raw.SUPABASE_URL)
+  ? raw.SUPABASE_URL
+  : isReal(raw.NEXT_PUBLIC_SUPABASE_URL)
+    ? raw.NEXT_PUBLIC_SUPABASE_URL
+    : undefined;
 const supabasePublishableKey = isReal(raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   ? raw.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   : isReal(raw.NEXT_PUBLIC_SUPABASE_ANON_KEY)
@@ -148,10 +171,18 @@ export const env = {
   supabasePublishableKey,
   /** Secret / service-role key — bypasses RLS, server-only. */
   supabaseSecretKey,
-  supabaseConfigured: !!supabaseUrl && !!supabasePublishableKey && !!supabaseSecretKey,
+  // The server repository only needs the URL + secret key (D-005 — the browser
+  // client / publishable key has no live read path yet). Requiring the
+  // publishable key here would silently drop the app to DEMO when only the
+  // build-time NEXT_PUBLIC value is missing.
+  supabaseConfigured: !!supabaseUrl && !!supabaseSecretKey,
+  /** True only when the browser SSR client (Supabase Auth, #65) can be built. */
+  supabaseBrowserConfigured: !!supabaseUrl && !!supabasePublishableKey,
   stripeConfigured: isReal(raw.STRIPE_SECRET_KEY) && isReal(raw.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),
+  MARKETING_FROM: isReal(raw.MARKETING_FROM) ? raw.MARKETING_FROM : undefined,
+  RESEND_WEBHOOK_SECRET: isReal(raw.RESEND_WEBHOOK_SECRET) ? raw.RESEND_WEBHOOK_SECRET : undefined,
   icalExportConfigured: isReal(raw.ICAL_EXPORT_TOKEN),
   CRON_SECRET: isReal(raw.CRON_SECRET) ? raw.CRON_SECRET : undefined,
   adminConfigured: isReal(raw.ADMIN_PASSWORD),
@@ -161,6 +192,11 @@ export const env = {
   rateLimitRedisToken,
   rateLimitDistributed: !!rateLimitRedisUrl && !!rateLimitRedisToken,
   whatsappConfigured: isReal(raw.NEXT_PUBLIC_WHATSAPP_NUMBER),
+  SES_HOSPEDAJES_USER: isReal(raw.SES_HOSPEDAJES_USER) ? raw.SES_HOSPEDAJES_USER : undefined,
+  SES_HOSPEDAJES_PASSWORD: isReal(raw.SES_HOSPEDAJES_PASSWORD) ? raw.SES_HOSPEDAJES_PASSWORD : undefined,
+  SES_HOSPEDAJES_ESTABLISHMENT: isReal(raw.SES_HOSPEDAJES_ESTABLISHMENT)
+    ? raw.SES_HOSPEDAJES_ESTABLISHMENT
+    : undefined,
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
   /** Resolved boolean — see `isFlagOn`. Overrides the raw string from `...raw`. */

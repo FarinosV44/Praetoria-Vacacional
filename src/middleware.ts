@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * hydration bootstrap — but keeps every other directive locked down
  * (object-src none, frame-ancestors none, base-uri self, allow-listed hosts).
  */
-const NOINDEX_PREFIXES = ["/admin", "/reservar", "/reserva", "/api"];
+const NOINDEX_PREFIXES = ["/admin", "/reservar", "/reserva", "/api", "/mi-reserva"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -37,5 +37,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/reservar/:path*", "/reserva/:path*", "/api/:path*"],
+  matcher: ["/admin/:path*", "/reservar/:path*", "/reserva/:path*", "/api/:path*", "/mi-reserva/:path*"],
 };

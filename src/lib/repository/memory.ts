@@ -65,6 +65,9 @@ import type {
 } from "@/domains/comms/types";
 import type { AdminUser } from "@/domains/admin/users";
 import type { MediaAsset } from "@/domains/media/types";
+import type { OpsTask } from "@/domains/operations/types";
+import type { Traveller } from "@/domains/registry/types";
+import { compareTasks, planTurnovers } from "@/domains/operations/planning";
 
 /** Blank intranet-only reservation fields (issue #56) for DEMO-created holds. */
 function blankIntranetFields() {
@@ -126,6 +129,8 @@ interface Store {
   scheduledMessages: ScheduledMessage[];
   adminUsers: AdminUser[];
   media: MediaAsset[];
+  opsTasks: OpsTask[];
+  travellers: Traveller[];
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -222,6 +227,8 @@ function seed(): Store {
     scheduledMessages: [],
     adminUsers: [],
     media: [],
+    opsTasks: [],
+    travellers: [],
   };
 }
 
@@ -356,6 +363,8 @@ store.jobs ??= [];
 store.scheduledMessages ??= [];
 store.adminUsers ??= [];
 store.media ??= [];
+store.opsTasks ??= [];
+store.travellers ??= [];
 
 function save(): boolean {
   return persist(store);
@@ -831,6 +840,26 @@ export const memoryRepository: Repository = {
 
   async listCampaignRecipients(id) {
     return store.campaignRecipients.filter((r) => r.campaignId === id);
+  },
+
+  async markCampaignRecipient(recipientId, status, error) {
+    const r = store.campaignRecipients.find((x) => x.id === recipientId);
+    if (!r) return;
+    r.status = status;
+    r.error = error ?? null;
+    save();
+  },
+
+  async finishCampaign(campaignId, sentCount) {
+    const campaign = store.campaigns.find((c) => c.id === campaignId);
+    if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
+    const now = new Date().toISOString();
+    campaign.status = "sent";
+    campaign.sentAt = now;
+    campaign.recipientCount = sentCount;
+    campaign.updatedAt = now;
+    save();
+    return campaign;
   },
 
   async markCampaignSent(id) {
@@ -1963,6 +1992,167 @@ export const memoryRepository: Repository = {
     store.auditLog = store.auditLog.filter((a) => a.createdAt >= beforeIso);
     save();
     return before - store.auditLog.length;
+  },
+
+  // --- Traveller registry / SES.HOSPEDAJES (issue #72) ----------
+  async listTravellers(reservationId: string) {
+    return store.travellers
+      .filter((t) => t.reservationId === reservationId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map((t) => ({ ...t }));
+  },
+
+  async upcomingTravellerRegistrations(days: number) {
+    const today = todayIso();
+    const until = addDays(today, days);
+    const out: { reservation: Reservation; travellers: Traveller[] }[] = [];
+    for (const r of store.reservations) {
+      if (r.status !== "confirmed") continue;
+      if (r.checkIn < today || r.checkIn > until) continue;
+      out.push({
+        reservation: { ...r },
+        travellers: store.travellers.filter((t) => t.reservationId === r.id).map((t) => ({ ...t })),
+      });
+    }
+    return out.sort((a, b) => a.reservation.checkIn.localeCompare(b.reservation.checkIn));
+  },
+
+  async addTraveller(input) {
+    const now = new Date().toISOString();
+    const row: Traveller = {
+      id: randomUUID(),
+      reservationId: input.reservationId,
+      fullName: input.fullName,
+      firstSurname: input.firstSurname ?? null,
+      secondSurname: input.secondSurname ?? null,
+      docType: input.docType,
+      docNumber: input.docNumber,
+      docSupport: input.docSupport ?? null,
+      nationality: input.nationality ?? "ESP",
+      birthDate: input.birthDate ?? null,
+      gender: input.gender ?? null,
+      phone: input.phone ?? null,
+      email: input.email ?? null,
+      addressCountry: input.addressCountry ?? "ESP",
+      addressLine: input.addressLine ?? null,
+      municipality: input.municipality ?? null,
+      province: input.province ?? null,
+      postalCode: input.postalCode ?? null,
+      kinship: input.kinship ?? null,
+      isLead: input.isLead ?? false,
+      paymentMethod: input.paymentMethod ?? null,
+      signedAt: now,
+      sentAt: null,
+      sentRef: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.travellers.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateTraveller(id, patch) {
+    const t = store.travellers.find((x) => x.id === id);
+    if (!t) throw new Error("TRAVELLER_NOT_FOUND");
+    Object.assign(t, patch);
+    t.updatedAt = new Date().toISOString();
+    save();
+    return { ...t };
+  },
+
+  async deleteTraveller(id: string) {
+    store.travellers = store.travellers.filter((t) => t.id !== id);
+    save();
+  },
+
+  async markTravellersSent(reservationId: string, ref: string) {
+    const now = new Date().toISOString();
+    for (const t of store.travellers) {
+      if (t.reservationId === reservationId) {
+        t.sentAt = now;
+        t.sentRef = ref;
+        t.updatedAt = now;
+      }
+    }
+    save();
+  },
+
+  // --- Operations: housekeeping + maintenance (issues #70, #71) --
+  async listOpsTasks(filter) {
+    let out = [...store.opsTasks];
+    if (filter?.kind) out = out.filter((t) => t.kind === filter.kind);
+    if (filter?.status?.length) out = out.filter((t) => filter.status!.includes(t.status));
+    if (filter?.propertyId) out = out.filter((t) => t.propertyId === filter.propertyId);
+    out.sort((a, b) => compareTasks(a, b) || a.createdAt.localeCompare(b.createdAt));
+    return out.slice(0, filter?.limit ?? 300).map((t) => ({ ...t }));
+  },
+
+  async getOpsTask(id: string) {
+    const t = store.opsTasks.find((x) => x.id === id);
+    return t ? { ...t } : null;
+  },
+
+  async createOpsTask(input) {
+    const now = new Date().toISOString();
+    const row: OpsTask = {
+      id: randomUUID(),
+      propertyId: input.propertyId,
+      kind: input.kind,
+      title: input.title,
+      description: input.description ?? "",
+      status: input.status ?? "open",
+      priority: input.priority ?? "normal",
+      dueDate: input.dueDate ?? null,
+      assignee: input.assignee ?? null,
+      costCents: input.costCents ?? null,
+      reservationId: input.reservationId ?? null,
+      photos: input.photos ?? [],
+      createdBy: input.createdBy ?? null,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.opsTasks.push(row);
+    save();
+    return { ...row };
+  },
+
+  async updateOpsTask(id, patch) {
+    const t = store.opsTasks.find((x) => x.id === id);
+    if (!t) throw new Error("OPS_TASK_NOT_FOUND");
+    Object.assign(t, patch);
+    if (patch.status === "done" && !t.completedAt) t.completedAt = new Date().toISOString();
+    if (patch.status && patch.status !== "done") t.completedAt = null;
+    t.updatedAt = new Date().toISOString();
+    save();
+    return { ...t };
+  },
+
+  async deleteOpsTask(id: string) {
+    store.opsTasks = store.opsTasks.filter((t) => t.id !== id);
+    save();
+  },
+
+  async reconcileTurnovers(now = new Date()) {
+    const existing = new Set(
+      store.opsTasks.filter((t) => t.kind === "turnover" && t.reservationId).map((t) => t.reservationId!),
+    );
+    const plan = planTurnovers(
+      store.reservations.map((r) => ({
+        id: r.id,
+        propertyId: r.propertyId,
+        checkIn: r.checkIn,
+        checkOut: r.checkOut,
+        status: r.status,
+      })),
+      existing,
+      now,
+    );
+    for (const input of plan) {
+      await this.createOpsTask(input);
+    }
+    return plan.length;
   },
 
   // --- Media library (issue #81) --------------------------------

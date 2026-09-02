@@ -761,3 +761,119 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   at point of use rather than a build step here.
 - **DEMO** keeps the metadata CRUD (so the UI renders) but blocks uploads —
   there's nowhere to put the bytes without Storage.
+
+## D-037 — #68 — passwordless guest portal
+**Date:** 2026-09-02 · issue #68
+- **Stateless magic link.** `<reservationId>.<expiryMs>.<hmac>` (base64url),
+  7-day TTL, keyed off an existing server secret. No `guest_portal_tokens`
+  table — a leaked link dies on expiry and the guest self-serves a new one with
+  code + email. The lookup requires the code AND the reservation's own email to
+  match, and never reveals whether a pair matched (rate-limited 5 / 10 min).
+- **What the guest can do:** see the stay + payment status, pay the outstanding
+  balance (`total − Σ succeeded payments` via a fresh Stripe Checkout Session),
+  download issued invoices, and submit an arrival time + requests (appended to
+  the reservation notes + an email to the owner).
+- **Invoice document extracted.** `<InvoiceDocument>` is now a shared pure
+  component; the admin viewer and the token-guarded guest route both render it.
+  The guest route checks the invoice belongs to that reservation and is issued.
+- **noindex** via the middleware prefix list; linked from the footer and the
+  confirmation email.
+
+## D-038 — #70 + #71 — one operations board
+**Date:** 2026-09-02 · issues #70, #71
+- **Housekeeping and maintenance are the same shape** — a task on a property
+  with a status, a priority, a due date and notes — so `operations_tasks` backs
+  both, distinguished by `kind` (turnover / cleaning / maintenance / incident).
+  Maintenance uses `cost_cents`; turnovers link `reservation_id`.
+- **Turnovers are derived, not entered.** Pure `planTurnovers` creates one
+  scheduled turnover per confirmed checkout inside a 45-day window; a stay that
+  starts the same day another ends is flagged `urgent`. `reconcileTurnovers`
+  (unique index on `reservation_id`) is idempotent and runs from
+  `/api/cron/turnovers` daily and an admin button.
+- **Photos** are just media-library URLs pasted onto a task — no separate
+  upload path, reuses #81.
+- **`operations.write`** capability, granted to admin + gestión (day-to-day
+  work), not lectura.
+- No owner workflow decision was needed for a first version — this is the
+  obvious shape; the owner can tell us later if their real turnover process
+  differs.
+
+## D-039 — #73 — marketing in production over Resend
+**Date:** 2026-09-02 · user choice (Resend, the existing email provider)
+- **No new provider.** Campaigns send through the same Resend account as the
+  transactional email. Not Resend Broadcasts/Audiences — we already own the
+  segment engine, consent gate and suppression list (#56 §6), so `sendCampaign`
+  just iterates the prepared recipients and calls `emails.send`.
+- **Deliverability basics baked in.** RFC-8058 `List-Unsubscribe` +
+  `List-Unsubscribe-Post: One-Click` headers, a visible unsubscribe link, an
+  optional dedicated `MARKETING_FROM`, and a per-recipient suppression re-check
+  at send time (not only at prepare time).
+- **Stateless unsubscribe.** HMAC token of the email → `/baja` (human) and
+  `/api/marketing/unsubscribe` (mail-client one-click POST). No expiry.
+- **Bounces & complaints.** `/api/webhooks/resend` verifies the Svix signature
+  and adds `email.bounced` / `email.complained` / `email.failed` recipients to
+  the suppression list.
+- WhatsApp bulk send is still unconfigured — that channel keeps the
+  intent-only `markCampaignSent` path.
+
+## D-040 — #74 — explainable dynamic pricing
+**Date:** 2026-09-02 · user choice ("auto-apply within guardrails")
+- **Nudge the natural price, don't compound.** `suggestNightlyRate` starts from
+  what the static rate config (seasons + weekend) would charge — never the
+  resolved config with existing `daily_rates` — so running it daily converges
+  instead of ratcheting.
+- **Named factors, always shown.** Lead time, window demand (real occupancy),
+  orphan nights. Each carries a label + signed % + a plain reason; the admin
+  screen prints the full breakdown per date.
+- **Hard guardrails.** The recommendation is clamped to ±`bandPct` (default 25)
+  of the natural price and then floored at `floorCents` (default 60% of base).
+  The clamp reason is surfaced.
+- **"Auto-apply" = the cron writes without a click**, but only for a property
+  whose owner has ticked `enabled` (default off). `/api/cron/pricing` runs
+  daily; `applyDynamicPricing(slug, {force:true})` is the manual "apply now".
+  Everything is audit-logged.
+
+## D-041 — #72 — traveller registry (SES.HOSPEDAJES)
+**Date:** 2026-09-02 · issue #72
+- **Collect + generate now, transmit when credentialed.** RD 933/2021 data is
+  gathered through the guest portal's check-in (`/mi-reserva/[token]/checkin`),
+  validated (`validateTraveller`: DNI/NIE format, mandatory payment method,
+  Spanish-resident municipality/province), and assembled into the parte
+  (`buildParte`). The SES.HOSPEDAJES web-service binding needs the owner's WSDL
+  and certificate, so `submitParte` returns a clear "not configured / binding
+  pending" and the owner uploads the generated parte on the official portal,
+  then records it with "marcar enviado".
+- **Lead traveller = first added.** Minors are detected (`isMinor` at the stay
+  date) so the form can ask for `parentesco`.
+- **Admin surfaces the gap.** `/admin/registro-viajeros` lists the next 14 days
+  of check-ins with a completeness badge; the reservation detail has the parte
+  download + submit/mark-sent.
+- No `payments`-style webhook — this registry is push-only to the Ministry.
+
+## D-042 — #78 — Lighthouse CI + performance budgets
+**Date:** 2026-09-02 · issue #78
+- **Budgets in `lighthouserc.json`, enforced by CI.** A new `lighthouse` job
+  builds + `next start`s the app and audits 5 representative URLs (3 runs,
+  median).
+- **Hard gates vs. annotations.** Accessibility ≥ 0.95, SEO ≥ 0.95 and CLS ≤ 0.1
+  fail the job; performance / LCP / TBT / bundle size are `warn` — Lighthouse on
+  a shared GitHub runner is too noisy to gate a merge on the perf score, but the
+  trend is visible on every PR and the stable checks are real gates.
+- **Field CWV stays a manual gate** (Search Console + PageSpeed Insights on the
+  live domain) — documented in `docs/perf-budget.md` and the final audit.
+
+## D-043 — bugfix — Supabase "configured" must not depend on a build-time var
+**Date:** 2026-09-02 · user report (calendar sync URL lost on redeploy despite Supabase configured)
+- **Root cause.** `supabaseConfigured` required `NEXT_PUBLIC_SUPABASE_URL`,
+  which Next inlines at **build** time. Setting it in the Hostinger panel and
+  restarting (no rebuild) left the value empty → the app silently ran in DEMO →
+  the iCal import URL went to `.data/demo.json` and was wiped on every redeploy.
+- **Fix.** New runtime-only `SUPABASE_URL` (no prefix), preferred over the
+  build-time one. `supabaseConfigured` now = URL + secret key only (the server
+  repo never uses the publishable key — D-005). Split out
+  `supabaseBrowserConfigured` (URL + publishable) for the Supabase-Auth login
+  path (#65), which genuinely needs the build-time key.
+- **Diagnostics.** `/api/health` gains a `supabase` block reporting runtime env
+  presence + a `hint` when a key is set but the URL isn't resolving.
+  `/admin/sincronizacion` shows a red banner for that exact situation and
+  another when `channel_feeds` can't be read (missing migration).

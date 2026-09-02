@@ -41,6 +41,7 @@ const PRIMARY: Item[] = [
   { href: "/admin/calendario", label: "Calendario", icon: "calendar" },
   { href: "/admin/reservas", label: "Reservas", icon: "bookings" },
   { href: "/admin/precios", label: "Precios y reglas", icon: "price" },
+  { href: "/admin/precios-dinamicos", label: "Precios dinámicos", icon: "price" },
   { href: "/admin/alojamientos", label: "Alojamientos", icon: "home2", match: ["/admin/contenido"] },
   { href: "/admin/clientes", label: "Clientes", icon: "users" },
   { href: "/admin/facturas", label: "Facturas", icon: "invoice" },
@@ -51,6 +52,8 @@ const PRIMARY: Item[] = [
 ];
 
 const SECONDARY: Item[] = [
+  { href: "/admin/operaciones", label: "Operaciones", icon: "plug" },
+  { href: "/admin/registro-viajeros", label: "Registro viajeros", icon: "users" },
   { href: "/admin/analitica", label: "Analítica", icon: "price" },
   { href: "/admin/pagos", label: "Pagos y correos", icon: "invoice" },
   { href: "/admin/blog", label: "Blog", icon: "megaphone" },

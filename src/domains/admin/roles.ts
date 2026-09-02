@@ -13,6 +13,7 @@ export type Capability =
   | "marketing.write"
   | "promotions.write"
   | "content.write"
+  | "operations.write"
   | "settings.write";
 
 const MATRIX: Record<AdminRole, Capability[]> = {
@@ -25,6 +26,7 @@ const MATRIX: Record<AdminRole, Capability[]> = {
     "marketing.write",
     "promotions.write",
     "content.write",
+    "operations.write",
     "settings.write",
   ],
   // day-to-day operations, no configuration
@@ -36,6 +38,7 @@ const MATRIX: Record<AdminRole, Capability[]> = {
     "marketing.write",
     "promotions.write",
     "content.write",
+    "operations.write",
   ],
   // read-only
   lectura: [],
