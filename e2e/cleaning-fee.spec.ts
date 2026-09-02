@@ -11,12 +11,15 @@ function futureDate(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-const OFFSET = 40 + (Math.floor(Date.now() / 1000) % 30);
+// Wide, per-run window + a 4-night stay — the same pattern booking-flow uses so
+// availability is deterministic regardless of season min-nights.
+const OFFSET = 60 + (Math.floor(Date.now() / 1000) % 200);
 
 for (const property of ["javalambre", "valencia"] as const) {
   test(`no cleaning line at checkout for ${property} (default: disabled)`, async ({ page }) => {
-    const checkIn = futureDate(OFFSET + (property === "valencia" ? 5 : 0));
-    const checkOut = futureDate(OFFSET + (property === "valencia" ? 8 : 3));
+    const propOffset = property === "valencia" ? 6 : 0;
+    const checkIn = futureDate(OFFSET + propOffset);
+    const checkOut = futureDate(OFFSET + propOffset + 4);
 
     await page.goto(`/reservar/${property}?checkIn=${checkIn}&checkOut=${checkOut}&guests=2`);
     await expect(page.getByRole("button", { name: /continuar/i })).toBeVisible();

@@ -219,7 +219,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
             className="reveal border-t border-[var(--color-line)] bg-[var(--accent-50)]"
           >
             <div
-              className={`container-page grid items-start gap-8 section-y-tight md:grid-cols-2 md:gap-12 ${
+              className={`container-page grid grid-cols-1 items-start gap-8 section-y-tight md:grid-cols-2 md:gap-12 ${
                 i % 2 ? "md:[&>*:first-child]:order-2" : ""
               }`}
             >
@@ -255,11 +255,17 @@ export async function HomeView({ locale }: { locale: Locale }) {
                 </ul>
 
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <Link href={path(`/${p.slug}`)} className="pv-btn pv-btn--primary">
+                  <Link
+                    href={path(`/${p.slug}`)}
+                    className="pv-btn pv-btn--primary h-auto min-h-11 max-w-full whitespace-normal py-2 text-center"
+                  >
                     {c.discover(p.name)}
                   </Link>
                   {locale === "es" && (
-                    <Link href={`/guias/${hubFor(p.slug)}`} className="pv-btn pv-btn--secondary">
+                    <Link
+                      href={`/guias/${hubFor(p.slug)}`}
+                      className="pv-btn pv-btn--secondary h-auto min-h-11 max-w-full whitespace-normal py-2 text-center"
+                    >
                       {c.guideCta} →
                     </Link>
                   )}

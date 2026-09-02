@@ -60,8 +60,12 @@ jobs:
 
       # playwright.config.ts's webServer runs `npm run build && npm run start`
       # on :3000 when E2E_BASE_URL is unset and CI is true.
+      # `visual.spec` is excluded: its pixel baselines are captured on the
+      # author's OS and never match the Linux CI renderer — it is a local
+      # design-review tool (regenerate with `playwright test visual
+      # --update-snapshots`), not a merge gate.
       - name: Run e2e
-        run: npx playwright test --project=chromium --workers=1
+        run: npx playwright test --project=chromium --workers=1 --grep-invert "visual · design system"
         env:
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
           ADMIN_PASSWORD: ci-e2e-password
