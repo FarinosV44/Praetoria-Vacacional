@@ -135,7 +135,7 @@ async function fromPassword(): Promise<AdminContext | null> {
 }
 
 export const getAdminContext = cache(async (): Promise<AdminContext | null> => {
-  if (env.supabaseBrowserConfigured) {
+  if (env.adminSupabaseAuth) {
     const viaSupabase = await fromSupabase();
     if (viaSupabase) return viaSupabase;
   }

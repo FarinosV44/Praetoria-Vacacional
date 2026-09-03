@@ -10,7 +10,7 @@ export default async function SeguridadPage() {
   const ctx = await getAdminContext();
 
   let factors: { id: string; status: string }[] = [];
-  if (env.supabaseBrowserConfigured && ctx?.source === "supabase") {
+  if (env.adminSupabaseAuth && ctx?.source === "supabase") {
     try {
       const { supabaseServer } = await import("@/lib/supabase/server");
       const sb = await supabaseServer();
@@ -32,10 +32,11 @@ export default async function SeguridadPage() {
         </p>
       </div>
 
-      {DEMO_MODE || !env.supabaseBrowserConfigured ? (
+      {DEMO_MODE || !env.adminSupabaseAuth ? (
         <div className="rounded-xl border border-[var(--color-line)] bg-white p-5 text-sm text-[var(--color-ink-soft)]">
-          La verificación en dos pasos usa Supabase Auth. Actívala configurando Supabase
-          (<code>NEXT_PUBLIC_SUPABASE_URL</code> + claves) y habilitando Auth en el proyecto.
+          El panel usa el acceso por contraseña única. La verificación en dos pasos por usuario
+          requiere el login por Supabase Auth (<code>ADMIN_SUPABASE_AUTH</code> activado y sus
+          claves publishable en build).
         </div>
       ) : ctx?.source !== "supabase" ? (
         <div className="rounded-xl border border-[var(--color-line)] bg-white p-5 text-sm text-[var(--color-ink-soft)]">

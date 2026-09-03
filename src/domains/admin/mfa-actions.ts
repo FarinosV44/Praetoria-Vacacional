@@ -25,7 +25,7 @@ async function supabase() {
 
 async function requireUser() {
   if (!(await isAdminAuthenticated())) throw new Error("No autorizado");
-  if (!env.supabaseBrowserConfigured) throw new Error("La verificación en dos pasos requiere Supabase Auth (falta la clave publishable en build).");
+  if (!env.adminSupabaseAuth) throw new Error("La verificación en dos pasos requiere el login por Supabase Auth (ADMIN_SUPABASE_AUTH).");
 }
 
 export async function startMfaEnrollmentAction(): Promise<EnrollResult> {

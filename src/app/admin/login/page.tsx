@@ -13,7 +13,7 @@ export default async function AdminLoginPage() {
       <div className="w-full max-w-sm rounded-xl border border-[var(--color-line)] bg-white p-6">
         <h1 className="font-display text-xl">Administración</h1>
         {adminEnabled ? (
-          <LoginForm supabaseAuth={env.supabaseBrowserConfigured} />
+          <LoginForm supabaseAuth={env.adminSupabaseAuth} />
         ) : (
           <p className="mt-3 text-sm text-[var(--color-ink-soft)]">
             El panel no está configurado. Define <code>ADMIN_PASSWORD</code> en el entorno para

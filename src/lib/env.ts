@@ -63,6 +63,11 @@ const schema = z.object({
   /** Role of the single admin login (issue #56 §10). Architecture is
    *  ready for admin / gestion / lectura; today there is one login. */
   ADMIN_ROLE: z.enum(["admin", "gestion", "lectura"]).default("admin"),
+  /** Opt in to per-user Supabase Auth for /admin (email + password, MFA,
+   *  revocable sessions — issue #65). OFF by default: the panel then uses the
+   *  single `ADMIN_PASSWORD` cookie login and the sign-in form asks for the
+   *  password only. Set to a truthy value once Supabase Auth users exist. */
+  ADMIN_SUPABASE_AUTH: z.string().optional(),
 
   // Distributed rate limiting (issue #62). Optional — without it the limiter
   // uses an in-memory store (correct for a single instance). Upstash Redis REST,
@@ -198,6 +203,9 @@ export const env = {
   supabaseConfigured: !!supabaseUrl && !!supabaseSecretKey,
   /** True only when the browser SSR client (Supabase Auth, #65) can be built. */
   supabaseBrowserConfigured: !!supabaseUrl && !!supabasePublishableKey,
+  /** /admin uses per-user Supabase Auth (email + password). Opt-in AND the
+   *  browser client must be buildable; otherwise /admin is password-only. */
+  adminSupabaseAuth: isFlagOn(raw.ADMIN_SUPABASE_AUTH) && !!supabaseUrl && !!supabasePublishableKey,
   stripeConfigured: isReal(raw.STRIPE_SECRET_KEY) && isReal(raw.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
   stripeWebhookConfigured: isReal(raw.STRIPE_WEBHOOK_SECRET),
   emailConfigured: isReal(raw.RESEND_API_KEY),
