@@ -18,9 +18,9 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<A
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  // Supabase Auth path (issue #65) — used when Supabase is configured and the
+  // Supabase Auth path (issue #65) — used when ADMIN_SUPABASE_AUTH is on and the
   // form supplied an email. Per-user accounts, MFA, revocable sessions.
-  if (env.supabaseBrowserConfigured && email) {
+  if (env.adminSupabaseAuth && email) {
     const { supabaseServer } = await import("@/lib/supabase/server");
     const supabase = await supabaseServer();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -46,7 +46,7 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<A
 
 export async function logoutAction(): Promise<void> {
   await destroyAdminSession();
-  if (env.supabaseBrowserConfigured) {
+  if (env.adminSupabaseAuth) {
     try {
       const { supabaseServer } = await import("@/lib/supabase/server");
       await (await supabaseServer()).auth.signOut();
