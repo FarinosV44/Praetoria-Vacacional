@@ -12,6 +12,14 @@ function futureDate(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** How the bar renders a date — `Intl` "d MMM" in es-ES, e.g. "1 abr" (no
+ *  leading zero), so the test must not assert against the ISO "01". */
+function shortLabel(iso: string): string {
+  return new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(
+    new Date(`${iso}T00:00:00Z`),
+  );
+}
+
 test("mobile: the bottom bar opens a sheet and books from a content page", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/guias/valencia-playa");
@@ -50,7 +58,7 @@ test("the bar keeps the selection across navigation and is hidden on checkout/ad
   await page.goto("/blog");
   await page.waitForLoadState("load");
   await expect(page.locator(".fixed.inset-x-0.bottom-0").getByRole("button")).toContainText(
-    futureDate(210).slice(8),
+    shortLabel(futureDate(210)),
   );
 
   // Hidden on checkout and admin.
