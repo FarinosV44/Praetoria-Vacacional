@@ -35,6 +35,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Hostinger's managed Next.js preset deploys the standalone output (it runs
+  // the generated `server.js`, not `next start` — the runtime `node_modules`
+  // has no `next` CLI). Declaring it here makes local/CI builds produce the
+  // same artifact so `npm start` == what production runs.
+  output: "standalone",
   // ESLint + its config live in devDependencies (CI runs them). A production
   // host that installs with --omit=dev / NODE_ENV=production won't have eslint,
   // and `next build` would otherwise fail looking for it. `tsc` still runs in CI.

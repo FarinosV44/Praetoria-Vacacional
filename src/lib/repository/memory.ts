@@ -141,8 +141,11 @@ function seed(): Store {
   const [javalambre, valencia] = getAllProperties();
   const blocks: AvailabilityBlock[] = [];
   const now = new Date().toISOString();
-  // A couple of demo blocks so calendars are not empty in DEMO mode.
-  if (javalambre) {
+  // A couple of demo blocks so calendars are not empty in DEMO mode. Skipped
+  // under test: the repository contract asserts a "fresh, empty" store, and
+  // `today`-relative blocks would drift into its fixed date fixtures.
+  const seedDemoBlocks = process.env.NODE_ENV !== "test";
+  if (javalambre && seedDemoBlocks) {
     blocks.push({
       id: randomUUID(),
       propertyId: javalambre.id,
@@ -155,7 +158,7 @@ function seed(): Store {
       updatedAt: now,
     });
   }
-  if (valencia) {
+  if (valencia && seedDemoBlocks) {
     blocks.push({
       id: randomUUID(),
       propertyId: valencia.id,
