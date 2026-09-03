@@ -59,7 +59,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       # playwright.config.ts's webServer runs `npm run build && npm run start`
-      # on :3000 when E2E_BASE_URL is unset and CI is true.
+      # on :3000 when E2E_BASE_URL is unset and CI is true. `npm start` boots
+      # the standalone `server.js` — the same entry point production runs.
       # `visual.spec` is excluded: its pixel baselines are captured on the
       # author's OS and never match the Linux CI renderer — it is a local
       # design-review tool (regenerate with `playwright test visual
