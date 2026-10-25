@@ -1,11 +1,13 @@
-import Image, { getImageProps } from "next/image";
 import type { CSSProperties } from "react";
-import type { ResponsivePhoto } from "@/content/properties/photos";
+import { srcSet, type ResponsivePhoto } from "@/content/properties/photos";
 
 /**
- * Property photo. The real files are pre-encoded (see photo-manifest.json); we
- * hand the largest WebP to next/image, which produces the responsive srcset and
- * modern formats. `fill` mode — the parent must be positioned with a size.
+ * Property photo. The real files are pre-encoded to AVIF + WebP at responsive
+ * widths (see photo-manifest.json and scripts/import-local-photos.mjs), so they
+ * are served directly as a native <picture> — no on-the-fly re-encoding by the
+ * Next image optimiser. That keeps the first visit after a deploy fast (a cold
+ * optimiser has to AVIF-encode every large hero) and spares the host's CPU.
+ * "Fill" layout: the parent must be positioned and sized.
  *
  * Optional `mobilePhoto` gives true art direction (issue #100/#101): phones get
  * a portrait frame (the same view, shot upright) instead of a squeezed
@@ -27,57 +29,68 @@ export function Picture({
   sizes: string;
   priority?: boolean;
   className?: string;
-  /** kept for API compatibility; merged into the Image className */
+  /** Classes for the <img>, e.g. "h-full w-full object-cover". */
   imgClassName?: string;
 }) {
-  const src = (p: ResponsivePhoto) => `${p.dir}/${p.base}-${Math.max(...p.widths)}.webp`;
-  const cls = `${imgClassName} ${className}`.trim();
+  const DESKTOP = "(min-width: 768px)";
+  const MOBILE = "(max-width: 767.98px)";
+  const mobileSizes = "100vw";
 
-  if (!mobilePhoto) {
-    // Focal point (issue #93) — keeps the subject in frame on tight crops.
-    return (
-      <Image
-        src={src(photo)}
-        alt={alt ?? photo.alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        style={photo.focal ? { objectPosition: photo.focal } : undefined}
-        className={cls}
-      />
-    );
-  }
-
-  const common = { alt: alt ?? photo.alt, fill: true, priority } as const;
-  const {
-    props: { srcSet: desktopSet },
-  } = getImageProps({ ...common, sizes, src: src(photo) });
-  const {
-    props: { srcSet: mobileSet, ...rest },
-  } = getImageProps({ ...common, sizes: "100vw", src: src(mobilePhoto) });
-
-  const focal = {
-    "--pv-focal-d": photo.focal ?? "50% 50%",
-    "--pv-focal-m": mobilePhoto.focal ?? "50% 50%",
-  } as CSSProperties;
+  // Focal point (issue #93) — keeps the subject in frame on tight crops; with
+  // art direction each frame keeps its own (see .pv-art in globals.css).
+  const style: CSSProperties = mobilePhoto
+    ? ({
+        "--pv-focal-d": photo.focal ?? "50% 50%",
+        "--pv-focal-m": mobilePhoto.focal ?? "50% 50%",
+      } as CSSProperties)
+    : { objectPosition: photo.focal ?? undefined };
 
   return (
     <picture>
       {priority && (
+        // React 19 hoists these to <head>. Only the LCP photo is marked
+        // priority, and with art direction each viewport preloads its own frame.
         <>
-          {/* React 19 hoists these to <head>: each viewport preloads only its own frame. */}
-          <link rel="preload" as="image" media="(min-width: 768px)" imageSrcSet={desktopSet} imageSizes={sizes} fetchPriority="high" />
-          <link rel="preload" as="image" media="(max-width: 767.98px)" imageSrcSet={mobileSet} imageSizes="100vw" fetchPriority="high" />
+          <link
+            rel="preload"
+            as="image"
+            type="image/avif"
+            media={mobilePhoto ? DESKTOP : undefined}
+            imageSrcSet={srcSet(photo, "avif")}
+            imageSizes={sizes}
+            fetchPriority="high"
+          />
+          {mobilePhoto && (
+            <link
+              rel="preload"
+              as="image"
+              type="image/avif"
+              media={MOBILE}
+              imageSrcSet={srcSet(mobilePhoto, "avif")}
+              imageSizes={mobileSizes}
+              fetchPriority="high"
+            />
+          )}
         </>
       )}
-      <source media="(min-width: 768px)" srcSet={desktopSet} sizes={sizes} />
-      <source srcSet={mobileSet} sizes="100vw" />
-      {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes from getImageProps */}
+      {mobilePhoto && (
+        <>
+          <source media={MOBILE} type="image/avif" srcSet={srcSet(mobilePhoto, "avif")} sizes={mobileSizes} />
+          <source media={MOBILE} type="image/webp" srcSet={srcSet(mobilePhoto, "webp")} sizes={mobileSizes} />
+        </>
+      )}
+      <source type="image/avif" srcSet={srcSet(photo, "avif")} sizes={sizes} />
+      <source type="image/webp" srcSet={srcSet(photo, "webp")} sizes={sizes} />
       <img
-        {...rest}
-        fetchPriority={priority ? "high" : rest.fetchPriority}
-        style={{ ...rest.style, ...focal }}
-        className={`pv-art ${cls}`}
+        src={photo.src}
+        alt={alt ?? photo.alt}
+        sizes={sizes}
+        srcSet={srcSet(photo, "webp")}
+        loading={priority ? "eager" : "lazy"}
+        decoding={priority ? "sync" : "async"}
+        fetchPriority={priority ? "high" : undefined}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", ...style }}
+        className={`${mobilePhoto ? "pv-art " : ""}${imgClassName} ${className}`.trim()}
       />
     </picture>
   );
