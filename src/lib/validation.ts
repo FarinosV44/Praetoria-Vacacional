@@ -73,7 +73,7 @@ export const guestDetailsSchema = z.object({
     .max(30)
     .regex(/^[+()0-9\s-]+$/, "Teléfono no válido")
     .optional(),
-  acceptTerms: z.literal(true, { errorMap: () => ({ message: "Debes aceptar las condiciones" }) }),
+  acceptTerms: z.literal(true, { error: "Debes aceptar las condiciones" }),
   notes: z.string().trim().max(500).optional(),
 });
 
