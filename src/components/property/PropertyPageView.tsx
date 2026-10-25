@@ -8,13 +8,19 @@ import { BookingWidget } from "@/components/booking/BookingWidget";
 import { bookingSectionId, bookingSectionHref } from "@/domains/booking/anchor";
 import { AvailabilityNote } from "@/components/booking/AvailabilityNote";
 import { PreferProperty } from "@/components/booking/PreferProperty";
-import { RatingBadge } from "@/components/property/RatingBadge";
 import { DirectBookingCompare } from "@/components/booking/DirectBooking";
 import { ReviewsBlock } from "@/components/ReviewsBlock";
 import { FaqBlock } from "@/components/FaqBlock";
 import { landingLinksFor, guideLinksFor } from "@/domains/marketing/navigation";
 import { getRateConfig } from "@/content/rates";
-import { propertyPhotos } from "@/content/properties/photos";
+import {
+  PHOTO_KIND_LABEL,
+  photoByBase,
+  photoCaption,
+  propertyPhotos,
+  type ResponsivePhoto,
+} from "@/content/properties/photos";
+import { Picture } from "@/components/media/Picture";
 import { localizedPath, type Locale } from "@/i18n/config";
 
 const T = {
@@ -48,6 +54,10 @@ const T = {
     closingBody: "Consulta disponibilidad y precio total, sin comisiones y con confirmación inmediata.",
     closingCta: "Ver fechas y precio",
     closingContact: "Tengo una duda",
+    galleryHeading: "La casa, tal como es.",
+    upTo: "huéspedes",
+    bedroomsShort: "dormitorios",
+    sizeShort: "superficie",
   },
   en: {
     home: "Home",
@@ -79,17 +89,44 @@ const T = {
     closingBody: "Check availability and the full price — no fees, instant confirmation.",
     closingCta: "See dates & price",
     closingContact: "I have a question",
+    galleryHeading: "The apartment, as it is.",
+    upTo: "guests",
+    bedroomsShort: "bedrooms",
+    sizeShort: "floor area",
   },
 } as const;
 
-const NEARBY_ICON: Record<string, string> = {
-  beach: "🏖️",
-  ski: "⛷️",
-  transport: "🚉",
-  food: "🍽️",
-  nature: "🌿",
-  landmark: "📍",
-  airport: "✈️",
+/** Short text labels for the distances table — no emoji (#99). */
+const NEARBY_LABEL: Record<"es" | "en", Record<string, string>> = {
+  es: { beach: "Playa", ski: "Nieve", transport: "Transporte", food: "Comer", nature: "Naturaleza", landmark: "Visitar", airport: "Aeropuerto" },
+  en: { beach: "Beach", ski: "Snow", transport: "Transport", food: "Food", nature: "Nature", landmark: "Sights", airport: "Airport" },
+};
+
+/**
+ * Art direction per property (#87/#88/#100): the opening is the idyllic real
+ * view or destination, a portrait frame for phones where one exists, and a
+ * short story sequence before the apartment itself.
+ */
+const STORY: Record<string, { mobile?: string; heroAlt?: { es: string; en: string }; heading: { es: string; en: string }; lede: { es: string; en: string } }> = {
+  valencia: {
+    mobile: "vista-verano",
+    heroAlt: {
+      es: "El mar Mediterráneo y la playa de la Llastra vistos desde el apartamento",
+      en: "The Mediterranean and la Llastra beach seen from the apartment",
+    },
+    heading: { es: "Despertarse frente al Mediterráneo.", en: "Waking up facing the Mediterranean." },
+    lede: {
+      es: "Las vistas son reales: el mar cambia cada mañana al otro lado del ventanal.",
+      en: "The views are real: the sea changes every morning beyond the window.",
+    },
+  },
+  javalambre: {
+    heading: { es: "Tu base para esquiar en Javalambre.", en: "Your base for skiing Javalambre." },
+    lede: {
+      es: "Pistas amplias y suaves a unos diez minutos en coche. La nieve depende de la temporada; el refugio, no.",
+      en: "Wide, gentle slopes about ten minutes away by car. Snow depends on the season; the warm apartment doesn't.",
+    },
+  },
 };
 
 export async function PropertyPageView({ slug, locale }: { slug: string; locale: Locale }) {
@@ -97,6 +134,12 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
   if (!p) return null;
   const t = T[locale];
   const photos = propertyPhotos(slug);
+  const lang = locale === "en" ? "en" : "es";
+  const art = STORY[slug];
+  const hero = photos[0];
+  const heroMobile = art?.mobile ? photoByBase(slug, art.mobile) : undefined;
+  // Idyllic sequence: the next views / surroundings after the hero, before the apartment.
+  const story = photos.slice(1).filter((ph) => ph.kind !== "alojamiento").slice(0, 3);
   const path = (n: string) => localizedPath(locale, n);
   const links =
     locale === "es" ? [...landingLinksFor(slug), ...(await guideLinksFor(slug))] : [];
@@ -118,6 +161,52 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
           faqJsonLd(p.faq),
         ]}
       />
+      {/* Opening — the signature real view or destination, full-bleed (#87/#88) */}
+      <section className="pv-scrim on-photo relative flex h-[76svh] min-h-[520px] items-end overflow-hidden bg-[var(--color-ink)] text-white md:h-[calc(92svh-4rem)] md:max-h-[920px]">
+        {hero && (
+          <Picture
+            photo={hero}
+            mobilePhoto={heroMobile}
+            alt={heroMobile && art?.heroAlt ? art.heroAlt[lang] : undefined}
+            priority
+            sizes="100vw"
+            imgClassName="h-full w-full object-cover"
+          />
+        )}
+        <div className="container-page relative z-10 pb-8 md:pb-14">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/85">
+            {p.location.area} · {p.location.region}
+          </p>
+          <h1 className="mt-4 max-w-4xl text-[clamp(2.1rem,1.2rem+3.6vw,4.75rem)] font-semibold leading-[1] tracking-[-0.032em] !text-white">
+            {p.seo.h1}
+          </h1>
+          <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <p className="text-sm text-white/90">
+              {p.name}
+              {p.rating && (
+                <>
+                  {" · "}
+                  {p.rating.value.toLocaleString(lang, { minimumFractionDigits: 1 })} ·{" "}
+                  {t.ratingOn(p.rating.count)}
+                </>
+              )}
+            </p>
+            {hero?.kind && !heroMobile && (
+              <p className="photo-caption">
+                <span className="photo-tag">{PHOTO_KIND_LABEL[lang][hero.kind]}</span>
+                {photoCaption(hero, lang)}
+              </p>
+            )}
+            {heroMobile && (
+              <p className="photo-caption">
+                <span className="photo-tag">{PHOTO_KIND_LABEL[lang].vista}</span>
+                {lang === "en" ? "From the apartment" : "Desde el apartamento"}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
       <Breadcrumbs
         items={[
           { name: t.home, path: path("/") },
@@ -125,48 +214,49 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         ]}
       />
 
-      <header className="container-page pt-4">
-        <p className="eyebrow">
-          {p.location.area} · {p.location.region}
-        </p>
-        <h1 className="mt-2 display-2">{p.seo.h1}</h1>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--color-ink-soft)]">
-          <RatingBadge rating={p.rating} locale={locale} />
-          <span>{p.headlineDistance.label} · {p.headlineDistance.value}</span>
-        </div>
-        <p className="lede mt-3 max-w-2xl">{p.shortIntro}</p>
-        <AvailabilityNote propertySlug={p.slug} locale={locale === "en" ? "en" : "es"} />
-      </header>
-
-      <Gallery photos={photos} name={p.name} />
-
-      {/* Impact block — the single most persuasive line, in frame at a glance (#87/#88) */}
-      <div className="container-page mt-6">
-        <ul className="pv-card pv-card--accent flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3.5 text-sm font-medium">
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
-            {p.headlineDistance.value} · {p.headlineDistance.label.toLowerCase()}
-          </li>
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
-            {locale === "en" ? "Up to" : "Hasta"} {p.capacity.guests}{" "}
-            {locale === "en" ? "guests" : "huéspedes"}
-          </li>
-          <li className="flex items-center gap-2">
-            <span aria-hidden className="text-[var(--accent-600)]">◆</span>
-            {p.capacity.bedrooms} {locale === "en" ? "bedrooms" : "habitaciones"}
-          </li>
-          {p.capacity.sizeSqm && (
-            <li className="flex items-center gap-2">
-              <span aria-hidden className="text-[var(--accent-600)]">◆</span>
-              {p.capacity.sizeSqm} m²
-            </li>
-          )}
-        </ul>
-      </div>
-
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px] lg:gap-14">
-        <div className="space-y-12">
+        <div className="min-w-0 space-y-16">
+          {/* Impact figures — the essentials at a glance (#87/#88) */}
+          <section aria-label={t.theProperty}>
+            <dl className="grid grid-cols-2 border-t border-[var(--color-ink)] sm:grid-cols-4">
+              <Fact
+                value={p.headlineDistance.value.split(" ").slice(0, 2).join(" ")}
+                label={
+                  p.experience === "ski"
+                    ? `${p.headlineDistance.label}, ${p.headlineDistance.value.split(" ").slice(2).join(" ")}`
+                    : p.headlineDistance.label
+                }
+              />
+              <Fact value={String(p.capacity.guests)} label={t.upTo} />
+              <Fact value={String(p.capacity.bedrooms)} label={t.bedroomsShort} />
+              {p.capacity.sizeSqm && <Fact value={`${p.capacity.sizeSqm} m²`} label={t.sizeShort} />}
+            </dl>
+            <p className="mt-8 max-w-2xl text-[clamp(1.1rem,1rem+0.45vw,1.4rem)] leading-relaxed">{p.shortIntro}</p>
+            <AvailabilityNote propertySlug={p.slug} locale={lang} />
+          </section>
+
+          {/* Story — real views and destination first, before the rooms (#100/#103) */}
+          {art && story.length > 0 && (
+            <section aria-labelledby="story-heading">
+              <h2 id="story-heading" className="display-2 max-w-2xl">
+                {art.heading[lang]}
+              </h2>
+              <p className="lede mt-4 max-w-xl">{art.lede[lang]}</p>
+              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {story.map((ph, i) => (
+                  <StoryFigure key={ph.base} photo={ph} lang={lang} wide={i === 0} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section aria-labelledby="gallery-heading">
+            <h2 id="gallery-heading" className="display-3">
+              {t.galleryHeading}
+            </h2>
+            <Gallery photos={photos} name={p.name} locale={lang} />
+          </section>
+
           {/* Quick facts */}
           <section aria-labelledby="cap-heading">
             <h2 id="cap-heading" className="display-3">
@@ -174,7 +264,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
             </h2>
             <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {facts.map(([label, value]) => (
-                <div key={label} className="pv-card !p-4">
+                <div key={label} className="border-t border-[var(--color-line)] pt-3">
                   <dt className="text-xs text-[var(--color-ink-soft)]">{label}</dt>
                   <dd className="mt-1 font-medium">{value}</dd>
                 </div>
@@ -190,17 +280,9 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
               </h2>
               <ul className="mt-4 grid gap-4 sm:grid-cols-2">
                 {p.highlights.map((h) => (
-                  <li
-                    key={h.title}
-                    className="pv-card !p-4"
-                  >
-                    <p className="flex items-start gap-2 font-medium">
-                      <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
-                        ◆
-                      </span>
-                      {h.title}
-                    </p>
-                    <p className="mt-1.5 pl-6 text-sm text-[var(--color-ink-soft)]">{h.body}</p>
+                  <li key={h.title} className="border-t border-[var(--color-line)] pt-4">
+                    <p className="font-semibold">{h.title}</p>
+                    <p className="mt-1.5 text-sm text-[var(--color-ink-soft)]">{h.body}</p>
                   </li>
                 ))}
               </ul>
@@ -262,10 +344,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
                   <p className="text-sm font-semibold text-[var(--color-ink)]">{g.category}</p>
                   <ul className="mt-2 space-y-1.5 text-sm text-[var(--color-ink-soft)]">
                     {g.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <span aria-hidden className="mt-0.5 text-[var(--accent-600)]">
-                          ✓
-                        </span>
+                      <li key={item} className="flex items-start gap-2 before:mt-px before:text-[var(--color-ink-faint)] before:content-['—']">
                         {item}
                       </li>
                     ))}
@@ -321,8 +400,8 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
                 {p.nearby.map((n) => (
                   <tr key={n.name} className="border-b border-[var(--color-line)]">
                     <td className="py-2 pr-4">
-                      <span aria-hidden className="mr-2">
-                        {NEARBY_ICON[n.category]}
+                      <span className="mr-3 inline-block w-24 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
+                        {NEARBY_LABEL[lang][n.category] ?? n.category}
                       </span>
                       {n.name}
                     </td>
@@ -372,7 +451,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
                       href={l.path}
                       className="pv-card pv-card--interactive block !p-4 text-sm font-medium"
                     >
-                      {l.label} <span aria-hidden className="text-[var(--accent-600)]">→</span>
+                      {l.label} <span aria-hidden>→</span>
                     </Link>
                   </li>
                 ))}
@@ -422,7 +501,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
         </div>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-white/95 p-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-line)] bg-[var(--color-paper)]/95 p-3 backdrop-blur-sm lg:hidden">
         <a href={bookingSectionHref(p.slug)} className="pv-btn pv-btn--primary pv-btn--block">
           {t.stickyCta}
         </a>
@@ -437,5 +516,33 @@ function Row({ label, value }: { label: string; value: string }) {
       <dt className="shrink-0 text-[var(--color-ink-soft)]">{label}</dt>
       <dd className="sm:text-right">{value}</dd>
     </div>
+  );
+}
+
+function Fact({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col-reverse border-b border-[var(--color-line)] py-4 pr-3">
+      <dt className="mt-1.5 text-xs leading-snug text-[var(--color-ink-soft)]">{label}</dt>
+      <dd className="text-[clamp(1.4rem,1.1rem+1vw,2.1rem)] font-semibold leading-none tracking-[-0.03em]">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function StoryFigure({ photo, lang, wide }: { photo: ResponsivePhoto; lang: "es" | "en"; wide: boolean }) {
+  const ratio = photo.aspect < 1 ? "aspect-[3/4]" : "aspect-[4/3]";
+  return (
+    <figure className={wide ? "col-span-2 sm:col-span-1" : ""}>
+      <div className={`relative overflow-hidden bg-[var(--color-mist)] ${ratio}`}>
+        <Picture photo={photo} sizes="(max-width: 640px) 100vw, 30vw" imgClassName="h-full w-full object-cover" />
+      </div>
+      {photo.kind && (
+        <figcaption className="photo-caption mt-3">
+          <span className="photo-tag">{PHOTO_KIND_LABEL[lang][photo.kind]}</span>
+          {photoCaption(photo, lang)}
+        </figcaption>
+      )}
+    </figure>
   );
 }

@@ -1,10 +1,10 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { Picture } from "@/components/media/Picture";
-import { RatingBadge } from "@/components/property/RatingBadge";
-import type { ResponsivePhoto } from "@/content/properties/photos";
+import {
+  PHOTO_KIND_LABEL,
+  photoCaption,
+  type ResponsivePhoto,
+} from "@/content/properties/photos";
 import { localizedPath, type Locale } from "@/i18n/config";
 
 export interface ExperienceOption {
@@ -12,21 +12,22 @@ export interface ExperienceOption {
   experience: "ski" | "sea";
   name: string;
   area: string;
-  region: string;
-  intro: string;
   photo: ResponsivePhoto | undefined;
-  rating: { value: number; count: number; source: "booking" } | null;
-  headline: { label: string; value: string };
 }
 
 const STR = {
-  es: { sea: "Mar", ski: "Nieve", discover: (n: string) => `Ver ${n}`, chooseYour: "Elige tu escapada" },
-  en: { sea: "Sea", ski: "Snow", discover: (n: string) => `View ${n}`, chooseYour: "Choose your getaway" },
+  es: { sea: "Mar", ski: "Montaña", explore: "Explorar", label: "Elige tu escapada" },
+  en: { sea: "Sea", ski: "Mountains", explore: "Explore", label: "Choose your getaway" },
 } as const;
 
 /**
- * MAR / NIEVE visual selector (issue #86 §5). Two large editorial panels, one
- * tap to switch, real photos and rating. Premium, not themed-cartoonish.
+ * MAR / MONTAÑA diptych (issues #86 §5 and #101, creative direction 2026).
+ *
+ * The two worlds share the first screen as equals: two full-height photographic
+ * panels, each a single link to its property, with the exact property name, a
+ * truthful place label and a caption saying what the photo shows. Server
+ * rendered — no client state, nothing to hydrate. On phones the panels stack so
+ * neither destination hides behind a carousel or a tab.
  */
 export function ExperienceSelector({
   options,
@@ -35,74 +36,48 @@ export function ExperienceSelector({
   options: ExperienceOption[];
   locale?: Locale;
 }) {
-  const t = STR[locale === "en" ? "en" : "es"];
-  const [active, setActive] = useState<"sea" | "ski">(options[0]?.experience ?? "sea");
-  const current = options.find((o) => o.experience === active) ?? options[0];
-  if (!current) return null;
+  const lang = locale === "en" ? "en" : "es";
+  const t = STR[lang];
 
   return (
-    <section aria-label={t.chooseYour} className="container-page section-y-tight">
-      <div className="mx-auto flex w-fit rounded-full bg-[var(--color-mist)] p-1 text-sm shadow-[inset_0_0_0_1px_var(--color-line)]">
-        {options.map((o) => (
-          <button
-            key={o.slug}
-            type="button"
-            data-experience={o.experience}
-            aria-pressed={active === o.experience}
-            onClick={() => setActive(o.experience)}
-            className={`rounded-full px-6 py-2 font-medium transition-all ${
-              active === o.experience
-                ? "bg-[var(--accent-600)] text-white shadow-[var(--shadow-sm)]"
-                : "text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]"
-            }`}
+    <ul aria-label={t.label} className="grid md:h-full md:grid-cols-2">
+      {options.map((o, i) => (
+        <li key={o.slug} data-experience={o.experience} className="relative">
+          <Link
+            href={localizedPath(locale, `/${o.slug}`)}
+            className="pv-zoom pv-scrim on-photo group relative flex h-[42svh] min-h-[300px] flex-col justify-end overflow-hidden bg-[var(--color-ink)] text-white md:h-full md:min-h-[560px]"
           >
-            <span aria-hidden className="mr-1.5">
-              {o.experience === "ski" ? "❄" : "☀"}
+            {o.photo && (
+              <Picture
+                photo={o.photo}
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                imgClassName="h-full w-full object-cover"
+              />
+            )}
+            <span className="relative z-10 block px-5 pb-5 md:px-[clamp(2rem,4.4vw,4rem)] md:pb-28">
+              <span className="block text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/85">
+                {o.experience === "sea" ? t.sea : t.ski} · {o.area}
+              </span>
+              <span className="mt-2 block text-[clamp(1.4rem,1rem+1.3vw,2.1rem)] font-semibold leading-tight tracking-[-0.02em]">
+                {o.name}
+              </span>
+              <span className="mt-3 inline-flex items-center gap-2 border-b border-white/80 pb-0.5 text-sm font-semibold">
+                {t.explore} <span aria-hidden>→</span>
+              </span>
+              {o.photo?.caption && o.photo.kind && (
+                <span className="photo-caption mt-4">
+                  <span className="photo-tag">{PHOTO_KIND_LABEL[lang][o.photo.kind]}</span>
+                  {photoCaption(o.photo, lang)}
+                </span>
+              )}
             </span>
-            {o.experience === "ski" ? t.ski : t.sea}
-          </button>
-        ))}
-      </div>
-
-      <div
-        key={current.slug}
-        data-experience={current.experience}
-        className="pv-card pv-card--soft pv-swap-in mt-6 grid items-stretch gap-0 overflow-hidden !p-0 md:grid-cols-2"
-      >
-        <div className="relative min-h-[260px] md:min-h-[400px]">
-          {current.photo && (
-            <Picture
-              photo={current.photo}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              imgClassName="h-full w-full object-cover"
-            />
-          )}
-        </div>
-        <div className="flex flex-col justify-center p-7 sm:p-10">
-          <p className="eyebrow">
-            {current.area} · {current.region}
-          </p>
-          <h2 className="mt-2 display-3">{current.name}</h2>
-          <div className="mt-2">
-            <RatingBadge rating={current.rating} locale={locale} size="xs" />
-          </div>
-          <p className="lede mt-3">{current.intro}</p>
-          <p className="mt-3 text-sm font-medium">
-            {current.headline.label} · {current.headline.value}
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href={localizedPath(locale, `/${current.slug}`)}
-              className="pv-btn pv-btn--primary"
-            >
-              {t.discover(current.name)}
-            </Link>
-            <a href="#buscador" className="pv-btn pv-btn--secondary">
-              {locale === "en" ? "Check dates" : "Comprobar fechas"}
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
+            {i === 0 && (
+              <span aria-hidden className="absolute inset-y-0 right-0 z-10 hidden w-px bg-white/20 md:block" />
+            )}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

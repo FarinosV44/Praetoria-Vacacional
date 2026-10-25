@@ -29,7 +29,7 @@ export function LanguageSwitcher() {
       href={target}
       hrefLang={isEn ? "es" : "en"}
       aria-label={`Ver en ${otherName}`}
-      className="inline-flex h-10 items-center rounded-full px-3 text-xs font-semibold text-[var(--color-ink-soft)] ring-1 ring-[var(--color-line)] hover:text-[var(--accent-700)]"
+      className="inline-flex h-11 items-center px-1 text-xs font-semibold tracking-[0.12em] text-[var(--color-ink)] underline-offset-4 hover:underline"
     >
       {otherLabel}
     </Link>

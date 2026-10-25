@@ -3,8 +3,10 @@
 /* =============================================================================
  * Praetoria Vacacional — Design System V4 (issues #2, #24, #77)
  *
- * One visual system, two personalities: `sea` (Mediterranean, warm) and `ski`
- * (mountain, cool). Experience theming is applied with `data-experience` on a
+ * One visual system, two personalities: `sea` (Mediterranean, petrol + sand)
+ * and `ski` (mountain, pine + stone). Creative direction 2026 (#99): Swiss-modern
+ * neo-grotesk typography (Inter with optical sizing, single family), warm ivory
+ * paper, graphite ink, square corners, hairlines instead of shadows. Experience theming is applied with `data-experience` on a
  * wrapper element, which remaps the --accent-* tokens.
  *
  * Layers:
@@ -21,38 +23,37 @@
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-display: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-  /* Ink & paper --------------------------------------------------------------- */
-  --color-ink: oklch(0.20 0.02 260);
-  /* ink-soft and ink-faint both clear WCAG AA (4.5:1) on white for body/small text. */
-  --color-ink-soft: oklch(0.42 0.02 260);
-  --color-ink-faint: oklch(0.46 0.016 260);
-  --color-paper: oklch(0.994 0.004 250);
-  --color-paper-warm: oklch(0.985 0.012 80);
-  --color-mist: oklch(0.972 0.006 250);
-  --color-line: oklch(0.912 0.008 260);
-  --color-line-soft: oklch(0.948 0.006 260);
+  /* Ink & paper — warm ivory foundation (#99). All text tones ≥ 4.5:1 on ivory. */
+  --color-ink: #202827;
+  --color-ink-soft: #4a5250;
+  --color-ink-faint: #5b6361;
+  --color-paper: #f7f5f0;
+  --color-paper-warm: #f3efe7;
+  --color-mist: #efece5;
+  --color-line: #ddd8ce;
+  --color-line-soft: #e8e4db;
 
-  /* Sea (Mediterranean) — 600 is the CTA background, ≥ 4.5:1 with white ------- */
-  --color-sea-50: oklch(0.962 0.028 225);
-  --color-sea-100: oklch(0.92 0.045 228);
-  --color-sea-400: oklch(0.66 0.13 233);
-  --color-sea-500: oklch(0.585 0.132 236);
-  --color-sea-600: oklch(0.492 0.118 239);
-  --color-sea-700: oklch(0.405 0.098 241);
-  --color-sea-800: oklch(0.33 0.075 243);
-  --color-sea-accent: oklch(0.80 0.135 84);
+  /* Sea (Mediterranean) — petrol #285D63 is 600, the CTA background (7:1 on white). */
+  --color-sea-50: #e5f0ef;
+  --color-sea-100: #cfe3e1;
+  --color-sea-400: #5e9097;
+  --color-sea-500: #3f767c;
+  --color-sea-600: #285d63;
+  --color-sea-700: #1f4b50;
+  --color-sea-800: #18393d;
+  --color-sea-accent: #c4ab8b; /* sand */
 
-  /* Ski (mountain) ---------------------------------------------------------- */
-  --color-ski-50: oklch(0.962 0.02 250);
-  --color-ski-100: oklch(0.92 0.035 255);
-  --color-ski-400: oklch(0.60 0.12 261);
-  --color-ski-500: oklch(0.525 0.118 262);
-  --color-ski-600: oklch(0.45 0.108 264);
-  --color-ski-700: oklch(0.378 0.088 267);
-  --color-ski-800: oklch(0.31 0.07 269);
-  --color-ski-accent: oklch(0.73 0.115 205);
+  /* Ski (mountain) — dark pine #304B43 is 600 (9:1 on white). */
+  --color-ski-50: #eef2f0;
+  --color-ski-100: #d9e3de;
+  --color-ski-400: #6b8a80;
+  --color-ski-500: #4a6a60;
+  --color-ski-600: #304b43;
+  --color-ski-700: #263d36;
+  --color-ski-800: #1c2e29;
+  --color-ski-accent: #aaa79b; /* stone */
 
   /* Semantic — the base colours double as AA text on white (≥ 4.5:1). */
   --color-success: oklch(0.47 0.11 155);
@@ -63,11 +64,12 @@
   --color-danger-50: oklch(0.96 0.03 25);
 
   /* Radii ------------------------------------------------------------------- */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-card: 1rem; /* legacy alias, kept */
+  /* Near-square corners: editorial, not app-like (#99). */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-card: 3px; /* legacy alias, kept */
   --radius-pill: 999px;
 
   /* Elevation — soft, layered, tinted with ink ------------------------------ */
@@ -83,9 +85,9 @@
   --dur-mid: 200ms;
 
   /* Fluid type scale ------------------------------------------------------- */
-  --text-display-1: clamp(2.25rem, 1.4rem + 4.2vw, 4rem);
-  --text-display-2: clamp(1.9rem, 1.35rem + 2.6vw, 3rem);
-  --text-display-3: clamp(1.55rem, 1.25rem + 1.4vw, 2.25rem);
+  --text-display-1: clamp(2.5rem, 1.2rem + 5.4vw, 6rem);
+  --text-display-2: clamp(2rem, 1.25rem + 3vw, 3.75rem);
+  --text-display-3: clamp(1.55rem, 1.2rem + 1.5vw, 2.4rem);
   --text-title: clamp(1.3rem, 1.15rem + 0.7vw, 1.6rem);
 
   /* Section vertical rhythm --------------------------------------------------- */
@@ -138,8 +140,8 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 550;
-    letter-spacing: -0.014em;
+    font-weight: 600;
+    letter-spacing: -0.018em;
     text-wrap: balance;
     color: var(--color-ink);
   }
@@ -173,46 +175,59 @@
 
 @utility container-page {
   width: 100%;
-  max-width: 76rem;
+  max-width: 84rem;
   margin-inline: auto;
-  padding-inline: 1.25rem;
-}
-@media (min-width: 640px) {
-  .container-page {
-    padding-inline: 2rem;
-  }
+  padding-inline: clamp(1.25rem, 4.4vw, 4rem);
 }
 
 @utility eyebrow {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent-700);
+}
+
+/* Photo caption with a truthful kind tag — "Vista real", "Alojamiento", "Entorno" (#100). */
+@utility photo-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-ink-soft);
+}
+@utility photo-tag {
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink);
 }
 
 /* Fluid display headings — pair with font-display. */
 @utility display-1 {
   font-family: var(--font-display);
   font-size: var(--text-display-1);
-  line-height: 1.04;
-  letter-spacing: -0.02em;
-  font-weight: 550;
+  line-height: 0.96;
+  letter-spacing: -0.036em;
+  font-weight: 600;
 }
 @utility display-2 {
   font-family: var(--font-display);
   font-size: var(--text-display-2);
-  line-height: 1.1;
-  letter-spacing: -0.018em;
-  font-weight: 550;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 @utility display-3 {
   font-family: var(--font-display);
   font-size: var(--text-display-3);
-  line-height: 1.16;
-  letter-spacing: -0.014em;
-  font-weight: 550;
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  font-weight: 600;
 }
 
 /* Lead paragraph under a heading. */
@@ -240,9 +255,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    border-radius: var(--radius-pill);
-    font-weight: 550;
+    gap: 0.6rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    letter-spacing: 0.01em;
     line-height: 1;
     white-space: nowrap;
     text-align: center;
@@ -254,9 +270,21 @@
       border-color var(--dur-fast) var(--ease-out),
       transform var(--dur-fast) var(--ease-out);
     /* md size default */
-    height: 2.75rem;
-    padding-inline: 1.35rem;
+    height: 3rem;
+    padding-inline: 1.5rem;
     font-size: 0.9375rem;
+  }
+  /* Long labels ("Elegir fechas en Valencia Frente al Mar") wrap on small phones
+     instead of pushing the page sideways. */
+  .pv-btn { max-width: 100%; }
+  @media (max-width: 479px) {
+    .pv-btn {
+      height: auto;
+      min-height: 3rem;
+      padding-block: 0.75rem;
+      white-space: normal;
+      line-height: 1.25;
+    }
   }
   .pv-btn:active {
     transform: scale(0.98);
@@ -271,36 +299,39 @@
   }
 
   .pv-btn--sm { height: 2.25rem; padding-inline: 1rem; font-size: 0.875rem; }
-  .pv-btn--lg { height: 3.25rem; padding-inline: 1.9rem; font-size: 1rem; }
+  .pv-btn--lg { height: 3.5rem; padding-inline: 2rem; font-size: 1rem; }
   .pv-btn--block { width: 100%; }
 
   .pv-btn--primary {
     background: var(--accent-600);
     color: var(--accent-contrast);
-    box-shadow: var(--shadow-sm);
   }
   .pv-btn--primary:hover {
-    background: var(--accent-700);
-    box-shadow: var(--shadow-md);
+    background: var(--accent-800);
   }
+  /* Graphite — the neutral primary used where no destination is chosen yet. */
+  .pv-btn--ink {
+    background: var(--color-ink);
+    color: #fff;
+  }
+  .pv-btn--ink:hover { background: #000; }
 
   .pv-btn--secondary {
-    background: #fff;
+    background: transparent;
     color: var(--color-ink);
-    box-shadow: inset 0 0 0 1px var(--color-line);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
   }
   .pv-btn--secondary:hover {
-    color: var(--accent-700);
-    box-shadow: inset 0 0 0 1px var(--accent-500);
+    background: var(--color-ink);
+    color: #fff;
   }
 
   /* On dark / photographic backgrounds. */
   .pv-btn--ondark {
     background: #fff;
-    color: var(--accent-800);
-    box-shadow: var(--shadow-md);
+    color: var(--color-ink);
   }
-  .pv-btn--ondark:hover { background: #fff; box-shadow: var(--shadow-lg); }
+  .pv-btn--ondark:hover { background: var(--color-paper); }
   .pv-btn--ondark-ghost {
     background: transparent;
     color: #fff;
@@ -321,7 +352,7 @@
 
   /* --- Cards ------------------------------------------------------------- */
   .pv-card {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     background: #fff;
     box-shadow: inset 0 0 0 1px var(--color-line);
   }
@@ -336,8 +367,7 @@
       border-color var(--dur-mid) var(--ease-out);
   }
   .pv-card--interactive:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-3px);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
   }
   @media (prefers-reduced-motion: reduce) {
     .pv-card--interactive:hover { transform: none; }
@@ -391,7 +421,7 @@
   .pv-select:focus-visible,
   .pv-textarea:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 1.5px var(--accent-600), 0 0 0 3px var(--accent-100);
+    box-shadow: inset 0 0 0 2px var(--accent-600);
   }
   .pv-select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23667' stroke-width='1.4'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
@@ -408,8 +438,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    border-radius: var(--radius-pill);
-    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.75rem;
     font-size: 0.8125rem;
     line-height: 1;
     box-shadow: inset 0 0 0 1px var(--color-line);
@@ -586,4 +616,32 @@
   border: 0;
   border-top: 1px solid var(--color-line);
   margin-block: 2em;
+}
+
+/* =============================================================================
+ * Creative direction 2026 — photography helpers (#100/#101)
+ * ========================================================================== */
+/* Art-directed <picture>: focal point per breakpoint (see components/media/Picture). */
+.pv-art { object-position: var(--pv-focal-m, 50% 50%); }
+@media (min-width: 768px) {
+  .pv-art { object-position: var(--pv-focal-d, 50% 50%); }
+}
+/* Legibility scrim for text on photographs — bottom-weighted, no decorative gradient. */
+.pv-scrim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(14 20 19 / 0.72) 0%, rgb(14 20 19 / 0.22) 42%, rgb(14 20 19 / 0) 64%, rgb(14 20 19 / 0.28) 100%);
+}
+.on-photo .photo-caption, .on-photo .photo-tag { color: rgb(255 255 255 / 0.9); }
+/* Slow, quiet zoom on photographic links — never on reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .pv-zoom img { transition: transform 1.2s var(--ease-out); }
+  .pv-zoom:hover img, .pv-zoom:focus-visible img { transform: scale(1.03); }
+}
+/* Snowfields are much brighter than sea and sky — give white text a deeper base. */
+[data-experience="ski"] .pv-scrim::after,
+.pv-scrim[data-experience="ski"]::after {
+  background: linear-gradient(to top, rgb(14 20 19 / 0.8) 0%, rgb(14 20 19 / 0.45) 48%, rgb(14 20 19 / 0.08) 72%, rgb(14 20 19 / 0.3) 100%);
 }
