@@ -22,17 +22,25 @@ export interface ResponsivePhoto {
   focal?: string;
   /** Optional grouping for a categorised gallery ("vistas", "salon", …). */
   category?: string;
+  /** What the picture truthfully shows (issue #100): a view taken FROM the
+   *  apartment, the apartment itself, or the surroundings. Drives the visible
+   *  caption tag so destination shots are never passed off as the property. */
+  kind?: PhotoKind;
+  /** Short visible caption (ES / EN). */
+  caption?: string;
+  captionEn?: string;
+  /** "owner" = supplied directly by the owner, otherwise the Booking listing. */
+  source?: string;
 }
 
-type ManifestEntry = {
-  base: string;
-  alt: string;
-  order: number;
-  aspect: number;
-  widths: number[];
-  focal?: string;
-  category?: string;
+export type PhotoKind = "vista" | "alojamiento" | "entorno";
+
+export const PHOTO_KIND_LABEL: Record<"es" | "en", Record<PhotoKind, string>> = {
+  es: { vista: "Vista real", alojamiento: "Alojamiento", entorno: "Entorno" },
+  en: { vista: "Actual view", alojamiento: "Apartment", entorno: "Surroundings" },
 };
+
+type ManifestEntry = Omit<ResponsivePhoto, "dir" | "src">;
 
 const M = manifest as Record<string, ManifestEntry[]>;
 
@@ -55,6 +63,15 @@ export function hasRealPhotos(slug: string): boolean {
 
 export function heroPhoto(slug: string): ResponsivePhoto | undefined {
   return propertyPhotos(slug)[0];
+}
+
+/** Find one photo by its file stem. */
+export function photoByBase(slug: string, base: string): ResponsivePhoto | undefined {
+  return propertyPhotos(slug).find((p) => p.base === base);
+}
+
+export function photoCaption(photo: ResponsivePhoto, locale: "es" | "en"): string | undefined {
+  return locale === "en" ? (photo.captionEn ?? photo.caption) : photo.caption;
 }
 
 /** srcset string for one format at the photo's available widths. */

@@ -1,49 +1,47 @@
 import Link from "next/link";
 import { getAllProperties } from "@/domains/properties/registry";
-import { ButtonLink } from "@/components/ui/Button";
-import { LogoMark } from "./Logo";
+import { Wordmark } from "./Logo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileMenu } from "./MobileMenu";
 
+/** Destination label shown instead of the old ☀/❄ emoji (#99). */
+const WORLD = { sea: "Mar", ski: "Montaña" } as const;
+
 export function SiteHeader() {
-  const properties = getAllProperties();
+  // Sea first, mountain second — the same reading order as the home diptych.
+  const properties = [...getAllProperties()].sort((a, b) =>
+    a.experience === b.experience ? 0 : a.experience === "sea" ? -1 : 1,
+  );
   const menuItems = [
     ...properties.map((p) => ({
       href: `/${p.slug}`,
       label: p.name,
-      icon: p.experience === "ski" ? "❄" : "☀",
+      kicker: WORLD[p.experience],
     })),
-    { href: "/guias", label: "Guías", icon: "🧭" },
-    { href: "/blog", label: "Blog", icon: "📰" },
-    { href: "/contacto", label: "Contacto", icon: "✉" },
+    { href: "/guias", label: "Guías de destino" },
+    { href: "/blog", label: "Blog" },
+    { href: "/contacto", label: "Contacto" },
   ];
 
   const navLink =
-    "rounded-full px-3 py-2 text-sm text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--accent-50)] hover:text-[var(--accent-700)]";
+    "relative py-2 text-[0.8125rem] font-medium tracking-[0.04em] text-[var(--color-ink)] after:absolute after:inset-x-0 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-transform hover:after:scale-x-100 motion-reduce:after:transition-none";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-paper)]/85 backdrop-blur-md">
-      <div className="container-page flex h-16 items-center justify-between gap-3">
-        <Link
-          href="/"
-          className="flex min-w-0 items-center gap-2 font-display text-base tracking-tight text-[var(--color-ink)]"
-        >
-          <LogoMark className="h-6 w-6 shrink-0 text-[var(--accent-600)]" />
-          <span className="truncate">
-            Praetoria&nbsp;<span className="text-[var(--accent-600)]">Vacacional</span>
-          </span>
+    <header className="sticky top-0 z-40 border-b border-[var(--color-line)] bg-[var(--color-paper)]/95 backdrop-blur-sm">
+      <div className="container-page flex h-16 items-center justify-between gap-4">
+        <Link href="/" aria-label="Praetoria Vacacional, inicio" className="min-w-0 text-[var(--color-ink)]">
+          <Wordmark />
         </Link>
 
-        <nav aria-label="Alojamientos" className="hidden items-center gap-0.5 md:flex">
+        <nav aria-label="Principal" className="hidden items-center gap-8 lg:flex">
           {properties.map((p) => (
             <Link
               key={p.slug}
               href={`/${p.slug}`}
-              data-experience={p.experience}
-              className={`inline-flex items-center gap-1.5 ${navLink}`}
+              aria-label={`${WORLD[p.experience]}: ${p.name}`}
+              className={navLink}
             >
-              <span aria-hidden>{p.experience === "ski" ? "❄" : "☀"}</span>
-              {p.name.split(" ")[0]}
+              {WORLD[p.experience]}
             </Link>
           ))}
           <Link href="/guias" className={navLink}>
@@ -54,11 +52,11 @@ export function SiteHeader() {
           </Link>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           <LanguageSwitcher />
-          <ButtonLink href="/#buscador" size="sm" className="hidden md:inline-flex">
-            Ver disponibilidad
-          </ButtonLink>
+          <Link href="/#buscador" className="pv-btn pv-btn--ink pv-btn--sm hidden md:inline-flex">
+            Consultar fechas
+          </Link>
           <MobileMenu items={menuItems} />
         </div>
       </div>

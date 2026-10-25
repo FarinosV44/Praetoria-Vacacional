@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import { Inter } from "next/font/google";
 import { publicEnv } from "@/lib/env";
 import { absoluteUrl, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -10,12 +10,14 @@ import { Analytics } from "@/components/Analytics";
 import { ExperimentTracker } from "@/components/ExperimentTracker";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
+// One neo-grotesk family for brand, headlines and text (creative direction 2026,
+// #99). Inter is OFL-licensed; the optical-size axis gives Helvetica-like display
+// cuts at headline sizes without shipping a second font.
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-inter",
   display: "swap",
-  weight: ["400", "500", "600"],
+  axes: ["opsz"],
 });
 
 export const metadata: Metadata = {
@@ -43,13 +45,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1f3a6b",
+  themeColor: "#202827",
   colorScheme: "light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="es" className={inter.variable}>
       <body className="min-h-dvh antialiased">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <SiteChrome

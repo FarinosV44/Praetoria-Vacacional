@@ -60,5 +60,5 @@ test("mobile menu opens and exposes navigation + booking CTA at 375px", async ({
   await page.getByRole("button", { name: /abrir menú/i }).click();
   const panel = page.locator("#mobile-menu-panel");
   await expect(panel.getByRole("link", { name: /valencia frente al mar/i })).toBeVisible();
-  await expect(panel.getByRole("link", { name: /ver disponibilidad/i })).toBeVisible();
+  await expect(panel.getByRole("link", { name: /consultar fechas/i })).toBeVisible();
 });
