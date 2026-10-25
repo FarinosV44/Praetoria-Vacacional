@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ResponsivePhoto } from "@/content/properties/photos";
+import { photoCaption, type PhotoKind, type ResponsivePhoto } from "@/content/properties/photos";
 
 /**
  * Full-screen, keyboard-navigable gallery (issue #17/#38). Mounts only when
@@ -12,12 +12,17 @@ export function GalleryLightbox({
   name,
   openIndex,
   onClose,
+  kindLabels,
+  locale = "es",
 }: {
   photos: ResponsivePhoto[];
   name: string;
   openIndex: number | null;
   onClose: () => void;
+  kindLabels?: Record<PhotoKind, string>;
+  locale?: "es" | "en";
 }) {
+  const en = locale === "en";
   const [index, setIndex] = useState(openIndex ?? 0);
 
   useEffect(() => {
@@ -74,9 +79,9 @@ export function GalleryLightbox({
         </span>
         <button
           onClick={onClose}
-          className="rounded-full px-3 py-1 text-sm ring-1 ring-white/40 hover:bg-white/10"
+          className="px-3 py-2 text-sm font-semibold ring-1 ring-white/40 hover:bg-white/10"
         >
-          Cerrar ✕
+          {en ? "Close" : "Cerrar"}
         </button>
       </div>
 
@@ -87,8 +92,8 @@ export function GalleryLightbox({
       >
         <button
           onClick={prev}
-          aria-label="Anterior"
-          className="absolute left-2 z-10 h-12 w-12 rounded-full bg-white/10 text-2xl text-white hover:bg-white/20"
+          aria-label={en ? "Previous photo" : "Foto anterior"}
+          className="absolute left-2 z-10 h-12 w-12 bg-white/10 text-2xl text-white hover:bg-white/20"
         >
           ‹
         </button>
@@ -100,13 +105,20 @@ export function GalleryLightbox({
         />
         <button
           onClick={next}
-          aria-label="Siguiente"
-          className="absolute right-2 z-10 h-12 w-12 rounded-full bg-white/10 text-2xl text-white hover:bg-white/20"
+          aria-label={en ? "Next photo" : "Foto siguiente"}
+          className="absolute right-2 z-10 h-12 w-12 bg-white/10 text-2xl text-white hover:bg-white/20"
         >
           ›
         </button>
       </div>
-      <p className="pb-4 text-center text-sm text-white/70">{photo.alt}</p>
+      <p className="px-4 pb-5 text-center text-sm text-white/80">
+        {photo.kind && kindLabels && (
+          <span className="mr-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-white">
+            {kindLabels[photo.kind]}
+          </span>
+        )}
+        {photoCaption(photo, locale) ?? photo.alt}
+      </p>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllProperties } from "@/domains/properties/registry";
-import { LogoMark } from "./Logo";
+import { Wordmark } from "./Logo";
 import { company, companyAddressOneLine } from "@/content/company";
 
 const legal = [
@@ -11,24 +11,24 @@ const legal = [
 ];
 
 const colHead =
-  "text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-faint)]";
+  "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60";
 const colLink =
-  "block py-1.5 text-sm text-[var(--color-ink-soft)] transition-colors hover:text-[var(--accent-700)]";
+  "block py-1.5 text-sm text-white/85 underline-offset-4 hover:text-white hover:underline";
 
 export function SiteFooter() {
   const properties = getAllProperties();
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-[var(--color-line)] bg-white">
-      <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="bg-[var(--color-ink)] text-white/80">
+      <div className="container-page grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:py-20">
         <div>
-          <p className="flex items-center gap-2 font-display text-lg">
-            <LogoMark className="h-5 w-5 text-[var(--accent-600)]" />
-            Praetoria Vacacional
+          <p className="text-white">
+            <Wordmark />
+            <span className="sr-only">Praetoria Vacacional</span>
           </p>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-[var(--color-ink-soft)]">
-            Reserva directa en alojamientos de playa y montaña. Sin intermediarios, con
-            confirmación inmediata.
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
+            Dos apartamentos con reserva directa: frente a la playa de la Llastra y en
+            Camarena de la Sierra, junto a Javalambre.
           </p>
         </div>
 
@@ -91,8 +91,8 @@ export function SiteFooter() {
       </div>
       {/* bottom clearance so the mobile/tablet sticky booking bar never covers
           the copyright line; removed once that bar is gone (lg+) */}
-      <div className="border-t border-[var(--color-line)] pb-16 lg:pb-0">
-        <div className="container-page space-y-1 py-6 text-xs text-[var(--color-ink-faint)]">
+      <div className="border-t border-white/15 pb-16 lg:pb-0">
+        <div className="container-page space-y-1 py-6 text-xs text-white/65">
           <p>
             © {year} {company.tradeName}. Pagos seguros procesados por Stripe.
           </p>
