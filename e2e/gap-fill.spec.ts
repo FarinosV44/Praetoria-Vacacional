@@ -13,16 +13,24 @@ function july(day: number): string {
 }
 
 async function seedHold(request: APIRequestContext, checkIn: string, checkOut: string) {
-  const res = await request.post("/api/checkout", {
-    data: {
-      property: "valencia",
-      checkIn,
-      checkOut,
-      guests: 2,
-      idempotencyKey: crypto.randomUUID(),
-    },
-  });
-  return res.ok();
+  // /api/checkout is rate-limited (20/min per IP). Earlier specs in a serial run
+  // can use up that budget, so honour Retry-After instead of treating a 429 as
+  // "dates taken" — that silently skipped the seeds and made this test flaky.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await request.post("/api/checkout", {
+      data: {
+        property: "valencia",
+        checkIn,
+        checkOut,
+        guests: 2,
+        idempotencyKey: crypto.randomUUID(),
+      },
+    });
+    if (res.status() !== 429) return res.ok();
+    const wait = Number(res.headers()["retry-after"] ?? "5");
+    await new Promise((r) => setTimeout(r, Math.min(Math.max(wait, 1), 65) * 1000));
+  }
+  return false;
 }
 
 async function quote(request: APIRequestContext, checkIn: string, checkOut: string) {
@@ -35,6 +43,7 @@ async function quote(request: APIRequestContext, checkIn: string, checkOut: stri
 test("a stay that exactly fills a 2-night gap is bookable below the 4-night minimum", async ({
   request,
 }) => {
+  test.setTimeout(240_000);
   // Walk the window forward until both 4-night seeds land on free dates.
   let base = 3;
   for (; base < 20; base += 6) {
