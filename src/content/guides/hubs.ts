@@ -170,9 +170,9 @@ export const guideHubs: GuideHub[] = [
     propertySlug: "valencia",
     eyebrow: "Guía de destino · Litoral sur de Valencia",
     title: "Guía de la playa de la Llastra y el litoral sur de Valencia",
-    metaTitle: "Guía de la playa de la Llastra: El Perelló, Albufera y Valencia",
+    metaTitle: "Litoral sur de Valencia: qué pueblos y playas lo forman (guía)",
     metaDescription:
-      "Guía práctica del litoral sur de Valencia: la playa de la Llastra entre Les Palmeres y El Perelló, la Albufera, Cullera, cómo llegar a la ciudad de Valencia y dónde comer arroz.",
+      "Qué es el litoral sur de Valencia y qué pueblos y playas lo forman: El Saler, El Perelló, la Llastra, Cullera y la Safor. Además, la Albufera, cómo llegar y dónde comer arroz.",
     h1: "Guía de la playa de la Llastra y el litoral sur de Valencia",
     lead: "Todo para preparar una escapada al litoral sur de la provincia de Valencia: la playa de la Llastra entre Les Palmeres y El Perelló, el Parque Natural de la Albufera, Cullera y los arrozales, con la ciudad de Valencia a media hora.",
     quickFacts: [
@@ -184,6 +184,19 @@ export const guideHubs: GuideHub[] = [
       { label: "Tren más cercano", value: "Sueca (8 km) / Cullera (11 km)" },
     ],
     sections: [
+      {
+        heading: "¿Qué es el litoral sur de Valencia y qué pueblos lo forman?",
+        body: [
+          "Se suele llamar litoral sur de Valencia a la costa que empieza al sur de la ciudad y baja hacia la comarca de la Safor. Es una franja de playas largas de arena, dunas y arrozales, con la Albufera justo detrás.",
+          "De norte a sur, estos son los tramos principales:",
+        ],
+        list: [
+          "El Saler y El Perellonet, dentro del término de Valencia y del Parque Natural de la Albufera.",
+          "Las playas de Sueca: El Perelló, Les Palmeres y la playa de la Llastra.",
+          "Cullera, con su faro, su castillo y su gran bahía.",
+          "Ya en la Safor: Tavernes de la Valldigna, Xeraco, Gandia y Oliva.",
+        ],
+      },
       {
         heading: "Dónde está y cómo llegar",
         body: [
@@ -212,6 +225,11 @@ export const guideHubs: GuideHub[] = [
       },
     ],
     faq: [
+      {
+        question: "¿Qué pueblos forman el litoral sur de Valencia?",
+        answer:
+          "Al sur de la ciudad están El Saler y El Perellonet (término de Valencia), las playas de Sueca —El Perelló, Les Palmeres y la Llastra— y Cullera. Más al sur, en la Safor, siguen Tavernes de la Valldigna, Xeraco, Gandia y Oliva.",
+      },
       {
         question: "¿La playa de la Llastra está masificada?",
         answer:
