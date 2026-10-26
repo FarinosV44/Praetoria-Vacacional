@@ -20,7 +20,15 @@ export interface Guide {
   description: string;
   h1: string;
   lead: string;
-  sections: { heading: string; body: string[]; list?: string[] }[];
+  sections: {
+    heading: string;
+    body: string[];
+    list?: string[];
+    /** Official external sources (live snow, weather, roads). Opened in a new tab. */
+    links?: { label: string; href: string }[];
+    /** Official live widget embedded as-is (e.g. AEMET forecast), with its credit. */
+    embed?: { src: string; title: string; height: number; credit: string };
+  }[];
   faq?: { question: string; answer: string }[];
   published: boolean;
 }
@@ -104,6 +112,75 @@ export const guides: Guide[] = [
         body: [
           "Hay servicio de alquiler de material y escuela de esquí en la propia estación. En puentes y vacaciones conviene reservar las clases con antelación.",
         ],
+      },
+    ],
+    published: true,
+  },
+  {
+    // DinoRANK (oct 2026): "javalambre webcam" ~6.600/mes, "tiempo javalambre" ~2.400,
+    // "nieve en javalambre" ~480, "parte de nieve javalambre" ~320, "estado pistas
+    // javalambre" ~140. Skiers check this right before booking. We never publish
+    // live data ourselves — we point to the official sources and explain how to read them.
+    slug: "nieve-en-javalambre-hoy",
+    propertySlug: "javalambre",
+    pillar: false,
+    intent: "Informacional con intención de viaje — comprobar nieve antes de reservar",
+    keyword: "parte de nieve Javalambre",
+    title: "Nieve en Javalambre hoy: webcams, tiempo, parte de nieve y pistas",
+    description:
+      "Dónde consultar el parte de nieve oficial de Javalambre, las webcams, el tiempo en Camarena de la Sierra y el estado de las carreteras antes de subir a esquiar.",
+    h1: "Nieve en Javalambre hoy",
+    lead: "Antes de reservar o de salir hacia la estación, cuatro consultas rápidas te dicen si hay nieve, qué pistas están abiertas, qué tiempo hará y cómo está la carretera. Aquí tienes dónde mirar cada una en fuentes oficiales.",
+    sections: [
+      {
+        heading: "Parte de nieve, pistas abiertas y webcams",
+        body: [
+          "La fuente fiable es la web oficial de la estación (Javalambre y Valdelinares). Allí se publican cada día el estado de pistas y remontes, los centímetros de nieve, la apertura prevista y las webcams en directo de la estación: lo más rápido para ver con tus propios ojos cómo está la nieve antes de salir.",
+          "Fíjate en la fecha y la hora del parte: en días de temporal cambia a lo largo de la mañana. Si estás reservando con antelación, recuerda que la temporada suele ir de diciembre a marzo, siempre según la nieve.",
+        ],
+        links: [{ label: "Web oficial de la estación: parte de nieve, pistas y webcams", href: "https://www.javalambre-valdelinares.com/" }],
+      },
+      {
+        heading: "El tiempo en Camarena de la Sierra",
+        body: [
+          "Camarena de la Sierra es el pueblo más cercano a las pistas, a unos 10 minutos en coche. Esta es la previsión oficial de AEMET para el municipio, que se actualiza sola: cielo, temperaturas y probabilidad de precipitación de los próximos días. En la web de AEMET tienes además el detalle por horas, útil para saber si nevará a primera hora, cuando conviene subir.",
+        ],
+        embed: {
+          src: "https://www.aemet.es/es/eltiempo/prediccion/municipios/mostrarwidget/camarena-de-la-sierra-id44054?w=g4p01110001ohm71a2eew600z190x4f86d9t95b6e9r1s3n2",
+          title: "Previsión del tiempo en Camarena de la Sierra para los próximos días (AEMET)",
+          height: 260,
+          credit: "Previsión: Agencia Estatal de Meteorología (AEMET)",
+        },
+        links: [{ label: "AEMET: previsión para Camarena de la Sierra", href: "https://www.aemet.es/es/eltiempo/prediccion/municipios/camarena-de-la-sierra-id44054" }],
+      },
+      {
+        heading: "Carreteras y cadenas",
+        body: [
+          "Desde Valencia se sube por la A-23 y después por carretera de montaña. En episodios de nieve consulta las incidencias de la DGT antes de salir y lleva cadenas o neumáticos de invierno.",
+        ],
+        links: [{ label: "DGT: estado de las carreteras", href: "https://infocar.dgt.es/etraffic/" }],
+      },
+      {
+        heading: "Cuando hay nieve: dónde dormir",
+        body: [
+          "Los fines de semana con buen parte se llenan rápido. Si el parte es bueno y tienes fechas, asegura primero el alojamiento: en Camarena de la Sierra tienes un apartamento para hasta 6 personas, con chimenea de pellets, guardaesquís y parking gratis, a unos 10 minutos de las pistas.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Hay nieve en Javalambre ahora?",
+        answer:
+          "Depende del día: consulta el parte oficial de la estación, que indica los centímetros de nieve y las pistas abiertas. La temporada suele ir de diciembre a marzo, siempre según las condiciones.",
+      },
+      {
+        question: "¿Dónde veo las webcams de Javalambre?",
+        answer: "En la web oficial de la estación, junto al parte de nieve.",
+      },
+      {
+        question: "¿Hace falta llevar cadenas?",
+        answer:
+          "En días de nieve o hielo sí es recomendable llevar cadenas o neumáticos de invierno, y comprobar antes el estado de las carreteras en la DGT.",
       },
     ],
     published: true,

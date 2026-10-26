@@ -74,6 +74,11 @@ export const landings: Landing[] = [
         question: "¿Tiene parking?",
         answer: "Sí, parking privado gratuito en el mismo edificio, además de guardaesquís.",
       },
+      {
+        question: "¿Hotel o apartamento para esquiar en Javalambre?",
+        answer:
+          "En la estación no hay alojamiento a pie de pistas, así que tanto hoteles como apartamentos están en los pueblos de alrededor. Un apartamento como este, en Camarena de la Sierra, da más espacio para familias o grupos de hasta 6 personas, cocina propia, chimenea de pellets, guardaesquís y parking gratis, a unos 10 minutos en coche de las pistas.",
+      },
     ],
     published: true,
   },
@@ -172,14 +177,16 @@ export const landings: Landing[] = [
   {
     slug: "apartamento-playa-valencia",
     propertySlug: "valencia",
-    intent: "Transaccional — 'apartamento playa Valencia'",
-    keyword: "apartamento playa Valencia",
+    intent: "Transaccional — 'apartamentos playa Valencia'",
+    keyword: "apartamentos playa Valencia",
     secondaryKeywords: [
+      "apartamento playa Valencia",
+      "alquiler apartamento playa Valencia",
       "apartamento playa Sueca",
       "apartamento playa de la Llastra",
       "alojamiento cerca de El Perelló",
     ],
-    title: "Apartamento en la playa, al sur de Valencia | Reserva directa",
+    title: "Apartamentos en la playa de Valencia: frente al mar en la Llastra",
     description:
       "Apartamento a pie de la playa de la Llastra, entre Les Palmeres y El Perelló (Sueca), litoral sur de Valencia. 75 m², vistas frontales al mar, parking gratis. Reserva directa.",
     h1: "Apartamento en la playa, al sur de Valencia",
@@ -367,10 +374,11 @@ export const landings: Landing[] = [
     intent: "Transaccional — alojamiento cerca de El Perelló",
     keyword: "alojamiento cerca de El Perelló",
     secondaryKeywords: [
+      "apartamentos El Perelló",
       "apartamento cerca El Perelló playa",
       "dónde dormir El Perelló Valencia",
     ],
-    title: "Alojamiento cerca de El Perelló: apartamento frente al mar en la Llastra",
+    title: "Apartamentos cerca de El Perelló: frente al mar en la playa de la Llastra",
     description:
       "Apartamento a pie de playa junto a El Perelló, en la playa de la Llastra (Sueca). Vistas frontales al mar, parking gratis, hasta 6 huéspedes y arroces a un paso. Reserva directa.",
     h1: "Alojamiento cerca de El Perelló",
