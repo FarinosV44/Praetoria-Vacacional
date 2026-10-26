@@ -40,6 +40,8 @@ jobs:
         env:
           # Build must not depend on live infra (D-021). No secrets here.
           NEXT_PUBLIC_SITE_URL: https://example.com
+          # Keep GA4 (set in .env.production) out of CI builds.
+          NEXT_PUBLIC_GA4_ID: ""
 
   e2e:
     name: e2e (chromium)
@@ -69,6 +71,8 @@ jobs:
         run: npx playwright test --project=chromium --workers=1 --grep-invert "visual · design system"
         env:
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          # Keep GA4 (set in .env.production) out of CI builds.
+          NEXT_PUBLIC_GA4_ID: ""
           ADMIN_PASSWORD: ci-e2e-password
           # NEXT_PUBLIC_* is inlined at build time — the whatsapp.spec needs it
           # present when `npm run build` runs inside the Playwright webServer.
@@ -110,6 +114,8 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          # Keep GA4 (set in .env.production) out of CI builds.
+          NEXT_PUBLIC_GA4_ID: ""
       # Budgets + Core Web Vitals thresholds live in lighthouserc.json.
       # `assert` failures fail the job; `warn` assertions only annotate.
       - name: Run Lighthouse CI

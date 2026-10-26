@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLegalDoc, legalSlugs } from "@/content/legal";
 import { pageMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CookieSettingsButton } from "@/components/CookieSettingsButton";
 
 export const dynamicParams = false;
 export function generateStaticParams() {
@@ -54,6 +55,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
             ))}
           </section>
         ))}
+        {slug === "cookies" && <CookieSettingsButton />}
       </div>
     </article>
   );

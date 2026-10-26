@@ -129,7 +129,7 @@ export const legalDocs: Record<string, LegalDoc> = {
   cookies: {
     slug: "cookies",
     title: "Política de cookies",
-    updated: lastUpdated,
+    updated: "2026-10-26",
     intro: "Qué cookies utiliza este sitio y cómo puedes gestionarlas.",
     sections: [
       {
@@ -139,7 +139,14 @@ export const legalDocs: Record<string, LegalDoc> = {
       {
         heading: "Cookies analíticas",
         body: [
-          "Si se activa la analítica (Google Analytics 4), se utilizan cookies de medición únicamente con tu consentimiento y con la IP anonimizada. Puedes retirar el consentimiento en cualquier momento.",
+          "Usamos Google Analytics 4 (Google Ireland Limited) para saber cuántas personas visitan la web y qué páginas les resultan útiles. Estas cookies solo se instalan si pulsas «Aceptar» en el aviso de cookies; si las rechazas, no se carga ningún código de Google.",
+          "Cookies que instala si aceptas: «_ga» y «_ga_<ID>», que distinguen visitas de forma anónima. Duran hasta 2 años. La IP se anonimiza y no se usan con fines publicitarios. Google puede tratar los datos fuera del Espacio Económico Europeo con las garantías previstas en el RGPD.",
+        ],
+      },
+      {
+        heading: "Cómo cambiar o retirar tu consentimiento",
+        body: [
+          "Tu elección se guarda en este dispositivo. Puedes cambiarla cuando quieras con el botón de esta página: si retiras el consentimiento, borramos las cookies de Google Analytics. También puedes eliminar las cookies desde la configuración de tu navegador.",
         ],
       },
     ],
