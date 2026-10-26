@@ -399,7 +399,7 @@ export async function HomeView({ locale }: { locale: Locale }) {
             <a href="#buscador" className="pv-btn pv-btn--ondark pv-btn--lg">
               {c.finalCta} <span aria-hidden>→</span>
             </a>
-            <Link href={path("/contacto")} className="border-b border-white/70 pb-0.5 text-sm font-semibold">
+            <Link href="/contacto" className="border-b border-white/70 pb-0.5 text-sm font-semibold">
               {locale === "en" ? "Ask a question" : "Resolver una duda"}
             </Link>
           </div>
