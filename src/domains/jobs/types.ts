@@ -24,6 +24,7 @@ export type JobType =
   | "email.reservation_confirmation"
   | "email.payment_failed"
   | "email.internal_notice"
+  | "push.reservation_notice"
   | "ical.import"
   | "holds.expire";
 

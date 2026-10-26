@@ -1,0 +1,18 @@
+{
+  "id": "/admin/movil",
+  "name": "Praetoria · Reservas",
+  "short_name": "Praetoria",
+  "description": "Reservas y precios de Praetoria Vacacional desde el móvil.",
+  "lang": "es",
+  "start_url": "/admin/movil",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#202827",
+  "theme_color": "#202827",
+  "icons": [
+    { "src": "/admin-icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/admin-icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/admin-icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

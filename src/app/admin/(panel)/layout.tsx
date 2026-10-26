@@ -12,6 +12,11 @@ import { MfaGate } from "./MfaGate";
 export const metadata: Metadata = {
   title: { default: "Administración", template: "%s · Administración" },
   robots: { index: false, follow: false },
+  // Installable as a phone app ("Praetoria"): see public/admin.webmanifest and
+  // the /admin/movil start screen.
+  manifest: "/admin.webmanifest",
+  appleWebApp: { capable: true, title: "Praetoria", statusBarStyle: "default" },
+  icons: { icon: "/icon.svg", apple: "/admin-icons/apple-touch-180.png" },
 };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
