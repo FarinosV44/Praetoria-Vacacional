@@ -38,6 +38,7 @@ interface Item {
 
 const PRIMARY: Item[] = [
   { href: "/admin", label: "Resumen", icon: "home" },
+  { href: "/admin/movil", label: "App móvil", icon: "bookings" },
   { href: "/admin/calendario", label: "Calendario", icon: "calendar" },
   { href: "/admin/reservas", label: "Reservas", icon: "bookings" },
   { href: "/admin/precios", label: "Precios y reglas", icon: "price" },

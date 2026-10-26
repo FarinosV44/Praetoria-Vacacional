@@ -69,6 +69,11 @@ const schema = z.object({
    *  password only. Set to a truthy value once Supabase Auth users exist. */
   ADMIN_SUPABASE_AUTH: z.string().optional(),
 
+  // Web Push for the admin mobile app. Optional: without them a key pair is
+  // generated on first use and kept server-side (src/domains/notifications/push.ts).
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+
   // Distributed rate limiting (issue #62). Optional — without it the limiter
   // uses an in-memory store (correct for a single instance). Upstash Redis REST,
   // or the KV_REST_API_* aliases a Vercel KV / Upstash integration injects.
@@ -225,6 +230,9 @@ export const env = {
   SES_HOSPEDAJES_ESTABLISHMENT: isReal(raw.SES_HOSPEDAJES_ESTABLISHMENT)
     ? raw.SES_HOSPEDAJES_ESTABLISHMENT
     : undefined,
+  /** Only real values; placeholders fall back to the generated pair. */
+  VAPID_PUBLIC_KEY: isReal(raw.VAPID_PUBLIC_KEY) ? raw.VAPID_PUBLIC_KEY : undefined,
+  VAPID_PRIVATE_KEY: isReal(raw.VAPID_PRIVATE_KEY) ? raw.VAPID_PRIVATE_KEY : undefined,
   adminEmails: raw.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   adminRole: raw.ADMIN_ROLE,
   /** Resolved boolean — see `isFlagOn`. Overrides the raw string from `...raw`. */

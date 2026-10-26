@@ -225,7 +225,24 @@ export function getConfigFeatures(): ConfigFeature[] {
     publicMessage: null,
   };
 
-  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, travellerRegistry, campaigns, whatsapp];
+  const pushKeysFromEnv = !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY);
+  const push: ConfigFeature = {
+    key: "push",
+    label: "Avisos al móvil (app de administración)",
+    impact:
+      "Notificación en el teléfono del propietario por cada reserva confirmada. Se activa desde /admin/movil en cada teléfono.",
+    envVars: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"],
+    where: "Opcional. Sin ellas se genera un par de claves la primera vez y se guarda en el servidor.",
+    state: "configured",
+    statusLine: pushKeysFromEnv
+      ? "Activo con claves VAPID propias."
+      : env.supabaseConfigured
+        ? "Activo con claves generadas y guardadas en la base de datos."
+        : "Activo en modo demo: las claves se regeneran al reiniciar.",
+    publicMessage: null,
+  };
+
+  return [database, payments, email, ical, analytics, searchConsole, admin, observability, rateLimit, media, travellerRegistry, campaigns, whatsapp, push];
 }
 
 export function getFeature(key: string): ConfigFeature | undefined {

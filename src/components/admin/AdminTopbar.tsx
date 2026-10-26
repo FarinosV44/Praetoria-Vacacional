@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TITLES: [string, string][] = [
+  ["/admin/movil/precios", "Precios rápidos"],
+  ["/admin/movil", "App móvil"],
   ["/admin/calendario", "Calendario"],
   ["/admin/reservas/nuevo", "Nueva reserva"],
   ["/admin/reservas", "Reservas"],
