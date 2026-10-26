@@ -494,7 +494,7 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
             <a href={bookingSectionHref(p.slug)} className="pv-btn pv-btn--primary">
               {t.closingCta}
             </a>
-            <Link href={path("/contacto")} className="pv-btn pv-btn--secondary">
+            <Link href="/contacto" className="pv-btn pv-btn--secondary">
               {t.closingContact}
             </Link>
           </div>
