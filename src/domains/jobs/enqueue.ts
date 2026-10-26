@@ -33,7 +33,7 @@ export function jobKey(type: string, subject: string): string {
   return `${type}:${subject}`;
 }
 
-/** Queue the confirmation + internal-notice emails for a freshly confirmed reservation. */
+/** Queue the confirmation + internal-notice emails and the owner's phone push for a freshly confirmed reservation. */
 export async function enqueueReservationEmails(reservationId: string): Promise<void> {
   await enqueueBestEffort({
     type: "email.reservation_confirmation" satisfies JobType,
@@ -45,6 +45,12 @@ export async function enqueueReservationEmails(reservationId: string): Promise<v
     type: "email.internal_notice" satisfies JobType,
     payload: { reservationId },
     idempotencyKey: jobKey("email.internal_notice", reservationId),
+    maxAttempts: 4,
+  });
+  await enqueueBestEffort({
+    type: "push.reservation_notice" satisfies JobType,
+    payload: { reservationId },
+    idempotencyKey: jobKey("push.reservation_notice", reservationId),
     maxAttempts: 4,
   });
 }

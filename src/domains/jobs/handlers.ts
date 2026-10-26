@@ -6,6 +6,9 @@ import {
   sendInternalReservationNotice,
 } from "@/domains/notifications/email";
 import { importAllFeeds, importPropertyFeeds } from "@/domains/integrations/sync";
+import { sendPushToAdmins } from "@/domains/notifications/push";
+import { reservationPushMessage } from "@/domains/notifications/push-message";
+import { getPropertyById } from "@/domains/properties/registry";
 import type { JobOutcome } from "./types";
 
 /**
@@ -48,6 +51,19 @@ export const HANDLERS: Record<string, JobHandler> = {
 
   "email.internal_notice": (p) =>
     emailForReservation(str(p, "reservationId"), sendInternalReservationNotice),
+
+  // Owner's phone (admin mobile app). No registered device = nothing to do;
+  // a failed send retries, a gone subscription is pruned inside the sender.
+  "push.reservation_notice": async (p) => {
+    const id = str(p, "reservationId");
+    if (!id) return { ok: false, error: "falta reservationId", retryable: false };
+    const reservation = await getRepository().getReservation(id);
+    if (!reservation) return { ok: false, error: `reserva ${id} no encontrada`, retryable: false };
+    const name = getPropertyById(reservation.propertyId)?.name ?? "Alojamiento";
+    const report = await sendPushToAdmins(reservationPushMessage(reservation, name));
+    if (report.failed > 0 && report.sent === 0) return { ok: false, error: "envío push fallido" };
+    return { ok: true, result: report };
+  },
 
   "ical.import": async (p) => {
     const slug = str(p, "slug");
