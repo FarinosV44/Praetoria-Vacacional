@@ -125,15 +125,15 @@ export const guides: Guide[] = [
     propertySlug: "javalambre",
     pillar: false,
     intent: "Informacional con intención de viaje — comprobar nieve antes de reservar",
-    keyword: "parte de nieve Javalambre",
-    title: "Nieve en Javalambre hoy: webcams, tiempo, parte de nieve y pistas",
+    keyword: "javalambre webcam",
+    title: "Javalambre webcam y tiempo hoy: nieve, pistas abiertas y carreteras",
     description:
-      "Dónde consultar el parte de nieve oficial de Javalambre, las webcams, el tiempo en Camarena de la Sierra y el estado de las carreteras antes de subir a esquiar.",
-    h1: "Nieve en Javalambre hoy",
+      "Webcams de Javalambre en directo, el tiempo de AEMET en Camarena de la Sierra, el parte de nieve oficial y el estado de las carreteras, antes de subir a esquiar.",
+    h1: "Javalambre hoy: webcam, tiempo y nieve",
     lead: "Antes de reservar o de salir hacia la estación, cuatro consultas rápidas te dicen si hay nieve, qué pistas están abiertas, qué tiempo hará y cómo está la carretera. Aquí tienes dónde mirar cada una en fuentes oficiales.",
     sections: [
       {
-        heading: "Parte de nieve, pistas abiertas y webcams",
+        heading: "Webcams de Javalambre, parte de nieve y pistas abiertas",
         body: [
           "La fuente fiable es la web oficial de la estación (Javalambre y Valdelinares). Allí se publican cada día el estado de pistas y remontes, los centímetros de nieve, la apertura prevista y las webcams en directo de la estación: lo más rápido para ver con tus propios ojos cómo está la nieve antes de salir.",
           "Fíjate en la fecha y la hora del parte: en días de temporal cambia a lo largo de la mañana. Si estás reservando con antelación, recuerda que la temporada suele ir de diciembre a marzo, siempre según la nieve.",
@@ -141,7 +141,7 @@ export const guides: Guide[] = [
         links: [{ label: "Web oficial de la estación: parte de nieve, pistas y webcams", href: "https://www.javalambre-valdelinares.com/" }],
       },
       {
-        heading: "El tiempo en Camarena de la Sierra",
+        heading: "El tiempo en Javalambre y Camarena de la Sierra",
         body: [
           "Camarena de la Sierra es el pueblo más cercano a las pistas, a unos 10 minutos en coche. Esta es la previsión oficial de AEMET para el municipio, que se actualiza sola: cielo, temperaturas y probabilidad de precipitación de los próximos días. En la web de AEMET tienes además el detalle por horas, útil para saber si nevará a primera hora, cuando conviene subir.",
         ],
@@ -181,6 +181,76 @@ export const guides: Guide[] = [
         question: "¿Hace falta llevar cadenas?",
         answer:
           "En días de nieve o hielo sí es recomendable llevar cadenas o neumáticos de invierno, y comprobar antes el estado de las carreteras en la DGT.",
+      },
+    ],
+    published: true,
+  },
+  {
+    // DinoRANK (oct 2026): "javalambre como llegar" ~480/mes (dif. 31), "estación de
+    // esquí javalambre como llegar" ~110, "cómo llegar a javalambre" ~70. Route facts
+    // match the property page (A-23 Sagunto–Teruel, ~2 h from Valencia).
+    slug: "como-llegar-a-javalambre",
+    propertySlug: "javalambre",
+    pillar: false,
+    intent: "Práctico — cómo llegar a la estación",
+    keyword: "javalambre cómo llegar",
+    title: "Cómo llegar a Javalambre desde Valencia, Teruel o Zaragoza",
+    description:
+      "Cómo llegar a la estación de esquí de Javalambre: en coche por la A-23, tiempos desde Valencia, Teruel y Zaragoza, tren hasta Puebla de Valverde y consejos de invierno.",
+    h1: "Cómo llegar a Javalambre",
+    lead: "La estación de esquí de Javalambre está al sur de Teruel, junto a Camarena de la Sierra. Lo más práctico es llegar en coche: casi todo el trayecto es autovía y solo el final es carretera de montaña.",
+    sections: [
+      {
+        heading: "Desde Valencia en coche",
+        body: [
+          "Se sale de Valencia hacia Sagunto y se toma la A-23 (autovía Mudéjar, Sagunto–Teruel) en dirección Teruel. Es autovía casi todo el camino; al final, una corta subida de montaña lleva a Camarena de la Sierra y a las pistas.",
+          "Son unas 2 horas desde Valencia. En fin de semana de nieve, salir temprano evita la hora punta de llegada a la estación.",
+        ],
+        links: [
+          { label: "Ruta en Google Maps hasta la estación de esquí de Javalambre", href: "https://www.google.com/maps/dir/?api=1&destination=Estaci%C3%B3n+de+esqu%C3%AD+Javalambre" },
+        ],
+      },
+      {
+        heading: "Desde Teruel y desde Zaragoza",
+        body: [
+          "Desde Teruel capital son unos 40 minutos por la A-23 en dirección Valencia. Desde Zaragoza, algo más de 2 horas por la misma autovía, pasando por Teruel.",
+        ],
+      },
+      {
+        heading: "En tren",
+        body: [
+          "La estación de tren más cercana es Puebla de Valverde, a unos 15 km de Camarena de la Sierra. Desde allí necesitas coche o taxi para subir a la estación de esquí, así que el tren solo compensa si alguien te recoge.",
+        ],
+      },
+      {
+        heading: "En invierno: cadenas y estado de la carretera",
+        body: [
+          "La última parte del trayecto es carretera de montaña. En días de nieve o hielo lleva cadenas o neumáticos de invierno y consulta antes las incidencias de la DGT. El parte de la estación indica además si los accesos y aparcamientos están abiertos.",
+          "Reposta en Teruel o en la A-23 antes de la subida: en la sierra hay pocas gasolineras.",
+        ],
+        links: [{ label: "DGT: estado de las carreteras", href: "https://infocar.dgt.es/etraffic/" }],
+      },
+      {
+        heading: "Dormir a 10 minutos de las pistas",
+        body: [
+          "Si vas más de un día, dormir en Camarena de la Sierra te ahorra el viaje de ida y vuelta: el apartamento está a unos 10 minutos en coche de la estación, con parking gratis, guardaesquís y chimenea de pellets. Por la mañana llegas a pistas antes que quien sale de Valencia.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Cuánto se tarda de Valencia a Javalambre?",
+        answer: "Unas 2 horas en coche por la A-23 (Sagunto–Teruel), autovía casi todo el trayecto.",
+      },
+      {
+        question: "¿Se puede ir a Javalambre en tren?",
+        answer:
+          "La estación de tren más cercana es Puebla de Valverde, a unos 15 km de Camarena de la Sierra. Desde allí hace falta coche o taxi para llegar a las pistas.",
+      },
+      {
+        question: "¿Hace falta llevar cadenas para subir a Javalambre?",
+        answer:
+          "En días de nieve o hielo sí: la última parte es carretera de montaña. Lleva cadenas o neumáticos de invierno y mira el estado de la carretera en la DGT antes de salir.",
       },
     ],
     published: true,
@@ -526,15 +596,79 @@ export const guides: Guide[] = [
     published: true,
   },
   {
+    // DinoRANK (oct 2026): "el tiempo en el perelló" ~2.400/mes (dif. 30), "tiempo el
+    // perello" ~880, "tiempo en el perelló" ~320, "el tiempo en el perelló valencia"
+    // ~320. El Perelló belongs to Sueca: AEMET publishes the forecast for Sueca.
+    slug: "el-tiempo-en-el-perello",
+    propertySlug: "valencia",
+    pillar: false,
+    intent: "Informacional con intención de viaje — tiempo de playa",
+    keyword: "el tiempo en El Perelló",
+    title: "El tiempo en El Perelló (Valencia): previsión AEMET y clima de playa",
+    description:
+      "Previsión oficial de AEMET para El Perelló y la costa de Sueca, qué tiempo hace cada temporada y cuándo hay viento para kitesurf. Con alojamiento frente al mar.",
+    h1: "El tiempo en El Perelló",
+    lead: "El Perelló es una pedanía de Sueca, en la costa sur de Valencia, así que la previsión oficial de AEMET se publica para Sueca. Aquí la tienes en directo, junto con lo que conviene saber del clima de esta playa en cada época del año.",
+    sections: [
+      {
+        heading: "Previsión de AEMET para El Perelló y Sueca",
+        body: [
+          "Esta es la previsión oficial de AEMET para el municipio de Sueca, al que pertenecen El Perelló y la playa de la Llastra. Se actualiza sola: cielo, temperaturas y probabilidad de lluvia de los próximos días. En la web de AEMET tienes el detalle por horas.",
+        ],
+        embed: {
+          src: "https://www.aemet.es/es/eltiempo/prediccion/municipios/mostrarwidget/sueca-id46235?w=g4p01110001ohm71a2eew600z190x4f86d9t95b6e9r1s3n2",
+          title: "Previsión del tiempo en Sueca (El Perelló) para los próximos días (AEMET)",
+          height: 260,
+          credit: "Previsión: Agencia Estatal de Meteorología (AEMET)",
+        },
+        links: [{ label: "AEMET: previsión por horas para Sueca", href: "https://www.aemet.es/es/eltiempo/prediccion/municipios/sueca-id46235" }],
+      },
+      {
+        heading: "Qué tiempo hace en cada temporada",
+        body: [
+          "Verano: calor y humedad, con días largos de playa. Es la temporada alta: las playas tienen más ambiente y conviene reservar con antelación.",
+          "Primavera y otoño: temperaturas suaves y playas tranquilas, buenas para pasear, ir en bici por la Albufera o teletrabajar frente al mar. Septiembre suele seguir siendo de baño.",
+          "Invierno: suave para lo que es el invierno en España, con muchos días de sol. En otoño pueden llegar episodios de lluvias fuertes (DANA): mira la previsión y los avisos de AEMET antes de viajar.",
+        ],
+      },
+      {
+        heading: "Viento para kitesurf y paddle surf",
+        body: [
+          "La playa de la Llastra es un spot conocido entre kitesurfistas. Para ver el viento previsto, consulta la predicción por horas de AEMET; para paddle surf busca mañanas sin viento, cuando el mar está más plano.",
+        ],
+      },
+      {
+        heading: "Dormir frente al mar",
+        body: [
+          "El apartamento está en primera línea de la playa de la Llastra, a unos 2 km de El Perelló: tres dormitorios, vistas frontales al mar, WiFi gratis y parking. Con buen tiempo, bajas a la playa sin coger el coche.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "¿Dónde veo el tiempo de El Perelló?",
+        answer:
+          "AEMET publica la previsión para Sueca, el municipio al que pertenece El Perelló. La tienes en esta página y, con detalle por horas, en la web de AEMET.",
+      },
+      {
+        question: "¿Cuándo se puede uno bañar en El Perelló?",
+        answer:
+          "De junio a septiembre es temporada de baño. En primavera y otoño hay muchos días de sol, pero el agua está más fresca.",
+      },
+    ],
+    published: true,
+  },
+  {
     slug: "restaurantes-y-ocio-cerca-de-la-playa-valencia",
     propertySlug: "valencia",
     pillar: false,
     intent: "Informacional local",
-    keyword: "restaurantes cerca de la playa de la Llastra / El Perelló",
-    title: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
+    // DinoRANK (oct 2026): "restaurantes en el perello" ~1.900/mes (dif. 34).
+    keyword: "restaurantes en El Perelló",
+    title: "Restaurantes en El Perelló y cerca de la playa de la Llastra",
     description:
-      "Dónde comer arroz, tapear y salir cerca de la playa de la Llastra y El Perelló, en la costa sur de Valencia. Consejos prácticos.",
-    h1: "Restaurantes y ocio cerca de la playa, al sur de Valencia",
+      "Dónde comer arroz en El Perelló y junto a la playa de la Llastra, El Palmar para la paella en la Albufera y qué ambiente hay por la noche. Consejos prácticos.",
+    h1: "Restaurantes en El Perelló y cerca de la playa",
     lead: "La costa sur de Valencia es tierra de arroz: la paella valenciana y el arroz a banda se toman aquí en su versión más tradicional, muchas veces con el arrozal a la vista. Esto es lo que conviene saber cerca del apartamento.",
     sections: [
       {
