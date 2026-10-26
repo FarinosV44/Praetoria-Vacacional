@@ -18,6 +18,8 @@
  *   **bold**  *italic* _italic_  `code`  [text](href)
  */
 
+import { currentInternalPath } from "@/lib/legacy-paths";
+
 const ESCAPE: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -51,8 +53,9 @@ function inline(src: string): string {
   // [text](href)
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text: string, href: string) => {
     const clean = href.replace(/&amp;/g, "&");
-    const safe = safeHref(clean);
-    if (!safe) return text;
+    const checked = safeHref(clean);
+    if (!checked) return text;
+    const safe = checked.startsWith("/") ? currentInternalPath(checked) : checked;
     const external = /^https?:\/\//i.test(safe);
     const attrs = external ? ' rel="nofollow noopener" target="_blank"' : "";
     return `<a href="${escapeHtml(safe)}"${attrs}>${text}</a>`;

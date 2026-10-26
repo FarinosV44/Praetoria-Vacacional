@@ -22,7 +22,8 @@ intents are prioritised. No two URLs target the same query.
 | `/javalambre/alojamiento-cerca-estacion-esqui` | alojamiento cerca estación de esquí Javalambre / Camarena de la Sierra | Local transactional |
 | `/guias/javalambre/guia-de-javalambre` | guía de Javalambre | Info (pillar) |
 | `/guias/javalambre/esquiar-en-javalambre` | esquiar en Javalambre | Info-transactional |
-| `/guias/javalambre/nieve-en-javalambre-hoy` | parte de nieve Javalambre (+ webcams, tiempo, estado de pistas) | Informational, pre-trip |
+| `/guias/javalambre/nieve-en-javalambre-hoy` | javalambre webcam (+ tiempo javalambre, parte de nieve, estado de pistas) | Informational, pre-trip |
+| `/guias/javalambre/como-llegar-a-javalambre` | javalambre cómo llegar | Practical |
 | `/guias/javalambre/fin-de-semana-en-javalambre` | fin de semana de esquí Javalambre | Transactional |
 | `/guias/javalambre/javalambre-con-ninos` | Javalambre con niños | Info |
 | `/guias/javalambre/que-hacer-en-javalambre-sin-esquiar` | qué hacer en Javalambre sin esquiar | Info |
@@ -69,3 +70,5 @@ intents are prioritised. No two URLs target the same query.
 - EN tree is a focused funnel (home → property → checkout); EN landings/guides
   are a later expansion.
 - `noindex`: `/admin/**`, `/reservar/**`, `/reserva/**`, `/api/**`.
+
+| `/guias/valencia-playa/el-tiempo-en-el-perello` | el tiempo en El Perelló | Informational, pre-trip |
