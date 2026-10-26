@@ -1,28 +1,13 @@
-import Script from "next/script";
 import { publicEnv } from "@/lib/env";
+import { AnalyticsConsent } from "@/components/AnalyticsConsent";
 
 /**
- * GA4 loader (issue #19). Only renders when NEXT_PUBLIC_GA4_ID is configured.
- * Consent defaults to denied (issue #20) until a CMP grants it; no PII is sent
- * (see lib/analytics).
+ * GA4 loader (issues #19, #20). Renders nothing unless NEXT_PUBLIC_GA4_ID is
+ * configured; the tag itself only loads after the visitor accepts analytics
+ * cookies (see AnalyticsConsent).
  */
 export function Analytics() {
   const id = publicEnv.ga4Id;
   if (!id) return null;
-  return (
-    <>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
-      <Script id="ga4-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('consent', 'default', {
-            ad_storage: 'denied', analytics_storage: 'denied', wait_for_update: 500
-          });
-          gtag('js', new Date());
-          gtag('config', '${id}', { anonymize_ip: true });
-        `}
-      </Script>
-    </>
-  );
+  return <AnalyticsConsent id={id} />;
 }
