@@ -22,6 +22,7 @@ intents are prioritised. No two URLs target the same query.
 | `/javalambre/alojamiento-cerca-estacion-esqui` | alojamiento cerca estación de esquí Javalambre / Camarena de la Sierra | Local transactional |
 | `/guias/javalambre/guia-de-javalambre` | guía de Javalambre | Info (pillar) |
 | `/guias/javalambre/esquiar-en-javalambre` | esquiar en Javalambre | Info-transactional |
+| `/guias/javalambre/nieve-en-javalambre-hoy` | parte de nieve Javalambre (+ webcams, tiempo, estado de pistas) | Informational, pre-trip |
 | `/guias/javalambre/fin-de-semana-en-javalambre` | fin de semana de esquí Javalambre | Transactional |
 | `/guias/javalambre/javalambre-con-ninos` | Javalambre con niños | Info |
 | `/guias/javalambre/que-hacer-en-javalambre-sin-esquiar` | qué hacer en Javalambre sin esquiar | Info |
@@ -32,7 +33,7 @@ intents are prioritised. No two URLs target the same query.
 | URL | Primary keyword | Intent |
 |---|---|---|
 | `/valencia` | apartamento frente al mar Valencia / playa de la Llastra | Transactional (property) |
-| `/valencia/apartamento-playa-valencia` | apartamento playa Valencia | Transactional |
+| `/valencia/apartamento-playa-valencia` | apartamentos playa Valencia | Transactional |
 | `/valencia/alojamiento-frente-al-mar-valencia` | alojamiento frente al mar Valencia / primera línea | Transactional specific |
 | `/valencia/vacaciones-playa-valencia` | apartamento vacaciones Valencia playa | Transactional seasonal |
 | `/guias/valencia/guia-playas-de-valencia` | playas del sur de Valencia | Info (pillar) |

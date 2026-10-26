@@ -121,6 +121,22 @@ export default async function GuidePage({
                   ))}
                 </ul>
               )}
+              {s.links && s.links.length > 0 && (
+                <ul className="mt-4 space-y-2">
+                  {s.links.map((l) => (
+                    <li key={l.href}>
+                      <a
+                        href={l.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border-b border-current pb-0.5 text-sm font-semibold"
+                      >
+                        {l.label} <span aria-hidden>↗</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           ))}
 
