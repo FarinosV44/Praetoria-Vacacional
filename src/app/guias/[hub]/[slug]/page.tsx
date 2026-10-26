@@ -121,6 +121,19 @@ export default async function GuidePage({
                   ))}
                 </ul>
               )}
+              {s.embed && (
+                <figure className="mt-5">
+                  <iframe
+                    src={s.embed.src}
+                    title={s.embed.title}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="block w-full border border-[var(--color-line)] bg-white"
+                    style={{ height: s.embed.height }}
+                  />
+                  <figcaption className="photo-caption mt-2">{s.embed.credit}</figcaption>
+                </figure>
+              )}
               {s.links && s.links.length > 0 && (
                 <ul className="mt-4 space-y-2">
                   {s.links.map((l) => (

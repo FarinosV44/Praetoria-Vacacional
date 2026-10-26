@@ -26,6 +26,8 @@ export interface Guide {
     list?: string[];
     /** Official external sources (live snow, weather, roads). Opened in a new tab. */
     links?: { label: string; href: string }[];
+    /** Official live widget embedded as-is (e.g. AEMET forecast), with its credit. */
+    embed?: { src: string; title: string; height: number; credit: string };
   }[];
   faq?: { question: string; answer: string }[];
   published: boolean;
@@ -124,7 +126,7 @@ export const guides: Guide[] = [
     pillar: false,
     intent: "Informacional con intención de viaje — comprobar nieve antes de reservar",
     keyword: "parte de nieve Javalambre",
-    title: "Nieve en Javalambre hoy: parte de nieve, webcams, tiempo y estado de pistas",
+    title: "Nieve en Javalambre hoy: webcams, tiempo, parte de nieve y pistas",
     description:
       "Dónde consultar el parte de nieve oficial de Javalambre, las webcams, el tiempo en Camarena de la Sierra y el estado de las carreteras antes de subir a esquiar.",
     h1: "Nieve en Javalambre hoy",
@@ -133,7 +135,7 @@ export const guides: Guide[] = [
       {
         heading: "Parte de nieve, pistas abiertas y webcams",
         body: [
-          "La fuente fiable es la web oficial de la estación (Javalambre y Valdelinares). Allí se publican cada día el estado de pistas y remontes, los centímetros de nieve, la apertura prevista y las webcams en directo.",
+          "La fuente fiable es la web oficial de la estación (Javalambre y Valdelinares). Allí se publican cada día el estado de pistas y remontes, los centímetros de nieve, la apertura prevista y las webcams en directo de la estación: lo más rápido para ver con tus propios ojos cómo está la nieve antes de salir.",
           "Fíjate en la fecha y la hora del parte: en días de temporal cambia a lo largo de la mañana. Si estás reservando con antelación, recuerda que la temporada suele ir de diciembre a marzo, siempre según la nieve.",
         ],
         links: [{ label: "Web oficial de la estación: parte de nieve, pistas y webcams", href: "https://www.javalambre-valdelinares.com/" }],
@@ -141,8 +143,14 @@ export const guides: Guide[] = [
       {
         heading: "El tiempo en Camarena de la Sierra",
         body: [
-          "Camarena de la Sierra es el pueblo más cercano a las pistas, a unos 10 minutos en coche. La previsión por horas de AEMET para el municipio sirve para saber si nevará, el viento y las temperaturas a primera hora, cuando conviene subir.",
+          "Camarena de la Sierra es el pueblo más cercano a las pistas, a unos 10 minutos en coche. Esta es la previsión oficial de AEMET para el municipio, que se actualiza sola: cielo, temperaturas y probabilidad de precipitación de los próximos días. En la web de AEMET tienes además el detalle por horas, útil para saber si nevará a primera hora, cuando conviene subir.",
         ],
+        embed: {
+          src: "https://www.aemet.es/es/eltiempo/prediccion/municipios/mostrarwidget/camarena-de-la-sierra-id44054?w=g4p01110001ohm71a2eew600z190x4f86d9t95b6e9r1s3n2",
+          title: "Previsión del tiempo en Camarena de la Sierra para los próximos días (AEMET)",
+          height: 260,
+          credit: "Previsión: Agencia Estatal de Meteorología (AEMET)",
+        },
         links: [{ label: "AEMET: previsión para Camarena de la Sierra", href: "https://www.aemet.es/es/eltiempo/prediccion/municipios/camarena-de-la-sierra-id44054" }],
       },
       {
