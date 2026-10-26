@@ -219,12 +219,13 @@ export function QuickRates({ slug, name, config }: { slug: string; name: string;
         <div className="flex gap-2">
           <button
             type="button"
-            className="admin-btn flex-1 justify-center py-3 text-base"
+            className="admin-btn flex-1 justify-center py-3 text-base disabled:opacity-45"
             data-variant="primary"
+            aria-label={dirty ? `Guardar ${dirty} ${dirty === 1 ? "cambio" : "cambios"} en ${name}` : undefined}
             disabled={!dirty || pending}
             onClick={save}
           >
-            {pending ? "Guardando…" : dirty ? `Guardar ${dirty} ${dirty === 1 ? "cambio" : "cambios"} · ${name.split(" ")[0]}` : "Sin cambios"}
+            {pending ? "Guardando…" : dirty ? `Guardar ${dirty} ${dirty === 1 ? "cambio" : "cambios"}` : "Sin cambios"}
           </button>
           {dirty > 0 && (
             <button type="button" className="admin-btn justify-center py-3" data-variant="ghost" onClick={() => setEdits({})} disabled={pending}>

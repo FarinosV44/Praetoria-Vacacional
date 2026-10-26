@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginAction } from "@/domains/admin/actions";
+import { safeAdminNext } from "@/domains/admin/next-path";
 import { Button } from "@/components/ui/Button";
 
 export function LoginForm({ supabaseAuth = false }: { supabaseAuth?: boolean }) {
@@ -11,7 +12,7 @@ export function LoginForm({ supabaseAuth = false }: { supabaseAuth?: boolean }) 
   const [state, action, pending] = useActionState(loginAction, null);
 
   useEffect(() => {
-    if (state?.ok) router.replace(params.get("next") ?? "/admin");
+    if (state?.ok) router.replace(safeAdminNext(params.get("next")));
   }, [state, router, params]);
 
   return (

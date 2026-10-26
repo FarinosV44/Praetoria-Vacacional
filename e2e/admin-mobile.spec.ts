@@ -13,7 +13,9 @@ async function login(page: Page, next = "/admin/movil") {
   if (await pwd.isVisible().catch(() => false)) {
     await pwd.fill(ADMIN_PASSWORD);
     await page.getByRole("button", { name: /entrar/i }).click();
-    await page.waitForURL((u) => !u.pathname.endsWith("/login"), { timeout: 15_000 });
+    // The app's start screen (or any admin `next`) is honoured after sign-in.
+    const target = new URL(next, "http://x").pathname;
+    await page.waitForURL((u) => u.pathname === target, { timeout: 15_000 });
   }
 }
 
