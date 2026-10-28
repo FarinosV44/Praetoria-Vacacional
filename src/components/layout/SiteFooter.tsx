@@ -64,6 +64,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link className={colLink} href="/propietarios">
+                Gestionamos tu apartamento
+              </Link>
+            </li>
+            <li>
               <Link className={colLink} href="/contacto">
                 Contacto
               </Link>

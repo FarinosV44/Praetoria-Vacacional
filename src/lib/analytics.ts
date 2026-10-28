@@ -16,7 +16,8 @@ type EventName =
   | "checkout_step"
   | "checkout_abandoned"
   | "contact_click"
-  | "select_alternative_dates";
+  | "select_alternative_dates"
+  | "generate_lead";
 
 type Params = Record<string, string | number | boolean | undefined>;
 

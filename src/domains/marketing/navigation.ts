@@ -22,6 +22,7 @@ export interface SiteRoute {
 const staticInfoRoutes: SiteRoute[] = [
   { path: "/", changefreq: "weekly", priority: 1, section: "home" },
   { path: "/ventajas-reserva-directa", changefreq: "monthly", priority: 0.6, section: "info" },
+  { path: "/propietarios", changefreq: "monthly", priority: 0.7, section: "info" },
   { path: "/guias", changefreq: "weekly", priority: 0.5, section: "guia" },
   { path: "/blog", changefreq: "weekly", priority: 0.5, section: "blog" },
   { path: "/contacto", changefreq: "monthly", priority: 0.4, section: "info" },
