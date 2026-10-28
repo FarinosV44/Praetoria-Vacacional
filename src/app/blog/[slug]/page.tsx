@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LandingLinks } from "@/components/marketing/LandingLinks";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -183,6 +184,10 @@ export default async function BlogPostPage({
               )}
             </div>
           </section>
+        )}
+
+        {ctaProperty && (
+          <LandingLinks propertySlug={ctaProperty.slug} className="mx-auto mt-10 max-w-2xl" />
         )}
 
         {related.length > 0 && (

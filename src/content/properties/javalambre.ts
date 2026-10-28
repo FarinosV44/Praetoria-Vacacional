@@ -41,7 +41,7 @@ export const javalambre: PropertyContent = {
     },
     {
       day: "Domingo",
-      text: "Media mañana de pistas o un paseo por la sierra si no esquías, y salida sin prisa. Camarena queda a poco más de una hora de Valencia.",
+      text: "Media mañana de pistas o un paseo por la montaña si no esquías, y salida sin prisa. Camarena queda a poco más de una hora de Valencia.",
     },
   ],
 
@@ -56,11 +56,11 @@ export const javalambre: PropertyContent = {
     },
     {
       title: "Un dormitorio principal muy especial",
-      body: "Cama doble grande, dos puertas balconeras que llenan la habitación de sol, vistas a los tejados del pueblo y a la sierra, cortinas para dormir sin prisa y televisión propia. Un dormitorio para descansar de verdad después de un día de pistas.",
+      body: "Cama doble grande, dos puertas balconeras que llenan la habitación de sol, vistas a los tejados del pueblo y a la montaña, cortinas para dormir sin prisa y televisión propia. Un dormitorio para descansar de verdad después de un día de pistas.",
     },
     {
       title: "Apartamento nuevo de 70 m², parking gratis y guardaesquís",
-      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, balcón con vistas a la sierra y plaza de aparcamiento gratuita en el mismo edificio, sin buscar sitio en la calle con nieve. El edificio tiene guardaesquís: dejas ahí esquís y botas y no subes el material a casa. Para hasta 6 personas.",
+      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, balcón con vistas a la montaña y plaza de aparcamiento gratuita en el mismo edificio, sin buscar sitio en la calle con nieve. El edificio tiene guardaesquís: dejas ahí esquís y botas y no subes el material a casa. Para hasta 6 personas.",
     },
     {
       title: "En un pueblo serrano de verdad, no en un resort",
@@ -170,14 +170,14 @@ export const javalambre: PropertyContent = {
       heading: "Una base a diez minutos de las pistas",
       body: [
         "El apartamento está en el centro de Camarena de la Sierra, a unos 10 minutos en coche de la estación de esquí de Javalambre. Es de las formas más cómodas de esquiar cerca de Valencia: sales, llegas a pistas antes de las colas y vuelves a comer o a descansar al apartamento sin recorrer medio valle.",
-        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. El dormitorio principal es la joya de la casa: cama doble grande y dos puertas balconeras por las que entra el sol de la mañana, con los tejados de Camarena y la sierra al otro lado. La habitación de los niños tiene litera y su propio rincón de juego, con juguetes, cuentos, juegos de mesa y hasta un trineo para la nieve. El edificio tiene habitación guardaesquís, así que dejas ahí el material y no lo subes a casa. El forfait y el alquiler de equipo se gestionan en la propia estación.",
+        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. El dormitorio principal es la joya de la casa: cama doble grande y dos puertas balconeras por las que entra el sol de la mañana, con los tejados de Camarena y la montaña al otro lado. La habitación de los niños tiene litera y su propio rincón de juego, con juguetes, cuentos, juegos de mesa y hasta un trineo para la nieve. El edificio tiene habitación guardaesquís, así que dejas ahí el material y no lo subes a casa. El forfait y el alquiler de equipo se gestionan en la propia estación.",
         "La estación de Javalambre, del grupo Aramón, es una de las más accesibles del este peninsular y especialmente cómoda para familias y para quienes se estrenan en la nieve.",
       ],
     },
     {
       heading: "Camarena de la Sierra, un pueblo serrano con vida propia",
       body: [
-        "Camarena conserva una atmósfera de pueblo de montaña tradicional, con un ritmo y una escala que parecen ajenos al turismo de masas: calles de piedra, fuentes por todo el casco —de ahí que se la conozca como la villa de las fuentes—, y el paisaje de la sierra siempre delante. Pasear por el pueblo al caer la tarde es parte del plan, no solo esquiar.",
+        "Camarena conserva una atmósfera de pueblo de montaña tradicional, con un ritmo y una escala que parecen ajenos al turismo de masas: calles de piedra, fuentes por todo el casco —de ahí que se la conozca como la villa de las fuentes—, y el paisaje de la montaña siempre delante. Pasear por el pueblo al caer la tarde es parte del plan, no solo esquiar.",
         "Su entorno es además un destino de montaña todo el año: senderismo, BTT, escalada, micología y barranquismo, con una ruta fluvial por el propio pueblo apta para hacer en familia.",
         "La comarca Gúdar-Javalambre es Destino Turístico Starlight y una de las zonas con menos contaminación lumínica de Europa; el Observatorio Astrofísico de Javalambre está muy cerca.",
       ],
