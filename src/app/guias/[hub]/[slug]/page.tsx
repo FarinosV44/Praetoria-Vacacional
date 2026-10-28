@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LandingLinks } from "@/components/marketing/LandingLinks";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGuideHub } from "@/content/guides/hubs";
@@ -168,6 +169,8 @@ export default async function GuidePage({
           )}
 
           <PropertyCta propertySlug={g.propertySlug} heading="Para esta escapada" />
+
+          <LandingLinks propertySlug={g.propertySlug} className="mt-8" />
 
           <p className="mt-8 text-sm">
             <Link href={`/guias/${hub}`} className="text-[var(--accent-700)] hover:underline">
