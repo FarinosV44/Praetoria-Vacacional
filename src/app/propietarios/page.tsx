@@ -23,7 +23,7 @@ const crumbs = [
 
 const ZONES = [
   {
-    photo: "vista-mar",
+    photo: "vista-tormenta",
     slug: "valencia",
     eyebrow: "Mar",
     title: "Costa sur de Valencia",
@@ -41,7 +41,8 @@ const ZONES = [
 ] as const;
 
 export default function PropietariosPage() {
-  const hero = photoByBase("valencia", "entorno") ?? photoByBase("valencia", "vista-mar");
+  // Evocative, owner-supplied view of the coast — not an interior shot.
+  const hero = photoByBase("valencia", "dunas-llastra") ?? photoByBase("valencia", "vista-tormenta");
   const tel = company.phone.replace(/\s+/g, "");
   const wa = company.whatsapp.replace(/[^\d]/g, "");
 
@@ -80,7 +81,7 @@ export default function PropietariosPage() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">
               <Picture
                 photo={hero}
-                alt="Vista de la playa desde un apartamento en primera línea gestionado por Praetoria Vacacional"
+                alt="Dunas y playa de la Llastra bajo un cielo de nubes y rayos de sol, en la costa sur de Valencia"
                 sizes="(min-width: 1024px) 45vw, 100vw"
                 priority
                 imgClassName="absolute inset-0 h-full w-full object-cover"
