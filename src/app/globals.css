@@ -463,6 +463,59 @@
   }
   .pv-badge--score { background: var(--accent-700); color: #fff; }
   .pv-badge--neutral { background: var(--color-mist); color: var(--color-ink-soft); }
+  /* Availability calendar days — green = free, red = booked (owner request:
+     "en verde los días libres y en rojo ocupado"). Colour is never the only
+     cue: booked days are also struck through, and every cell has an aria-label. */
+  .pv-day {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 120ms, border-color 120ms, color 120ms;
+  }
+  .pv-day--free {
+    background: var(--color-success-50);
+    border-color: color-mix(in oklch, var(--color-success), transparent 62%);
+    color: oklch(0.34 0.09 155);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pv-day--free:hover { background: color-mix(in oklch, var(--color-success), white 72%); border-color: var(--color-success); }
+  .pv-day--busy {
+    background: var(--color-danger-50);
+    border-color: color-mix(in oklch, var(--color-danger), transparent 60%);
+    color: oklch(0.47 0.15 27);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  /* Free, but out of reach for the stay being chosen (a booked night in between). */
+  .pv-day--unreachable {
+    background: var(--color-success-50);
+    color: color-mix(in oklch, oklch(0.34 0.09 155), transparent 45%);
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .pv-day--past { color: var(--color-ink-faint); opacity: 0.45; cursor: not-allowed; }
+  /* Departure-only: someone arrives that afternoon — free morning (green),
+     booked night (red). Selectable only as a check-out. */
+  .pv-day--exit {
+    background: linear-gradient(135deg, var(--color-success-50) 50%, var(--color-danger-50) 50%);
+    border-color: color-mix(in oklch, var(--color-ink-soft), transparent 70%);
+    color: var(--color-ink);
+  }
+  .pv-day--exit.pv-day--exit-active { border-color: var(--color-success); font-weight: 600; cursor: pointer; }
+  .pv-day--exit:not(.pv-day--exit-active) { cursor: not-allowed; }
+  .pv-day--range { background: var(--accent-100, var(--accent-50)); border-color: var(--accent-600); color: var(--accent-700); font-weight: 600; }
+  .pv-day--sel { background: var(--accent-600); border-color: var(--accent-600); color: #fff; font-weight: 700; }
+  .pv-day--sel:hover { background: var(--accent-700); }
+  .pv-day-swatch { display: inline-block; height: 1rem; width: 1rem; border-radius: 4px; border-width: 1px; border-style: solid; }
+
   .pv-badge--success { background: var(--color-success-50); color: oklch(0.38 0.1 155); }
 
   /* --- Divider ---------------------------------------------------------- */
