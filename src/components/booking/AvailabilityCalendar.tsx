@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonCalendar } from "@/components/ui/Skeleton";
 import { monthCells } from "@/lib/calendar-cells";
 import {
@@ -55,6 +55,20 @@ export function AvailabilityCalendar({
   const [loading, setLoading] = useState(true);
   const [monthOffset, setMonthOffset] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
+  // Two months side by side only when the calendar itself is wide enough
+  // (~576px); in the narrow booking sidebar one roomy month reads far better.
+  // A callback ref, because the grid only mounts once the skeleton is gone.
+  const [wide, setWide] = useState(false);
+  const observer = useRef<ResizeObserver | null>(null);
+  const wrapRef = useCallback((el: HTMLDivElement | null) => {
+    observer.current?.disconnect();
+    observer.current = null;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    observer.current = new ResizeObserver(([entry]) => {
+      if (entry) setWide(entry.contentRect.width >= 576);
+    });
+    observer.current.observe(el);
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -230,13 +244,9 @@ export function AvailabilityCalendar({
         </button>
       </div>
 
-      {/* Two months side by side only when the widget itself is wide enough;
-          in the narrow booking sidebar one roomy month reads far better. */}
-      <div className="@container mt-2">
-        <div className="flex flex-col gap-4 @xl:flex-row @xl:gap-6">
-          {renderMonth(0)}
-          <div className={`flex-1 @xl:block ${stackNext ? "" : "hidden"}`}>{renderMonth(1)}</div>
-        </div>
+      <div ref={wrapRef} className={`mt-2 flex gap-4 ${wide ? "flex-row gap-6" : "flex-col"}`}>
+        {renderMonth(0)}
+        {(wide || stackNext) && renderMonth(1)}
       </div>
 
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
