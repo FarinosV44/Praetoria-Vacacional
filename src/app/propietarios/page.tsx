@@ -31,7 +31,7 @@ const ZONES = [
     body: "Especialistas en apartamentos en primera línea de playa. Demanda todo el verano y escapadas el resto del año, a media hora de Valencia.",
   },
   {
-    photo: "pistas-esqui",
+    photo: "camarena-atardecer-otono",
     slug: "javalambre",
     eyebrow: "Montaña",
     title: "Sierra de Javalambre",
