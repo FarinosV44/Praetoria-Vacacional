@@ -16,13 +16,6 @@ import {
 
 const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 
-/**
- * "Solo salida" marker — a single thin line crossing the cell corner to corner.
- * Deliberately understated: ~1.2px, a soft neutral at low opacity, no fill. It
- * reads as "half a day" without looking like a broken or struck-through cell.
- */
-const EXIT_ONLY_HAIRLINE =
-  "linear-gradient(45deg, transparent calc(50% - 0.6px), color-mix(in oklch, var(--color-ink-soft), transparent 55%) calc(50% - 0.6px), color-mix(in oklch, var(--color-ink-soft), transparent 55%) calc(50% + 0.6px), transparent calc(50% + 0.6px))";
 const MONTHS = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
@@ -100,12 +93,31 @@ export function AvailabilityCalendar({
   const belowMin =
     !!minNightsHint && minNightsHint > 1 && selectedNights > 0 && selectedNights < minNightsHint;
 
+  /** Month cells without the weeks that are entirely in the past, so the
+   *  bookable days are what the eye lands on (end of month = one short row). */
+  function visibleCells(year: number, month1: number): (string | null)[] {
+    const all = monthCells(year, month1);
+    const today = todayStr();
+    const out: (string | null)[] = [];
+    for (let i = 0; i < all.length; i += 7) {
+      const week = all.slice(i, i + 7);
+      if (week.some((c) => c && c >= today)) out.push(...week);
+    }
+    return out;
+  }
+
+  // In the narrow (one-month) layout, also stack next month underneath when
+  // fewer than three weeks of the current month are still ahead.
+  const firstShown = new Date(base);
+  const stackNext =
+    visibleCells(firstShown.getFullYear(), firstShown.getMonth() + 1).length / 7 < 3;
+
   function renderMonth(offset: number) {
     const d = new Date(base);
     d.setMonth(d.getMonth() + offset);
     const year = d.getFullYear();
     const month = d.getMonth(); // 0-indexed
-    const cells = monthCells(year, month + 1);
+    const cells = visibleCells(year, month + 1);
 
     const previewEnd = value.checkIn && !value.checkOut && hover ? hover : value.checkOut;
     const choosingCheckout = selectionPhase(value) === "checkout";
@@ -142,10 +154,25 @@ export function AvailabilityCalendar({
               s === "past"
                 ? `${date} pasado`
                 : role === "blocked"
-                  ? `${date} no disponible`
+                  ? `${date} ocupado`
                   : exitOnly
                     ? `${date} disponible solo como fecha de salida`
-                    : date;
+                    : `${date} libre`;
+
+            const selected = isIn || isOut;
+            const tone = selected
+              ? "pv-day--sel"
+              : inRange
+                ? "pv-day--range"
+                : s === "past"
+                  ? "pv-day--past"
+                  : role === "blocked"
+                    ? "pv-day--busy"
+                    : exitOnly
+                      ? `pv-day--exit${choosingCheckout && selectable ? " pv-day--exit-active" : ""}`
+                      : disabled
+                        ? "pv-day--unreachable"
+                        : "pv-day--free";
 
             return (
               <button
@@ -159,27 +186,8 @@ export function AvailabilityCalendar({
                 onClick={() => pick(date)}
                 aria-label={label}
                 aria-pressed={isIn || isOut}
-                className={[
-                  "relative h-10 overflow-hidden rounded-lg text-sm transition-colors",
-                  disabled
-                    ? "cursor-not-allowed text-[var(--color-line)] line-through"
-                    : "hover:bg-[var(--accent-50)]",
-                  isIn || isOut ? "bg-[var(--accent-600)] text-white hover:bg-[var(--accent-600)]" : "",
-                  inRange ? "bg-[var(--accent-50)] text-[var(--accent-700)]" : "",
-                  exitOnly && !isIn && !isOut && !inRange
-                    ? choosingCheckout
-                      ? "bg-[var(--accent-50)] font-medium text-[var(--color-ink)]"
-                      : "text-[var(--color-ink-soft)]"
-                    : "",
-                ].join(" ")}
+                className={`pv-day w-full ${tone}`}
               >
-                {exitOnly && !isIn && !isOut && !inRange && (
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0"
-                    style={{ background: EXIT_ONLY_HAIRLINE }}
-                  />
-                )}
                 <span className="relative">{Number(date.slice(8, 10))}</span>
               </button>
             );
@@ -205,7 +213,7 @@ export function AvailabilityCalendar({
         >
           ‹
         </button>
-        <span className="text-xs text-[var(--color-ink-soft)]">
+        <span className="text-sm font-medium text-[var(--color-ink)]">
           {loading
             ? "Cargando disponibilidad…"
             : selectionPhase(value) === "checkout"
@@ -222,26 +230,31 @@ export function AvailabilityCalendar({
         </button>
       </div>
 
-      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:gap-6">
-        {renderMonth(0)}
-        <div className="hidden sm:block">{renderMonth(1)}</div>
+      {/* Two months side by side only when the widget itself is wide enough;
+          in the narrow booking sidebar one roomy month reads far better. */}
+      <div className="@container mt-2">
+        <div className="flex flex-col gap-4 @xl:flex-row @xl:gap-6">
+          {renderMonth(0)}
+          <div className={`flex-1 @xl:block ${stackNext ? "" : "hidden"}`}>{renderMonth(1)}</div>
+        </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-ink-soft)]">
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)]" />
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="pv-day-swatch pv-day--free" />
           Libre
         </span>
-        <span className="inline-flex items-center gap-1">
-          <span
-            className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)]"
-            style={{ background: EXIT_ONLY_HAIRLINE }}
-          />
+        <span className="inline-flex items-center gap-1.5">
+          <span className="pv-day-swatch pv-day--busy" />
+          Ocupado
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="pv-day-swatch pv-day--exit" />
           Solo salida
         </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-sm border border-[var(--color-line)] bg-[var(--color-line)] opacity-50" />
-          No disponible
+        <span className="inline-flex items-center gap-1.5">
+          <span className="pv-day-swatch pv-day--sel" />
+          Tu estancia
         </span>
       </div>
 

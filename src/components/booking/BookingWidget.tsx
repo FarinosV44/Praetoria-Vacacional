@@ -68,6 +68,7 @@ function fmtShort(iso: string, locale: Locale): string {
   return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
     day: "numeric",
     month: "short",
+    timeZone: "UTC",
   }).format(new Date(`${iso}T00:00:00Z`));
 }
 
@@ -188,7 +189,7 @@ export function BookingWidget({
         {checkIn && checkOut
           ? `${formatRange(checkIn, checkOut)}`
           : checkIn
-            ? s.pickCheckout(checkIn)
+            ? s.pickCheckout(fmtShort(checkIn, locale))
             : s.pickDates}
       </div>
 
