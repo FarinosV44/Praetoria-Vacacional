@@ -154,21 +154,6 @@
       ]
     },
     {
-      "base": "dormitorio-1",
-      "sourceId": "464284729",
-      "order": 9,
-      "kind": "alojamiento",
-      "category": "dormitorio",
-      "alt": "Dormitorio del apartamento con cama doble grande y ventana con vistas a la montaña",
-      "caption": "Dormitorio",
-      "captionEn": "Bedroom",
-      "aspect": 0.75,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
       "base": "cocina-1",
       "sourceId": "464284738",
       "order": 10,
@@ -200,22 +185,6 @@
         768,
         1200,
         1600
-      ]
-    },
-    {
-      "base": "bano",
-      "sourceId": "464284737",
-      "order": 12,
-      "kind": "alojamiento",
-      "category": "bano",
-      "alt": "Baño completo del apartamento con ducha y bidé",
-      "caption": "Baño",
-      "captionEn": "Bathroom",
-      "aspect": 0.75,
-      "widths": [
-        480,
-        768,
-        1200
       ]
     },
     {
@@ -251,6 +220,114 @@
         480,
         768,
         1200
+      ]
+    },
+    {
+      "base": "pistas-pinos-nevados",
+      "source": "owner",
+      "order": 1.5,
+      "kind": "entorno",
+      "category": "nieve",
+      "focal": "55% 60%",
+      "alt": "Niños esquiando junto a un telearrastre de Javalambre, entre pinos cargados de nieve y niebla",
+      "caption": "Pistas de Javalambre entre pinos nevados · en temporada",
+      "captionEn": "Javalambre slopes among snowy pines · in season",
+      "aspect": 0.849,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "dormitorio-principal",
+      "source": "owner",
+      "order": 8.1,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "50% 55%",
+      "alt": "Dormitorio principal con cama doble grande, dos puertas balconeras abiertas al sol y vistas a los tejados de Camarena y a la sierra",
+      "caption": "Dormitorio principal con dos balcones",
+      "captionEn": "Main bedroom with two balconies",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "dormitorio-principal-balcones",
+      "source": "owner",
+      "order": 8.4,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "50% 55%",
+      "alt": "Otra vista del dormitorio principal, con cortinas verdes, lámina de Yayoi Kusama y televisión",
+      "caption": "Dormitorio principal",
+      "captionEn": "Main bedroom",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "habitacion-literas",
+      "source": "owner",
+      "order": 8.3,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "45% 55%",
+      "alt": "Habitación infantil con litera de madera, juguetes en el suelo y balcón",
+      "caption": "Habitación de los niños, con litera",
+      "captionEn": "Children's room with bunk bed",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "rincon-infantil",
+      "source": "owner",
+      "order": 8.2,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "55% 55%",
+      "alt": "Rincón de juego infantil con estantería de cuentos, juegos de mesa, peluches, correpasillos y un trineo rojo",
+      "caption": "Rincón de juego con juguetes, cuentos y trineo",
+      "captionEn": "Play corner with toys, books and a sledge",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "bano-completo",
+      "source": "owner",
+      "order": 12,
+      "kind": "alojamiento",
+      "category": "bano",
+      "focal": "50% 55%",
+      "alt": "Baño completo del apartamento con ducha, lavabo con mueble de madera, inodoro y bidé",
+      "caption": "Baño",
+      "captionEn": "Bathroom",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
       ]
     }
   ],
@@ -503,6 +580,132 @@
       "alt": "Playa y dunas del litoral sur de Valencia, junto al apartamento, en la playa de la Llastra",
       "caption": "Playa y dunas junto al apartamento",
       "captionEn": "Beach and dunes by the apartment",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "salon-mesa-ventanal",
+      "source": "owner",
+      "order": 5.1,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Salón-comedor con mesa de madera, banco corrido con cojines junto al ventanal y la playa de la Llastra al otro lado del cristal",
+      "caption": "Salón-comedor con banco junto al ventanal",
+      "captionEn": "Living-dining room with a window bench",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "salon-balcon-mar",
+      "source": "owner",
+      "order": 5.2,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Salón con salida a la terraza y ventanal con vistas frontales al mar y a la arena de la Llastra",
+      "caption": "Salón con terraza y ventanal al mar",
+      "captionEn": "Living room with terrace and sea-view window",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "mesa-bienvenida-mar",
+      "source": "owner",
+      "order": 5.3,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Mesa del salón junto al ventanal, con el mar de fondo, la guía del apartamento y una caja de bienvenida",
+      "caption": "Desayunar con el mar delante",
+      "captionEn": "Breakfast with the sea in front",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "salon-sillones",
+      "source": "owner",
+      "order": 8.1,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Rincón del salón con dos butacas de madera, láminas enmarcadas y espejo que refleja el mar",
+      "caption": "Rincón de lectura del salón",
+      "captionEn": "Reading corner in the living room",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "vista-pescador-surfcasting",
+      "source": "owner",
+      "order": 2.1,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "60% 40%",
+      "alt": "Pescador de surfcasting con sus cañas en la orilla, visto desde el ventanal del apartamento sobre el paseo marítimo",
+      "caption": "Desde el ventanal: surfcasting en la orilla",
+      "captionEn": "From the window: surfcasting at the shoreline",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "balcon-mar",
+      "source": "owner",
+      "order": 6.1,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "65% 50%",
+      "alt": "Puerta corredera del salón abierta a la terraza, con taburete y sillas frente al mar",
+      "caption": "La terraza, frente al mar",
+      "captionEn": "The terrace, facing the sea",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "surf-llastra",
+      "source": "owner",
+      "order": 9.1,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 50%",
+      "alt": "Surfista cogiendo una ola en la playa de la Llastra un día de temporal, junto a un cartel de zona peligrosa para el baño",
+      "caption": "Días de olas en la Llastra · respeta siempre la señalización de baño",
+      "captionEn": "Surf days at la Llastra · always follow the swimming signs",
       "aspect": 1.3333,
       "widths": [
         480,

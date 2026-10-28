@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllProperties } from "@/domains/properties/registry";
+import { instagramUrl } from "@/lib/social";
 import { Wordmark } from "./Logo";
 import { company, companyAddressOneLine } from "@/content/company";
 
@@ -30,6 +31,26 @@ export function SiteFooter() {
             Dos apartamentos con reserva directa: frente a la playa de la Llastra y en
             Camarena de la Sierra, junto a Javalambre.
           </p>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+            Síguenos en Instagram
+          </p>
+          <ul className="mt-1">
+            {properties
+              .filter((p) => p.instagram)
+              .map((p) => (
+                <li key={p.slug}>
+                  <a
+                    className={colLink}
+                    href={instagramUrl(p.instagram!)}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={`Instagram de ${p.name}: @${p.instagram}`}
+                  >
+                    @{p.instagram}
+                  </a>
+                </li>
+              ))}
+          </ul>
         </div>
 
         <nav aria-label="Alojamientos">
