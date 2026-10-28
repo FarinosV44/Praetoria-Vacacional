@@ -100,6 +100,7 @@ export const valencia: PropertyContent = {
         "Calefacción",
         "Recepción 24 horas",
         "Ropa de cama y toallas incluidas",
+        "Caja de bienvenida a la llegada",
         "Habitaciones sin humo",
         "Apto para familias",
       ],
@@ -142,7 +143,7 @@ export const valencia: PropertyContent = {
       heading: "En primera línea de la playa de la Llastra",
       body: [
         "El apartamento está a pie de la playa de la Llastra, en el litoral sur de Valencia, entre Les Palmeres y El Perelló. A unos cinco metros de la arena: no hay carretera de por medio ni un paseo largo, bajas del portal y ya estás en la playa.",
-        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y una terraza con vistas frontales al mar. La mesa del salón está junto al ventanal, con un banco corrido lleno de cojines a lo largo de la ventana: se desayuna con la playa delante, se baja descalzo a primera hora y se vuelve a mediodía sin coger el coche. El alojamiento cuenta con zona privada de playa y recepción 24 horas.",
+        "Son 75 m² con tres dormitorios, salón-comedor, cocina totalmente equipada y una terraza con vistas frontales al mar. La mesa del salón está junto al ventanal, con un banco corrido lleno de cojines a lo largo de la ventana: al llegar te espera en ella una caja de bienvenida; se desayuna con la playa delante, se baja descalzo a primera hora y se vuelve a mediodía sin coger el coche. El alojamiento cuenta con zona privada de playa y recepción 24 horas.",
         "A las parejas les encanta la ubicación —Booking la valora con un 9,4 para viajes de dos personas— y el barrio es especialmente tranquilo, con un horario sin ruido de 22:00 a 9:00.",
       ],
     },
@@ -301,7 +302,7 @@ export const valencia: PropertyContent = {
         heading: "Front line to la Llastra beach",
         body: [
           "The apartment sits right on la Llastra beach, on the southern Valencia coast between Les Palmeres and El Perelló — about five metres from the sand. No road to cross, no long walk: you step out of the door and you are on the beach.",
-          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a terrace with head-on sea views. The table sits by the window, with a cushioned bench running the length of it: breakfast with the beach in front of you, an early barefoot walk down to the sand, back at midday without touching the car. The property has a private beach area and 24-hour reception.",
+          "It is 75 m² with three bedrooms, a living-dining room, a fully equipped kitchen and a terrace with head-on sea views. The table sits by the window, with a cushioned bench running the length of it and a welcome box waiting for you on arrival: breakfast with the beach in front of you, an early barefoot walk down to the sand, back at midday without touching the car. The property has a private beach area and 24-hour reception.",
           "Couples love the location — Booking rates it 9.4 for two-person trips — and the neighbourhood is especially quiet, with a no-noise window from 22:00 to 9:00.",
         ],
       },
