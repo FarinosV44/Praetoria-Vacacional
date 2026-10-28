@@ -74,7 +74,8 @@ function fmtShort(iso: string, locale: Locale) {
 }
 
 /** Routes where a persistent booking bar would be noise or redundant. */
-const HIDDEN_PREFIXES = ["/admin", "/reservar", "/reserva", "/en/reservar"];
+// /propietarios speaks to owners, not guests — no booking bar there.
+const HIDDEN_PREFIXES = ["/admin", "/reservar", "/reserva", "/en/reservar", "/propietarios"];
 /** Pages that carry their own tailored on-page booking module + sticky CTA —
  *  the mobile bottom bar is suppressed there (the desktop floating bar stays). */
 const OWN_BOOKING_UI = /^\/(en\/?)?(javalambre|valencia)?$/;
