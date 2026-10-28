@@ -154,21 +154,6 @@
       ]
     },
     {
-      "base": "dormitorio-1",
-      "sourceId": "464284729",
-      "order": 9,
-      "kind": "alojamiento",
-      "category": "dormitorio",
-      "alt": "Dormitorio del apartamento con cama doble grande y ventana con vistas a la montaña",
-      "caption": "Dormitorio",
-      "captionEn": "Bedroom",
-      "aspect": 0.75,
-      "widths": [
-        480,
-        768
-      ]
-    },
-    {
       "base": "cocina-1",
       "sourceId": "464284738",
       "order": 10,
@@ -200,22 +185,6 @@
         768,
         1200,
         1600
-      ]
-    },
-    {
-      "base": "bano",
-      "sourceId": "464284737",
-      "order": 12,
-      "kind": "alojamiento",
-      "category": "bano",
-      "alt": "Baño completo del apartamento con ducha y bidé",
-      "caption": "Baño",
-      "captionEn": "Bathroom",
-      "aspect": 0.75,
-      "widths": [
-        480,
-        768,
-        1200
       ]
     },
     {
@@ -251,6 +220,114 @@
         480,
         768,
         1200
+      ]
+    },
+    {
+      "base": "pistas-pinos-nevados",
+      "source": "owner",
+      "order": 1.5,
+      "kind": "entorno",
+      "category": "nieve",
+      "focal": "55% 60%",
+      "alt": "Niños esquiando junto a un telearrastre de Javalambre, entre pinos cargados de nieve y niebla",
+      "caption": "Pistas de Javalambre entre pinos nevados · en temporada",
+      "captionEn": "Javalambre slopes among snowy pines · in season",
+      "aspect": 0.849,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "dormitorio-principal",
+      "source": "owner",
+      "order": 8.1,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "50% 55%",
+      "alt": "Dormitorio principal con cama doble grande, dos puertas balconeras abiertas al sol y vistas a los tejados de Camarena y a la sierra",
+      "caption": "Dormitorio principal con dos balcones",
+      "captionEn": "Main bedroom with two balconies",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "dormitorio-principal-balcones",
+      "source": "owner",
+      "order": 8.4,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "50% 55%",
+      "alt": "Otra vista del dormitorio principal, con cortinas verdes, lámina de Yayoi Kusama y televisión",
+      "caption": "Dormitorio principal",
+      "captionEn": "Main bedroom",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "habitacion-literas",
+      "source": "owner",
+      "order": 8.3,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "45% 55%",
+      "alt": "Habitación infantil con litera de madera, juguetes en el suelo y balcón",
+      "caption": "Habitación de los niños, con litera",
+      "captionEn": "Children's room with bunk bed",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "rincon-infantil",
+      "source": "owner",
+      "order": 8.2,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "55% 55%",
+      "alt": "Rincón de juego infantil con estantería de cuentos, juegos de mesa, peluches, correpasillos y un trineo rojo",
+      "caption": "Rincón de juego con juguetes, cuentos y trineo",
+      "captionEn": "Play corner with toys, books and a sledge",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "bano-completo",
+      "source": "owner",
+      "order": 12,
+      "kind": "alojamiento",
+      "category": "bano",
+      "focal": "50% 55%",
+      "alt": "Baño completo del apartamento con ducha, lavabo con mueble de madera, inodoro y bidé",
+      "caption": "Baño",
+      "captionEn": "Bathroom",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
       ]
     }
   ],

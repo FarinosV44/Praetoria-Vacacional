@@ -20,6 +20,7 @@ export const valencia: PropertyContent = {
   name: "Valencia Frente al Mar",
   experience: "sea",
   currency: "EUR",
+  instagram: "valencia_beach_apartment01",
   tagline: "Apartamento a pie de la playa de la Llastra, litoral sur de Valencia",
   shortIntro:
     "Un apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo desde el salón y la terraza, zona privada de playa y parking gratis. Un tramo de costa valenciana tranquilo, junto a la Albufera y a media hora de la ciudad de Valencia.",

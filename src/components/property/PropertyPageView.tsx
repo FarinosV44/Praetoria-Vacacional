@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { instagramUrl } from "@/lib/social";
 import { resolveProperty } from "@/domains/properties/content";
 import { propertyJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -332,6 +333,20 @@ export async function PropertyPageView({ slug, locale }: { slug: string; locale:
               ))}
             </section>
           ))}
+
+          {p.instagram && (
+            <p className="text-sm text-[var(--color-ink-soft)]">
+              {lang === "en" ? "See more of the apartment on Instagram: " : "Más fotos y novedades del apartamento en Instagram: "}
+              <a
+                className="font-semibold text-[var(--color-ink)] underline underline-offset-4"
+                href={instagramUrl(p.instagram)}
+                target="_blank"
+                rel="noopener"
+              >
+                @{p.instagram}
+              </a>
+            </p>
+          )}
 
           {/* Amenities grouped */}
           <section aria-labelledby="amenities-heading">

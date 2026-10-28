@@ -105,6 +105,8 @@ export interface PropertyContent {
   experience: Experience;
   /** Short tagline for cards. */
   tagline: string;
+  /** The apartment's own Instagram account (handle without @). */
+  instagram?: string;
   /** One-liner of what kind of escape this is (issue #31 — concrete language). */
   shortIntro: string;
 

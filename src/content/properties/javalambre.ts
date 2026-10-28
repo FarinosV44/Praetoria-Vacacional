@@ -17,9 +17,10 @@ export const javalambre: PropertyContent = {
   name: "Javalambre Mountain SuperSki",
   experience: "ski",
   currency: "EUR",
+  instagram: "javalambresuperski",
   tagline: "Apartamento en Camarena de la Sierra, a 10 minutos de las pistas de Javalambre",
   shortIntro:
-    "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
+    "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Dormitorio principal luminoso con dos balcones, habitación infantil con juguetes, chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
 
   idealFor: [
     "Familias con niños",
@@ -50,24 +51,24 @@ export const javalambre: PropertyContent = {
       body: "El apartamento está en Camarena de la Sierra, el pueblo más cercano a la estación. Sales por la mañana y en unos 10 minutos estás calzando los esquís.",
     },
     {
-      title: "Guardaesquís en el edificio",
-      body: "El edificio tiene habitación guardaesquís: llegas, dejas ahí los esquís y las botas secándose y no subes el material al apartamento.",
-    },
-    {
       title: "Chimenea de pellets y calefacción",
       body: "Salón con chimenea de pellets además de la calefacción. Varios huéspedes destacan lo cálido que se mantiene el apartamento en pleno invierno.",
     },
     {
-      title: "Apartamento nuevo de 70 m², parking gratis y balcón a la montaña",
-      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, balcón con vistas a la sierra y plaza de aparcamiento gratuita en el mismo edificio, sin buscar sitio en la calle con nieve. Para hasta 6 personas.",
+      title: "Un dormitorio principal muy especial",
+      body: "Cama doble grande, dos puertas balconeras que llenan la habitación de sol, vistas a los tejados del pueblo y a la sierra, cortinas para dormir sin prisa y televisión propia. Un dormitorio para descansar de verdad después de un día de pistas.",
+    },
+    {
+      title: "Apartamento nuevo de 70 m², parking gratis y guardaesquís",
+      body: "Dos dormitorios, cocina totalmente equipada con lavavajillas y horno, balcón con vistas a la sierra y plaza de aparcamiento gratuita en el mismo edificio, sin buscar sitio en la calle con nieve. El edificio tiene guardaesquís: dejas ahí esquís y botas y no subes el material a casa. Para hasta 6 personas.",
     },
     {
       title: "En un pueblo serrano de verdad, no en un resort",
       body: "Camarena de la Sierra conserva una atmósfera de pueblo de montaña tradicional: calles de piedra, fuentes, paisaje y un ritmo ajeno al turismo de masas. Además del esquí, la experiencia de pasar unos días en un pueblo serrano español.",
     },
     {
-      title: "Ideal para familias y para la primera vez en la nieve",
-      body: "Javalambre es una estación cómoda para aprender y disfrutar sin agobios. Con la proximidad del apartamento a las pistas, es una escapada de fin de semana fácil de organizar, también con niños.",
+      title: "Pensado para ir con niños: habitación infantil con juguetes",
+      body: "La habitación de los niños tiene litera y un rincón de juego con juguetes, cuentos, juegos de mesa y un trineo para la nieve. Los peques tienen su espacio desde que llegan, y Javalambre es una estación cómoda para su primera vez en la nieve.",
     },
   ],
 
@@ -97,6 +98,15 @@ export const javalambre: PropertyContent = {
   },
 
   amenityGroups: [
+    {
+      category: "Para familias con niños",
+      items: [
+        "Habitación infantil con litera",
+        "Rincón de juego con juguetes y cuentos",
+        "Juegos de mesa",
+        "Trineo para la nieve",
+      ],
+    },
     {
       category: "Esquí y montaña",
       items: [
@@ -160,7 +170,7 @@ export const javalambre: PropertyContent = {
       heading: "Una base a diez minutos de las pistas",
       body: [
         "El apartamento está en el centro de Camarena de la Sierra, a unos 10 minutos en coche de la estación de esquí de Javalambre. Es de las formas más cómodas de esquiar cerca de Valencia: sales, llegas a pistas antes de las colas y vuelves a comer o a descansar al apartamento sin recorrer medio valle.",
-        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. El edificio tiene habitación guardaesquís, así que dejas ahí el material y no lo subes a casa. El forfait y el alquiler de equipo se gestionan en la propia estación.",
+        "Es un apartamento nuevo de 70 m² con dos dormitorios, salón con chimenea de pellets, cocina totalmente equipada y balcón con vistas a la montaña. El dormitorio principal es la joya de la casa: cama doble grande y dos puertas balconeras por las que entra el sol de la mañana, con los tejados de Camarena y la sierra al otro lado. La habitación de los niños tiene litera y su propio rincón de juego, con juguetes, cuentos, juegos de mesa y hasta un trineo para la nieve. El edificio tiene habitación guardaesquís, así que dejas ahí el material y no lo subes a casa. El forfait y el alquiler de equipo se gestionan en la propia estación.",
         "La estación de Javalambre, del grupo Aramón, es una de las más accesibles del este peninsular y especialmente cómoda para familias y para quienes se estrenan en la nieve.",
       ],
     },
@@ -190,6 +200,11 @@ export const javalambre: PropertyContent = {
       question: "¿Cuántas personas caben?",
       answer:
         "Hasta 6 personas: 1 cama doble grande, 1 litera y 1 sofá cama, repartidas en 2 dormitorios y el salón. El apartamento tiene 70 m² y 1 baño con ducha y bidé.",
+    },
+    {
+      question: "¿Es un buen apartamento para ir con niños?",
+      answer:
+        "Sí. Tiene una habitación infantil con litera y un rincón de juego con juguetes, cuentos, juegos de mesa y un trineo para la nieve. Además, la estación de Javalambre está a unos 10 minutos y es muy cómoda para que los niños se inicien en el esquí.",
     },
     {
       question: "¿Hay calefacción?",
@@ -294,7 +309,7 @@ export const javalambre: PropertyContent = {
   en: {
     tagline: "Apartment in Camarena de la Sierra, 10 minutes from the Javalambre slopes",
     shortIntro:
-      "A new 70 m² apartment in Camarena de la Sierra, a traditional stone-and-springs mountain village, with mountain views and about a 10-minute drive from the Javalambre slopes. Pellet stove, full kitchen, free parking and ski storage — one of the easiest snow escapes from Valencia, with no big mountain trip to organise.",
+      "A new 70 m² apartment in Camarena de la Sierra, a traditional stone-and-springs mountain village, with mountain views and about a 10-minute drive from the Javalambre slopes. A bright main bedroom with two balconies, a children's room with toys, pellet stove, full kitchen, free parking and ski storage — one of the easiest snow escapes from Valencia, with no big mountain trip to organise.",
     seo: {
       metaTitle: "Accommodation in Camarena de la Sierra near Javalambre | Praetoria Vacacional",
       metaDescription:
@@ -307,7 +322,7 @@ export const javalambre: PropertyContent = {
         heading: "A base ten minutes from the slopes",
         body: [
           "The apartment is in the centre of Camarena de la Sierra, about a 10-minute drive from the Javalambre ski resort. It is one of the most comfortable ways to ski near Valencia: you set off, reach the slopes before the queues, and come back to eat or rest at the apartment without crossing half the valley.",
-          "It is a new 70 m² apartment with two bedrooms, a living room with a pellet stove, a fully equipped kitchen and a balcony with mountain views. The building has a ski storage room, so you leave your gear there rather than carrying it upstairs. Ski passes and equipment rental are handled at the resort itself.",
+          "It is a new 70 m² apartment with two bedrooms, a living room with a pellet stove, a fully equipped kitchen and a balcony with mountain views. The main bedroom is the gem of the flat: a large double bed and two French windows that fill it with morning sun, with the village rooftops and the range beyond. The children's room has a bunk bed and its own play corner, with toys, storybooks, board games and even a sledge for the snow. The building has a ski storage room, so you leave your gear there rather than carrying it upstairs. Ski passes and equipment rental are handled at the resort itself.",
           "The Javalambre resort, part of the Aramón group, is one of the most accessible in eastern Spain and especially comfortable for families and first-timers on snow.",
         ],
       },
@@ -328,24 +343,24 @@ export const javalambre: PropertyContent = {
         body: "The apartment is in Camarena de la Sierra, the closest village to the resort. Leave in the morning and you are clipping into your skis about 10 minutes later.",
       },
       {
-        title: "Ski storage in the building",
-        body: "The building has a ski storage room: arrive, leave your skis and boots to dry there and don't carry them up to the apartment.",
-      },
-      {
         title: "Pellet stove and heating",
         body: "A living room with a pellet stove on top of the central heating. Guests keep mentioning how warm the apartment stays in midwinter.",
       },
       {
-        title: "New 70 m² apartment, free parking and a mountain-view balcony",
-        body: "Two bedrooms, a fully equipped kitchen with dishwasher and oven, a balcony facing the range and a free parking space in the same building. Sleeps up to 6.",
+        title: "A very special main bedroom",
+        body: "A large double bed, two French windows that flood the room with sun, views over the village rooftops to the range, and its own TV. A bedroom for real rest after a day on the slopes.",
+      },
+      {
+        title: "New 70 m² apartment, free parking and ski storage",
+        body: "Two bedrooms, a fully equipped kitchen with dishwasher and oven, a balcony facing the range and a free parking space in the same building. Ski storage downstairs, so your gear stays out of the flat. Sleeps up to 6.",
       },
       {
         title: "A real mountain village, not a resort",
         body: "Camarena de la Sierra keeps the feel of a traditional mountain village — stone streets, springs, landscape and a pace far from mass tourism. Beyond the skiing, the experience of a few days in a Spanish mountain village.",
       },
       {
-        title: "Great for families and a first time on snow",
-        body: "Javalambre is an easy resort to learn and enjoy without stress. With the apartment so close to the slopes, it is a weekend escape that is simple to organise, children included.",
+        title: "Made for children: a kids' room with toys",
+        body: "The children's room has a bunk bed and a play corner with toys, storybooks, board games and a sledge for the snow. The little ones have their own space from the moment they arrive, and Javalambre is an easy resort for their first time on snow.",
       },
     ],
   },
