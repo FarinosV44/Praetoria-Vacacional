@@ -391,6 +391,27 @@ export async function HomeView({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      {/* 6b · Owners — capture holiday-rental owners (ES only) */}
+      {locale !== "en" && (
+        <section aria-labelledby="owners-band-heading" className="border-t border-[var(--color-line)] py-[clamp(3rem,2.5rem+2vw,5rem)]">
+          <div className="container-page flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="max-w-2xl">
+              <p className="eyebrow">Propietarios</p>
+              <h2 id="owners-band-heading" className="mt-3 display-3">
+                ¿Tienes un apartamento turístico? Lo gestionamos por ti
+              </h2>
+              <p className="mt-3 text-[var(--color-ink-soft)]">
+                En El Perelló, Les Palmeres, Cullera o Camarena de la Sierra: licencia, reservas,
+                huéspedes, limpieza y mantenimiento. Tú solo recibes tus ingresos.
+              </p>
+            </div>
+            <Link href="/propietarios" className="pv-btn pv-btn--ink pv-btn--lg shrink-0">
+              Pide tu propuesta <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* 7 · Final call — one action */}
       <section className="bg-[var(--color-ink)] py-[clamp(4.5rem,3rem+5vw,9rem)] text-white">
         <div className="container-page flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">

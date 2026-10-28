@@ -20,6 +20,7 @@ export function SiteHeader() {
     })),
     { href: "/guias", label: "Guías de destino" },
     { href: "/blog", label: "Blog" },
+    { href: "/propietarios", label: "¿Tienes un apartamento?", kicker: "Propietarios" },
     { href: "/contacto", label: "Contacto" },
   ];
 
@@ -49,6 +50,9 @@ export function SiteHeader() {
           </Link>
           <Link href="/blog" className={navLink}>
             Blog
+          </Link>
+          <Link href="/propietarios" className={navLink}>
+            Propietarios
           </Link>
         </nav>
 
