@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllProperties } from "@/domains/properties/registry";
 import { instagramUrl } from "@/lib/social";
+import { landingLinksFor } from "@/domains/marketing/navigation";
 import { Wordmark } from "./Logo";
 import { company, companyAddressOneLine } from "@/content/company";
 
@@ -60,6 +61,18 @@ export function SiteFooter() {
               <li key={p.slug}>
                 <Link className={colLink} href={`/${p.slug}`}>
                   {p.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {/* The landing pages behind the money keywords, linked site-wide so
+              they are one click from anywhere (DinoRANK internal PageRank). */}
+          <p className={`${colHead} mt-6`}>Dónde alojarse</p>
+          <ul className="mt-2">
+            {properties.flatMap((p) => landingLinksFor(p.slug)).map((l) => (
+              <li key={l.path}>
+                <Link className={colLink} href={l.path}>
+                  {l.label}
                 </Link>
               </li>
             ))}
