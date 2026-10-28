@@ -587,6 +587,132 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "salon-mesa-ventanal",
+      "source": "owner",
+      "order": 5.1,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Salón-comedor con mesa de madera, banco corrido con cojines junto al ventanal y la playa de la Llastra al otro lado del cristal",
+      "caption": "Salón-comedor con banco junto al ventanal",
+      "captionEn": "Living-dining room with a window bench",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "salon-balcon-mar",
+      "source": "owner",
+      "order": 5.2,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Salón con salida a la terraza y ventanal con vistas frontales al mar y a la arena de la Llastra",
+      "caption": "Salón con terraza y ventanal al mar",
+      "captionEn": "Living room with terrace and sea-view window",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "mesa-bienvenida-mar",
+      "source": "owner",
+      "order": 5.3,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Mesa del salón junto al ventanal, con el mar de fondo, la guía del apartamento y una caja de bienvenida",
+      "caption": "Desayunar con el mar delante",
+      "captionEn": "Breakfast with the sea in front",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "salon-sillones",
+      "source": "owner",
+      "order": 8.1,
+      "kind": "alojamiento",
+      "category": "salon",
+      "focal": "50% 55%",
+      "alt": "Rincón del salón con dos butacas de madera, láminas enmarcadas y espejo que refleja el mar",
+      "caption": "Rincón de lectura del salón",
+      "captionEn": "Reading corner in the living room",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "vista-pescador-surfcasting",
+      "source": "owner",
+      "order": 2.1,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "60% 40%",
+      "alt": "Pescador de surfcasting con sus cañas en la orilla, visto desde el ventanal del apartamento sobre el paseo marítimo",
+      "caption": "Desde el ventanal: surfcasting en la orilla",
+      "captionEn": "From the window: surfcasting at the shoreline",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "balcon-mar",
+      "source": "owner",
+      "order": 6.1,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "65% 50%",
+      "alt": "Puerta corredera del salón abierta a la terraza, con taburete y sillas frente al mar",
+      "caption": "La terraza, frente al mar",
+      "captionEn": "The terrace, facing the sea",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "surf-llastra",
+      "source": "owner",
+      "order": 9.1,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 50%",
+      "alt": "Surfista cogiendo una ola en la playa de la Llastra un día de temporal, junto a un cartel de zona peligrosa para el baño",
+      "caption": "Días de olas en la Llastra · respeta siempre la señalización de baño",
+      "captionEn": "Surf days at la Llastra · always follow the swimming signs",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
     }
   ]
 }
