@@ -4,6 +4,8 @@ import type { PropertyContent } from "@/domains/properties/types";
 import { defaultLocale, locales, localizedPath, type Locale } from "@/i18n/config";
 import { propertyPhotos } from "@/content/properties/photos";
 import { company } from "@/content/company";
+import { getAllProperties } from "@/domains/properties/registry";
+import { instagramUrl } from "./social";
 
 const SITE = publicEnv.siteName;
 const BASE = publicEnv.siteUrl.replace(/\/$/, "");
@@ -92,7 +94,10 @@ export function organizationJsonLd() {
       email: company.email,
       availableLanguage: ["es", "en"],
     },
-    sameAs: [] as string[],
+    sameAs: getAllProperties()
+      .map((p) => p.instagram)
+      .filter((h): h is string => Boolean(h))
+      .map(instagramUrl),
   };
 }
 
@@ -120,6 +125,7 @@ export function propertyJsonLd(p: PropertyContent, opts: { ratingValue?: number;
     "@type": "VacationRental",
     name: p.name,
     url: absoluteUrl(`/${p.slug}`),
+    ...(p.instagram ? { sameAs: [instagramUrl(p.instagram)] } : {}),
     description: p.seo.metaDescription,
     image: propertyPhotos(p.slug).map((g) => absoluteUrl(g.src)),
     numberOfRooms: p.capacity.bedrooms,
