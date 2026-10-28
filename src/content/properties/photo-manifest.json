@@ -235,6 +235,23 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "camarena-atardecer-otono",
+      "source": "owner",
+      "order": 14,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 60%",
+      "alt": "Camarena de la Sierra al atardecer en otoño, con chopos dorados y la sierra de Javalambre al fondo",
+      "caption": "Camarena de la Sierra en otoño",
+      "captionEn": "Camarena de la Sierra in autumn",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200
+      ]
     }
   ],
   "valencia": [
