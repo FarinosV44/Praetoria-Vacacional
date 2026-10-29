@@ -717,7 +717,7 @@
     {
       "base": "vista-playa-palmeras",
       "source": "owner",
-      "order": -1,
+      "order": 0.3,
       "kind": "vista",
       "category": "vistas",
       "focal": "45% 55%",
