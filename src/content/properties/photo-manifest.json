@@ -713,6 +713,42 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "vista-playa-palmeras",
+      "source": "owner",
+      "order": -1,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "45% 55%",
+      "alt": "Vista desde el apartamento: la playa de la Llastra con su torre de socorrista, el paseo marítimo con palmeras y el Mediterráneo en un día de sol",
+      "caption": "La vista desde el apartamento: la Llastra y el paseo de palmeras",
+      "captionEn": "The view from the apartment: la Llastra beach and the palm-lined promenade",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "vista-playa-dunas",
+      "source": "owner",
+      "order": 0.5,
+      "kind": "vista",
+      "category": "vistas",
+      "focal": "50% 60%",
+      "alt": "Vista desde el apartamento de la amplia playa de la Llastra, las dunas protegidas junto al paseo y el mar en calma bajo un cielo azul",
+      "caption": "Desde el balcón: arena, dunas y mar abierto",
+      "captionEn": "From the balcony: sand, dunes and open sea",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
     }
   ]
 }
