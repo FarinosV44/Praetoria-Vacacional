@@ -11,8 +11,50 @@
   "background_color": "#202827",
   "theme_color": "#202827",
   "icons": [
-    { "src": "/admin-icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/admin-icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/admin-icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/admin-icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sincronizar Booking y Airbnb",
+      "short_name": "Sincronizar",
+      "description": "Importa ahora los calendarios de Booking y Airbnb",
+      "url": "/admin/sincronizar",
+      "icons": [
+        {
+          "src": "/admin-icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Precios rápidos",
+      "short_name": "Precios",
+      "url": "/admin/movil/precios",
+      "icons": [
+        {
+          "src": "/admin-icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

@@ -5,6 +5,7 @@ import { addDays, todayIso } from "@/lib/dates";
 import { formatMoney, formatRange, guestsLabel } from "@/lib/format";
 import { getVapidKeys, listSubscriptions } from "@/domains/notifications/push";
 import { MobileAppSetup } from "@/components/admin/mobile/MobileAppSetup";
+import { SyncAllButton } from "@/components/admin/sync/SyncAllButton";
 
 export const metadata = { title: "App móvil" };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,17 @@ export default async function AdminMobileHome() {
   return (
     <div className="mx-auto max-w-md space-y-4">
       <h1>Praetoria · Reservas</h1>
+
+      <section className="admin-card p-4" aria-labelledby="quick-sync">
+        <h2 id="quick-sync" className="text-base">
+          Calendarios de Booking y Airbnb
+        </h2>
+        <div className="mt-3">
+          <SyncAllButton
+            propertyNames={Object.fromEntries(getAllProperties().map((p) => [p.slug, p.name]))}
+          />
+        </div>
+      </section>
 
       <MobileAppSetup vapidPublicKey={vapid?.publicKey ?? ""} devices={subs.length} />
 

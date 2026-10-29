@@ -32,7 +32,7 @@ const QUICK: [string, string][] = [
   ["/admin/calendario", "Bloquear o abrir fechas"],
   ["/admin/precios", "Cambiar precios"],
   ["/admin/promociones", "Crear promoción"],
-  ["/admin/sincronizacion", "Sincronizar calendarios"],
+  ["/admin/sincronizar", "Sincronizar Booking y Airbnb"],
 ];
 
 export function AdminTopbar({ right }: { right?: React.ReactNode }) {

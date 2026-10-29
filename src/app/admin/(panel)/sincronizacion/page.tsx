@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { DEMO_MODE, env } from "@/lib/env";
 import { absoluteUrl } from "@/lib/seo";
 import { setImportFeedUrlAction } from "@/domains/admin/actions";
 import { getImportFeedStatus, type FeedState } from "@/domains/integrations/sync-status";
 import { RunSyncButton } from "./RunSyncButton";
+import { SyncAllButton } from "@/components/admin/sync/SyncAllButton";
+import { getAllProperties } from "@/domains/properties/registry";
 import { ImportFeedForm } from "./ImportFeedForm";
 
 export const metadata = { title: "Sincronización" };
@@ -33,6 +36,13 @@ export default async function AdminSyncPage() {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl">Sincronización de calendarios (iCal)</h1>
+      <div className="max-w-md">
+        <SyncAllButton propertyNames={Object.fromEntries(getAllProperties().map((p) => [p.slug, p.name]))} />
+        <p className="mt-2 text-xs text-[var(--color-ink-soft)]">
+          Enlace rápido: <Link className="underline" href="/admin/sincronizar">/admin/sincronizar</Link> — al abrirlo
+          sincroniza al momento. Guárdalo en favoritos o mantén pulsado el icono de la app.
+        </p>
+      </div>
       <p className="text-sm text-[var(--color-ink-soft)]">
         Cada alojamiento importa las reservas de Booking.com y/o Airbnb por su feed iCal y exporta
         las reservas directas por su propio feed. La URL de importación se resuelve en este orden:
