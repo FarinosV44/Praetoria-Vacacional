@@ -48,7 +48,7 @@ export const guideHubs: GuideHub[] = [
     metaDescription:
       "Guía práctica para tu escapada a Javalambre: la estación de esquí, Camarena de la Sierra, cómo llegar, dónde alojarse y qué hacer con o sin nieve.",
     h1: "Guía de Javalambre y Camarena de la Sierra",
-    lead: "Todo lo que necesitas para preparar una escapada a la sierra de Javalambre, en el sur de Teruel: la estación de esquí más cómoda para ir desde Valencia, el pueblo de Camarena de la Sierra a diez minutos de las pistas, cómo llegar y qué hacer durante todo el año.",
+    lead: "Todo lo que necesitas para preparar una escapada a la montaña de Javalambre, en el sur de Teruel: la estación de esquí más cómoda para ir desde Valencia, el pueblo de Camarena de la Sierra a diez minutos de las pistas, cómo llegar y qué hacer durante todo el año.",
     quickFacts: [
       { label: "Dónde", value: "Sierra de Javalambre, sur de Teruel (Aragón)" },
       { label: "Pueblo base", value: "Camarena de la Sierra" },
@@ -61,7 +61,7 @@ export const guideHubs: GuideHub[] = [
       {
         heading: "Dónde está y cómo llegar",
         body: [
-          "La sierra de Javalambre está en el extremo sur de la provincia de Teruel, en la comarca Gúdar-Javalambre. Se llega en coche por la A-23 (Sagunto–Teruel) y después por carreteras de montaña hasta Camarena de la Sierra, el pueblo situado a los pies de la estación.",
+          "La montaña de Javalambre está en el extremo sur de la provincia de Teruel, en la comarca Gúdar-Javalambre. Se llega en coche por la A-23 (Sagunto–Teruel) y después por carreteras de montaña hasta Camarena de la Sierra, el pueblo situado a los pies de la estación.",
           "Desde Valencia son unas dos horas; desde Zaragoza, algo más; desde Teruel capital, unos 40 minutos. En invierno conviene llevar cadenas o neumáticos de invierno. La estación de tren más cercana es Puebla de Valverde, a 15 km.",
         ],
       },
