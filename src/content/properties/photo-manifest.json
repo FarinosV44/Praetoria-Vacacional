@@ -787,6 +787,24 @@
         1600,
         2000
       ]
+    },
+    {
+      "base": "caseta-perellona-albufera",
+      "source": "owner",
+      "order": 14.3,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "40% 45%",
+      "alt": "Caseta blanca de puertas rojas entre los arrozales inundados de la Albufera, reflejada en el agua",
+      "caption": "Una caseta de la marjal durante la Perellonà",
+      "captionEn": "A farmhouse in the flooded rice fields during the Perellonà",
+      "aspect": 1.5,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
     }
   ]
 }
