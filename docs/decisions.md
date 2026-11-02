@@ -889,3 +889,10 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 - **Legal is explicitly not machine-translated** — the doc says to commission a
   professional EN version and keep a "Spanish version prevails" notice.
 - Blog EN is the owner's job — the CMS model already carries a locale field.
+
+## D-045 — cancellation policy aligned with Booking.com
+**Date:** 2026-11-02 · owner decision (web and Booking must show identical conditions)
+- **Policy.** Supersedes the tiers in D-035 for both properties: 100 % refund
+  ≥14 days before check-in, 0 % inside 14 days — the same "Flexible - 14 días"
+  policy the listings use on Booking.com. `computeRefund` is unchanged; only
+  each property's `cancellationPolicy` (tiers + ES/EN summaries) changed.
