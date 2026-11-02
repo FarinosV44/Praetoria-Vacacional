@@ -1,27 +1,31 @@
 /**
- * Praetoria Vacacional wordmark (creative direction 2026, #99 — route B lockup).
- * Pure typography: "PRAETORIA" set confidently, a hairline, then "VACACIONAL"
- * smaller and tracked. No pictogram — the Praetoria family is recognised by
- * its type, not by an illustrated sun, wave or mountain.
+ * Praetoria Vacacional logo (owner artwork, November 2026). The lockup —
+ * terracotta "PRAETORIA" with the arch-and-horizon A, "VACACIONAL" tracked
+ * below — is served as a traced vector from /public so it stays crisp at any
+ * size: logo.svg for light backgrounds, logo-dark.svg for the ink footer.
  */
+const RATIO = 3370 / 648;
+
 export function Wordmark({
-  className = "",
-  compact = false,
+  className = "h-9 sm:h-10",
+  tone = "light",
 }: {
+  /** Height utilities; the width follows the logo's aspect ratio. */
   className?: string;
-  /** Slightly tighter gap; below 360px the lockup always stacks on two lines. */
-  compact?: boolean;
+  /** "light" for paper backgrounds, "dark" for ink backgrounds. */
+  tone?: "light" | "dark";
 }) {
   return (
-    <span
-      className={`inline-flex items-center whitespace-nowrap leading-none max-[359px]:flex-col max-[359px]:items-start max-[359px]:gap-1.5 ${compact ? "gap-2" : "gap-3"} ${className}`}
-    >
-      <span className="text-[1.02rem] font-bold tracking-[0.14em]">PRAETORIA</span>
-      <span aria-hidden className="h-3.5 w-px bg-current opacity-45 max-[359px]:hidden" />
-      <span className="text-[0.6rem] font-medium tracking-[0.32em] max-[359px]:text-[0.52rem] max-[359px]:tracking-[0.42em]">
-        VACACIONAL
-      </span>
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element -- static SVG, no optimisation needed
+    <img
+      src={tone === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+      alt="Praetoria Vacacional"
+      width={Math.round(40 * RATIO)}
+      height={40}
+      decoding="async"
+      fetchPriority={tone === "light" ? "high" : "auto"}
+      className={`block w-auto max-w-full ${className}`}
+    />
   );
 }
 

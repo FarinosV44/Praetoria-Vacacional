@@ -24,10 +24,7 @@ export function SiteFooter() {
     <footer className="bg-[var(--color-ink)] text-white/80">
       <div className="container-page grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:py-20">
         <div>
-          <p className="text-white">
-            <Wordmark />
-            <span className="sr-only">Praetoria Vacacional</span>
-          </p>
+          <Wordmark tone="dark" className="h-11" />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
             Dos apartamentos con reserva directa: frente a la playa de la Llastra y en
             Camarena de la Sierra, junto a Javalambre.

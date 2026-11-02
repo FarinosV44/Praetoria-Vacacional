@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   description:
     "Reserva directa en dos alojamientos: Javalambre Mountain SuperSki para la nieve y Valencia Frente al Mar para la playa. Disponibilidad real, precio total y confirmación inmediata.",
   applicationName: publicEnv.siteName,
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
   alternates: { canonical: absoluteUrl("/") },
   openGraph: {
     type: "website",
