@@ -191,7 +191,7 @@ export const seasonalPages: SeasonalPage[] = [
     status: "published",
     keyword: "escapada de última hora a la playa de Valencia",
     period: "Reservas de última hora, todo el año",
-    title: "Escapada de última hora a la playa de Valencia | Apartamento en la Llastra",
+    title: "Escapada de última hora a la playa de Valencia",
     description:
       "¿Fechas próximas libres? Apartamento a pie de la playa de la Llastra, primera línea de mar, hasta 6 huéspedes, parking gratis. Precio total y confirmación inmediata. Reserva directa.",
     h1: "Escapada de última hora a la playa de Valencia",

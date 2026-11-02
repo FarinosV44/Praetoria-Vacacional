@@ -120,7 +120,7 @@ export async function buildSeoInventory(): Promise<SeoRow[]> {
   rows.push({
     path: "/",
     section: "home",
-    title: "Praetoria Vacacional · Alojamientos de playa y montaña con reserva directa",
+    title: "Praetoria Vacacional · Apartamentos de playa y montaña",
     description:
       "Reserva directa en dos alojamientos: Javalambre para la nieve y Valencia para la playa.",
     intent: "Marca + selección Playa/Nieve",

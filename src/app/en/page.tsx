@@ -5,7 +5,7 @@ import { HomeView } from "@/components/home/HomeView";
 export const metadata: Metadata = pageMetadata({
   title: "Praetoria Vacacional · Beach and mountain stays, booked direct",
   description:
-    "Book direct at two properties: Javalambre Mountain SuperSki for the snow and Valencia Frente al Mar for the beach. Real availability, full price, instant confirmation.",
+    "Book direct at two apartments: right on la Llastra beach south of Valencia and next to the Javalambre ski slopes. Full price and instant confirmation.",
   path: "/en",
   locale: "en",
   hreflangFor: "/",

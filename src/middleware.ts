@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Edge middleware:
  *  - hard `noindex` header on private/technical paths (issues #14, #32)
+ *  - 301 from the www host to the bare domain (single canonical host for SEO)
  *  - cheap first-line gate for /admin (full auth check is server-side in the
  *    (panel) layout).
  *
@@ -16,6 +17,13 @@ const NOINDEX_PREFIXES = ["/admin", "/reservar", "/reserva", "/api", "/mi-reserv
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // One host for Google: www.praetoriavacacional.es → praetoriavacacional.es (301).
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(",")[0]?.trim().toLowerCase() ?? "";
+  if (host.startsWith("www.")) {
+    const target = new URL(`${pathname}${req.nextUrl.search}`, `https://${host.slice(4)}`);
+    return NextResponse.redirect(target, 301);
+  }
 
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const hasSession =
@@ -37,5 +45,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/reservar/:path*", "/reserva/:path*", "/api/:path*", "/mi-reserva/:path*"],
+  // Every page (for the www → apex redirect) except Next's static assets.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -40,7 +40,7 @@ export const landings: Landing[] = [
     secondaryKeywords: ["apartamento Javalambre", "dónde alojarse en Javalambre"],
     title: "Alojamiento en Javalambre: apartamento en Camarena de la Sierra",
     description:
-      "Apartamento en Camarena de la Sierra, a 10 minutos de las pistas de Javalambre. 70 m², chimenea de pellets, cocina completa, parking gratis y guardaesquís. Reserva directa.",
+      "Alojamiento en Javalambre: apartamento de 70 m² en Camarena de la Sierra, a 10 min de las pistas. Chimenea, cocina completa, parking y guardaesquís.",
     h1: "Alojamiento en Javalambre",
     lead: "El alojamiento más práctico para esquiar en Javalambre es un apartamento en Camarena de la Sierra, el pueblo a los pies de la sierra. A unos 10 minutos en coche de las pistas, con parking y guardaesquís, es una base cómoda para un fin de semana de nieve.",
     blocks: [
@@ -90,7 +90,7 @@ export const landings: Landing[] = [
     secondaryKeywords: ["dónde alojarse Gúdar-Javalambre", "hoteles y apartamentos Javalambre"],
     title: "Dónde dormir en Javalambre: Camarena de la Sierra y alrededores",
     description:
-      "Guía práctica sobre dónde dormir para esquiar en Javalambre: Camarena de la Sierra, los pueblos de Gúdar-Javalambre y Teruel capital. Con apartamento en reserva directa.",
+      "Dónde dormir para esquiar en Javalambre: Camarena de la Sierra, los pueblos de alrededor y Teruel capital. Con apartamento en reserva directa.",
     h1: "Dónde dormir en Javalambre",
     lead: "Dónde dormir en Javalambre depende de tu plan. Para esquiar varios días, lo más cómodo es alojarse en Camarena de la Sierra; para una escapada rural o cultural, los pueblos de la comarca o Teruel capital.",
     blocks: [
@@ -138,7 +138,7 @@ export const landings: Landing[] = [
     ],
     title: "Alojamiento cerca de la estación de esquí de Javalambre",
     description:
-      "Apartamento en Camarena de la Sierra, a unos 10 minutos de la estación de esquí de Javalambre. Parking gratis y guardaesquís en el edificio. Reserva directa con precio total.",
+      "Apartamento a unos 10 minutos de la estación de esquí de Javalambre, en Camarena de la Sierra. Parking gratis y guardaesquís. Reserva directa con precio total.",
     h1: "Alojamiento cerca de la estación de esquí de Javalambre",
     lead: "Camarena de la Sierra es el pueblo más próximo a la estación de Javalambre. Alojarte aquí reduce los desplazamientos diarios a unos 10 minutos y te permite volver a comer o descansar entre jornadas.",
     blocks: [
@@ -188,7 +188,7 @@ export const landings: Landing[] = [
     ],
     title: "Apartamentos en la playa de Valencia: frente al mar en la Llastra",
     description:
-      "Apartamento a pie de la playa de la Llastra, entre Les Palmeres y El Perelló (Sueca), litoral sur de Valencia. 75 m², vistas frontales al mar, parking gratis. Reserva directa.",
+      "Apartamento en la playa de Valencia, a pie de la Llastra entre Les Palmeres y El Perelló: 75 m², vistas frontales al mar y parking gratis. Reserva directa.",
     h1: "Apartamento en la playa, al sur de Valencia",
     lead: "Un apartamento a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, en la costa sur de la provincia de Valencia. Arena clara, agua limpia, vistas frontales al Mediterráneo y reserva directa.",
     blocks: [
@@ -234,7 +234,7 @@ export const landings: Landing[] = [
     secondaryKeywords: ["apartamento primera línea playa Valencia", "alojamiento con vistas al mar Valencia"],
     title: "Alojamiento frente al mar en la provincia de Valencia",
     description:
-      "Alojamiento en primera línea de mar en la playa de la Llastra (Sueca), al sur de Valencia. Despiertas con el Mediterráneo delante. Reserva directa con disponibilidad real y precio total.",
+      "Alojamiento en primera línea de mar en la playa de la Llastra, al sur de Valencia. Despiertas con el Mediterráneo delante. Reserva directa con precio total.",
     h1: "Alojamiento frente al mar en la provincia de Valencia",
     lead: "Estar en primera línea de playa significa bajar a la arena en segundos y tener el mar como salón. Este apartamento está a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, en la costa sur de Valencia.",
     blocks: [
@@ -277,7 +277,7 @@ export const landings: Landing[] = [
     secondaryKeywords: ["alojamiento cerca de la Albufera", "apartamento vacaciones costa de Valencia"],
     title: "Vacaciones de playa al sur de Valencia | Apartamento frente al mar",
     description:
-      "Apartamento para vacaciones de playa en la playa de la Llastra (Sueca), litoral sur de Valencia: verano, primavera y otoño con clima suave. Reserva directa, disponibilidad real y precio total.",
+      "Vacaciones de playa al sur de Valencia en un apartamento frente al mar en la Llastra: verano, primavera y otoño con clima suave. Reserva directa.",
     h1: "Vacaciones de playa al sur de Valencia",
     lead: "La costa sur de Valencia, junto a la Albufera, es un destino de playa que funciona más allá del verano. Este apartamento a pie de la playa de la Llastra es una buena base para tus vacaciones.",
     blocks: [
@@ -326,7 +326,7 @@ export const landings: Landing[] = [
     ],
     title: "Apartamento en la playa de la Llastra (Sueca), a pie de arena",
     description:
-      "Apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, con vistas frontales al Mediterráneo, parking gratis y hasta 6 huéspedes. Reserva directa.",
+      "Apartamento de 75 m² a pie de la playa de la Llastra, con vistas frontales al Mediterráneo, parking gratis y hasta 6 huéspedes. Reserva directa.",
     h1: "Apartamento en la playa de la Llastra",
     lead: "La playa de la Llastra es un tramo tranquilo del litoral de Sueca, entre Les Palmeres y El Perelló, con arena clara y poca masificación. Este apartamento está en primera línea: bajas del edificio y estás sobre la arena.",
     blocks: [
@@ -378,9 +378,9 @@ export const landings: Landing[] = [
       "apartamento cerca El Perelló playa",
       "dónde dormir El Perelló Valencia",
     ],
-    title: "Apartamentos cerca de El Perelló: frente al mar en la playa de la Llastra",
+    title: "Apartamentos cerca de El Perelló, frente al mar",
     description:
-      "Apartamento a pie de playa junto a El Perelló, en la playa de la Llastra (Sueca). Vistas frontales al mar, parking gratis, hasta 6 huéspedes y arroces a un paso. Reserva directa.",
+      "Apartamento a pie de playa a 2 km de El Perelló, en la playa de la Llastra: vistas al mar, parking gratis y hasta 6 huéspedes. Reserva directa.",
     h1: "Alojamiento cerca de El Perelló",
     lead: "El Perelló es conocido por sus restaurantes de arroz y su ambiente de pueblo costero. Este apartamento está muy cerca, en la playa de la Llastra, en primera línea de mar y con parking gratuito.",
     blocks: [
@@ -427,9 +427,9 @@ export const landings: Landing[] = [
       "apartamento Camarena de la Sierra",
       "dónde dormir Camarena de la Sierra",
     ],
-    title: "Alojamiento en Camarena de la Sierra: apartamento a 10 min de Javalambre",
+    title: "Alojamiento en Camarena de la Sierra, a 10 min de Javalambre",
     description:
-      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a unos 10 minutos de las pistas de Javalambre. Chimenea de pellets, guardaesquís, parking gratis. Reserva directa.",
+      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a 10 min de las pistas de Javalambre. Chimenea, guardaesquís y parking gratis. Reserva directa.",
     h1: "Alojamiento en Camarena de la Sierra",
     lead: "Camarena de la Sierra es el pueblo más cercano a la estación de Javalambre y una buena base para una escapada de nieve o de montaña. Este apartamento está en el centro del pueblo, con parking y guardaesquís.",
     blocks: [

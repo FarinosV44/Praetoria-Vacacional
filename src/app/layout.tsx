@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: `%s · ${publicEnv.siteName}`,
   },
   description:
-    "Reserva directa en dos alojamientos: Javalambre Mountain SuperSki para la nieve y Valencia Frente al Mar para la playa. Disponibilidad real, precio total y confirmación inmediata.",
+    "Dos apartamentos con reserva directa: frente al mar en la playa de la Llastra, al sur de Valencia, y junto a las pistas de Javalambre.",
   applicationName: publicEnv.siteName,
   icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
   alternates: { canonical: absoluteUrl("/") },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: publicEnv.siteName,
     locale: "es_ES",
     url: absoluteUrl("/"),
-    images: ["/images/og/default.svg"],
+    images: ["/images/og/default.jpg"],
   },
   robots: { index: true, follow: true },
   verification: publicEnv.gscVerification
