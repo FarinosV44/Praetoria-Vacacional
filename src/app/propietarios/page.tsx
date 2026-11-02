@@ -12,7 +12,7 @@ import { OwnerLeadForm } from "./OwnerLeadForm";
 export const metadata: Metadata = pageMetadata({
   title: "Gestión de apartamentos turísticos en El Perelló y Cullera",
   description:
-    "Gestión integral de tu apartamento turístico: licencia, anuncio, reservas, huéspedes, limpieza con equipo propio y mantenimiento. Costa sur de Valencia y Javalambre. Pide tu propuesta.",
+    "Gestión integral de tu apartamento turístico: licencia, reservas, huéspedes, limpieza con equipo propio y mantenimiento. Costa sur de Valencia y Javalambre.",
   path: "/propietarios",
 });
 

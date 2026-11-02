@@ -275,9 +275,9 @@ export const valencia: PropertyContent = {
   },
 
   seo: {
-    metaTitle: "Apartamento frente al mar en la playa de la Llastra (Valencia) | Praetoria Vacacional",
+    metaTitle: "Apartamento frente al mar en Valencia · Playa de la Llastra",
     metaDescription:
-      "Apartamento de 75 m² a pie de la playa de la Llastra, entre Les Palmeres y El Perelló, litoral sur de Valencia. Vistas frontales al mar, zona privada de playa y parking gratis. Reserva directa.",
+      "Apartamento de 75 m² en primera línea de la playa de la Llastra, al sur de Valencia: 3 dormitorios, hasta 6 personas, vistas al mar y parking gratis.",
     h1: "Apartamento frente al mar en la playa de la Llastra, al sur de Valencia",
     ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
   },
@@ -289,9 +289,9 @@ export const valencia: PropertyContent = {
     shortIntro:
       "A 75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, with head-on Mediterranean views from the living room and terrace, a private beach area and free parking. A quiet stretch of the Valencian coast, next to the Albufera and half an hour from the city of Valencia.",
     seo: {
-      metaTitle: "Beachfront apartment on la Llastra beach (Valencia) | Praetoria Vacacional",
+      metaTitle: "Beachfront apartment in Valencia · La Llastra beach",
       metaDescription:
-        "75 m² apartment right on la Llastra beach, between Les Palmeres and El Perelló, southern Valencia coast. Head-on sea views, private beach area, free parking. Book direct.",
+        "75 m² beachfront apartment on la Llastra beach, south of Valencia: 3 bedrooms, up to 6 guests, head-on sea views and free parking. Book direct.",
       h1: "Beachfront apartment on la Llastra beach, southern Valencia coast",
       ogImage: "/images/properties/valencia/salon-vista-mar-1200.webp",
     },

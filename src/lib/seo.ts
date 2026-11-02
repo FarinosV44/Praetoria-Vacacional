@@ -32,7 +32,7 @@ interface PageSeoInput {
 export function pageMetadata(input: PageSeoInput): Metadata {
   const locale = input.locale ?? defaultLocale;
   const url = absoluteUrl(input.path);
-  const images = (input.images ?? ["/images/og/default.svg"]).map((i) =>
+  const images = (input.images ?? ["/images/og/default.jpg"]).map((i) =>
     i.startsWith("http") ? i : absoluteUrl(i),
   );
 
@@ -181,7 +181,7 @@ export function articleJsonLd(input: {
 }) {
   const image = input.image
     ? [input.image.startsWith("http") ? input.image : absoluteUrl(input.image)]
-    : [absoluteUrl("/images/og/default.svg")];
+    : [absoluteUrl("/images/og/default.jpg")];
   return {
     "@context": "https://schema.org",
     "@type": "Article",

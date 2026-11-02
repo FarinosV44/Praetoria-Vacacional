@@ -3,9 +3,9 @@ import { pageMetadata } from "@/lib/seo";
 import { HomeView } from "@/components/home/HomeView";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Praetoria Vacacional · Alojamientos de playa y montaña con reserva directa",
+  title: "Praetoria Vacacional · Apartamentos de playa y montaña",
   description:
-    "Reserva directa en dos alojamientos: Javalambre Mountain SuperSki para la nieve y Valencia Frente al Mar para la playa. Disponibilidad real, precio total y confirmación inmediata.",
+    "Dos apartamentos con reserva directa: frente al mar en la playa de la Llastra, al sur de Valencia, y junto a las pistas de Javalambre.",
   path: "/",
   hreflangFor: "/",
 });

@@ -295,9 +295,9 @@ export const javalambre: PropertyContent = {
   },
 
   seo: {
-    metaTitle: "Alojamiento en Camarena de la Sierra junto a Javalambre | Praetoria Vacacional",
+    metaTitle: "Alojamiento en Javalambre · Camarena de la Sierra",
     metaDescription:
-      "Apartamento nuevo de 70 m² en Camarena de la Sierra (Teruel), a unos 10 min en coche de las pistas de Javalambre. Chimenea, cocina completa, parking gratis y guardaesquís. Reserva directa.",
+      "Apartamento nuevo de 70 m² en Camarena de la Sierra, a 10 min de las pistas de Javalambre. Chimenea, cocina completa, parking y guardaesquís. Reserva directa.",
     h1: "Apartamento en Camarena de la Sierra, junto a la estación de Javalambre",
     ogImage: "/images/properties/javalambre/salon-comedor-1200.webp",
   },
@@ -309,9 +309,9 @@ export const javalambre: PropertyContent = {
     shortIntro:
       "A new 70 m² apartment in Camarena de la Sierra, a traditional stone-and-springs mountain village, with mountain views and about a 10-minute drive from the Javalambre slopes. A bright main bedroom with two balconies, a children's room with toys, pellet stove, full kitchen, free parking and ski storage — one of the easiest snow escapes from Valencia, with no big mountain trip to organise.",
     seo: {
-      metaTitle: "Accommodation in Camarena de la Sierra near Javalambre | Praetoria Vacacional",
+      metaTitle: "Apartment near Javalambre ski resort · Camarena de la Sierra",
       metaDescription:
-        "New 70 m² apartment in Camarena de la Sierra (Teruel, Spain), about a 10-minute drive from the Javalambre slopes. Stove, full kitchen, free parking, ski storage. Book direct.",
+        "New 70 m² apartment in Camarena de la Sierra, a 10-minute drive from the Javalambre slopes. Stove, full kitchen, free parking and ski storage. Book direct.",
       h1: "Apartment in Camarena de la Sierra, next to the Javalambre resort",
       ogImage: "/images/properties/javalambre/salon-comedor-1200.webp",
     },
