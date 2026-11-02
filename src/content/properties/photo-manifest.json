@@ -749,6 +749,44 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "cielo-rosa-llastra",
+      "source": "owner",
+      "order": 14.1,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 60%",
+      "alt": "Cielo rosado al anochecer sobre la playa de la Llastra, con las dunas y sus cañas en primer plano",
+      "caption": "Cielo rosado sobre la playa de la Llastra",
+      "captionEn": "Pink evening sky over la Llastra beach",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600,
+        2000
+      ]
+    },
+    {
+      "base": "arrozales-albufera-inundados",
+      "source": "owner",
+      "order": 14.2,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 60%",
+      "alt": "Arrozales inundados de la Albufera con casetas de labradores y las montañas al fondo",
+      "caption": "Arrozales de la Albufera inundados en invierno, a 8 km",
+      "captionEn": "The Albufera rice fields flooded in winter, 8 km away",
+      "aspect": 1.5004,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600,
+        2000
+      ]
     }
   ]
 }
