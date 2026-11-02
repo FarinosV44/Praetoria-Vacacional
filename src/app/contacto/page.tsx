@@ -6,7 +6,7 @@ import { TrackOnMount } from "@/components/TrackOnMount";
 import { company, companyAddressOneLine } from "@/content/company";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Contacto",
+  title: "Contacto · Praetoria Vacacional",
   description:
     "Contacta con Praetoria Vacacional para dudas sobre disponibilidad, condiciones o tu reserva en Javalambre o Valencia.",
   path: "/contacto",

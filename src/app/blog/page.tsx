@@ -9,9 +9,9 @@ import { BLOG_DESTINATIONS } from "@/domains/blog/types";
 export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
-  title: "Blog · Actualidad y guías de Valencia, playa y nieve | Praetoria Vacacional",
+  title: "Blog de escapadas: Valencia, Albufera y Javalambre",
   description:
-    "Actualidad, planes y consejos de nuestros dos destinos: la playa de la Llastra al sur de Valencia y Javalambre en Camarena de la Sierra. Gastronomía, esquí, familia y escapadas.",
+    "Planes para tu escapada: la playa de la Llastra y la Albufera, al sur de Valencia, y Javalambre en Camarena de la Sierra. Esquí, naturaleza y familia.",
   path: "/blog",
 });
 
