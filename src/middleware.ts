@@ -25,7 +25,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(target, 301);
   }
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if ((pathname === "/admin" || pathname.startsWith("/admin/")) && pathname !== "/admin/login") {
     const hasSession =
       req.cookies.has("pv_admin") ||
       req.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
