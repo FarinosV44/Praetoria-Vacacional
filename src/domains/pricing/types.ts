@@ -56,6 +56,23 @@ export interface LengthOfStayDiscount {
   label: string;
 }
 
+/** One occupancy-based adjustment: `percent` (may be negative) over the base-occupancy price. */
+export interface OccupancyAdjustment {
+  guests: number;
+  percent: number;
+}
+
+/**
+ * Occupancy-based pricing, the same model Booking.com uses ("precios por persona"):
+ * the nightly price is the price for `baseGuests`; a stay for exactly N guests pays
+ * that price adjusted by the `percent` of the adjustment for N (none → same price).
+ * When set, it replaces the flat `extraGuestNightlyCents` surcharge.
+ */
+export interface OccupancyPricing {
+  baseGuests: number;
+  adjustments: OccupancyAdjustment[];
+}
+
 export interface RateConfig {
   propertySlug: string;
   currency: "EUR";
@@ -90,6 +107,12 @@ export interface RateConfig {
   extraGuestNightlyCents: number;
   /** Hard capacity — quotes above this are invalid. */
   maxGuests: number;
+  /**
+   * Optional Booking-style occupancy pricing. When present, each night is priced
+   * for the requested guest count and `includedGuests`/`extraGuestNightlyCents`
+   * are ignored.
+   */
+  occupancyPricing?: OccupancyPricing;
   seasons: Season[];
   discounts: LengthOfStayDiscount[];
   /**

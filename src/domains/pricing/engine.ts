@@ -82,6 +82,22 @@ function roundCents(n: number): number {
   return Math.round(n);
 }
 
+/**
+ * Percent applied to the nightly price for `guests` under occupancy pricing
+ * (0 when the config has none, or no adjustment is set for that guest count).
+ */
+export function occupancyPercent(config: RateConfig, guests: number): number {
+  const occ = config.occupancyPricing;
+  if (!occ) return 0;
+  return occ.adjustments.find((a) => a.guests === guests)?.percent ?? 0;
+}
+
+/** A nightly price adjusted for the guest count (Booking-style occupancy pricing). */
+export function priceForGuests(config: RateConfig, nightlyCents: number, guests: number): number {
+  const pct = occupancyPercent(config, guests);
+  return pct ? roundCents((nightlyCents * (100 + pct)) / 100) : nightlyCents;
+}
+
 export function buildQuote(
   config: RateConfig,
   req: QuoteRequest,
@@ -101,8 +117,16 @@ export function buildQuote(
   if (req.guests > config.maxGuests)
     violations.push({ code: "max_guests", allowed: config.maxGuests, got: req.guests });
 
+  // Occupancy pricing is applied per night, so every downstream figure (subtotal,
+  // length-of-stay discount, tax) is based on the price for this group size.
+  const pricedGuests = Math.max(1, Math.min(req.guests, config.maxGuests));
   const perNight: NightBreakdown[] = rangeValid
-    ? nightsOf(req.checkIn, req.checkOut).map((iso) => nightlyRate(config, iso))
+    ? nightsOf(req.checkIn, req.checkOut).map((iso) => {
+        const night = nightlyRate(config, iso);
+        return config.occupancyPricing
+          ? { ...night, cents: priceForGuests(config, night.cents, pricedGuests) }
+          : night;
+      })
     : [];
 
   const nightlySubtotalCents = perNight.reduce((sum, n) => sum + n.cents, 0);
@@ -134,7 +158,9 @@ export function buildQuote(
     ? { label: tier.label, percent: tier.percent, amountCents: losDiscountCents }
     : null;
 
-  const extraGuests = Math.max(0, Math.min(req.guests, config.maxGuests) - config.includedGuests);
+  const extraGuests = config.occupancyPricing
+    ? 0
+    : Math.max(0, Math.min(req.guests, config.maxGuests) - config.includedGuests);
   const extraGuestFeeCents = extraGuests * config.extraGuestNightlyCents * nights;
 
   // Optional per-stay charges (issue #58) — only the enabled, non-zero ones.
