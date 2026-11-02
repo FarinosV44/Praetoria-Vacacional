@@ -145,6 +145,26 @@ export function RatesForm({
       </fieldset>
 
       <label className="block">
+        <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">
+          Precio por ocupación (JSON, opcional)
+        </span>
+        <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">
+          Como «Precios por persona» en Booking: el precio de cada noche es el de{" "}
+          <code>baseGuests</code> personas y, para cada número de huéspedes, se aplica su{" "}
+          <code>percent</code> (negativo = descuento). Si está relleno, sustituye a «Huéspedes
+          incluidos» y «Suplemento huésped/noche». Vacío = sin precio por ocupación.
+        </span>
+        <textarea
+          name="occupancyPricing"
+          rows={5}
+          placeholder={'{ "baseGuests": 2, "adjustments": [ { "guests": 1, "percent": -10 }, { "guests": 3, "percent": 25 } ] }'}
+          defaultValue={
+            config.occupancyPricing ? JSON.stringify(config.occupancyPricing, null, 2) : ""
+          }
+          className="w-full rounded-lg border border-[var(--color-line)] p-2 font-mono text-xs"
+        />
+      </label>
+      <label className="block">
         <span className="mb-1 block text-xs text-[var(--color-ink-soft)]">Temporadas (JSON)</span>
         <textarea
           name="seasons"

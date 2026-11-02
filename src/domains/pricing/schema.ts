@@ -34,6 +34,21 @@ export const dayRateSchema = z.object({
   minNights: z.number().int().positive().optional(),
 });
 
+export const occupancyPricingSchema = z
+  .object({
+    baseGuests: z.number().int().positive(),
+    adjustments: z.array(
+      z.object({
+        guests: z.number().int().positive(),
+        percent: z.number().min(-90).max(300),
+      }),
+    ),
+  })
+  .refine(
+    (o) => new Set(o.adjustments.map((a) => a.guests)).size === o.adjustments.length,
+    "Cada número de huéspedes solo puede aparecer una vez",
+  );
+
 export const rateConfigSchema: z.ZodType<RateConfig> = z.object({
   propertySlug: z.string().min(1),
   currency: z.literal("EUR"),
@@ -47,6 +62,7 @@ export const rateConfigSchema: z.ZodType<RateConfig> = z.object({
   includedGuests: z.number().int().positive(),
   extraGuestNightlyCents: z.number().int().nonnegative(),
   maxGuests: z.number().int().positive(),
+  occupancyPricing: occupancyPricingSchema.optional(),
   seasons: z.array(seasonSchema),
   discounts: z.array(discountSchema),
   dayRates: z.array(dayRateSchema).optional(),
