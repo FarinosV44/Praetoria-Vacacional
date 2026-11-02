@@ -123,3 +123,49 @@ describe("effectiveMinNights", () => {
     expect(effectiveMinNights(base, "2026-06-29", "2026-07-03")).toBe(4);
   });
 });
+
+describe("buildQuote — occupancy pricing (Booking-style precios por persona)", () => {
+  const occ: RateConfig = {
+    ...base,
+    cleaningFeeCents: 0,
+    maxGuests: 6,
+    includedGuests: 2,
+    extraGuestNightlyCents: 1500,
+    weekendNightlyCents: undefined,
+    baseNightlyCents: 20000,
+    discounts: [],
+    occupancyPricing: {
+      baseGuests: 2,
+      adjustments: [
+        { guests: 1, percent: -10 },
+        { guests: 3, percent: 25 },
+        { guests: 4, percent: 25 },
+        { guests: 5, percent: 30 },
+        { guests: 6, percent: 30 },
+      ],
+    },
+  };
+  // 2026-05-11 Mon .. 2026-05-13 Wed: 2 weekday nights at 200 €
+  const req = (guests: number) =>
+    quote(occ, { propertySlug: "test", checkIn: "2026-05-11", checkOut: "2026-05-13", guests });
+
+  it("charges the plain nightly price for the base occupancy", () => {
+    expect(req(2).nightlySubtotalCents).toBe(40000);
+  });
+
+  it("applies each occupancy's percentage per night, like Booking", () => {
+    expect(req(1).perNight.map((n) => n.cents)).toEqual([18000, 18000]);
+    expect(req(3).nightlySubtotalCents).toBe(50000);
+    expect(req(4).nightlySubtotalCents).toBe(50000);
+    expect(req(5).nightlySubtotalCents).toBe(52000);
+    expect(req(6).totalCents).toBe(52000);
+  });
+
+  it("replaces the flat extra-guest surcharge", () => {
+    expect(req(6).extraGuestFeeCents).toBe(0);
+  });
+
+  it("still rejects more guests than the capacity", () => {
+    expect(req(7).valid).toBe(false);
+  });
+});

@@ -896,3 +896,13 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   ≥14 days before check-in, 0 % inside 14 days — the same "Flexible - 14 días"
   policy the listings use on Booking.com. `computeRefund` is unchanged; only
   each property's `cancellationPolicy` (tiers + ES/EN summaries) changed.
+
+## D-046 — occupancy-based pricing (Booking-style «precios por persona»)
+**Date:** 2026-11-02 · owner decision (web and Booking must charge the same per group size)
+- **Model.** Optional `RateConfig.occupancyPricing = { baseGuests, adjustments[{ guests, percent }] }`.
+  The nightly price is the price for `baseGuests`; a stay for exactly N guests pays it
+  adjusted by N's `percent` (negative = discount, missing = same price). Applied per
+  night in `buildQuote`, so the length-of-stay discount and tax work on the adjusted
+  price, as on Booking. When set, `includedGuests`/`extraGuestNightlyCents` are ignored.
+- **Editing.** Admin → Precios y reglas, «Precio por ocupación (JSON)»; empty = off.
+- **Javalambre** mirrors Booking: base 2 · 1 → −10 % · 3–4 → +25 % · 5–6 → +30 %.

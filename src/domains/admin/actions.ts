@@ -127,6 +127,17 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
     return { ok: false, error: "El JSON de temporadas o descuentos no es válido" };
   }
 
+  // Optional Booking-style occupancy pricing. Empty textarea → none.
+  let occupancyPricing: unknown = undefined;
+  const rawOccupancy = String(formData.get("occupancyPricing") ?? "").trim();
+  if (rawOccupancy) {
+    try {
+      occupancyPricing = JSON.parse(rawOccupancy);
+    } catch {
+      return { ok: false, error: "El JSON de precio por ocupación no es válido" };
+    }
+  }
+
   // Optional per-stay charges (issue #58). One row per `fee_<i>_*` group.
   const feeCount = Math.min(20, Math.max(0, num(formData, "feeCount") || 0));
   const fees = Array.from({ length: feeCount }, (_, i) => {
@@ -156,6 +167,7 @@ export async function updateRatesAction(_prev: unknown, formData: FormData): Pro
     includedGuests: num(formData, "includedGuests"),
     extraGuestNightlyCents: num(formData, "extraGuestNightlyCents"),
     maxGuests: num(formData, "maxGuests"),
+    occupancyPricing,
     taxPercent: num(formData, "taxPercent"),
     bookingWindowDays: num(formData, "bookingWindowDays"),
     leadTimeDays: num(formData, "leadTimeDays"),
