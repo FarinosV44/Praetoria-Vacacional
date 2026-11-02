@@ -906,3 +906,12 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   price, as on Booking. When set, `includedGuests`/`extraGuestNightlyCents` are ignored.
 - **Editing.** Admin → Precios y reglas, «Precio por ocupación (JSON)»; empty = off.
 - **Javalambre** mirrors Booking: base 2 · 1 → −10 % · 3–4 → +25 % · 5–6 → +30 %.
+
+## D-047 — direct bookings on the non-refundable rate
+**Date:** 2026-11-02 · owner decision
+- **Price.** The web sells at Booking.com's "No reembolsable" price (Standard Rate − 10 %),
+  which is the price Booking shows in search before any Genius discount. The daily
+  Booking → web sync applies Standard × 0.90 per date.
+- **Policy.** Both properties are non-refundable on the web (single tier
+  `{ daysBefore: 0, refundPercent: 0 }`), matching that Booking rate. Supersedes D-045.
+  The admin can still refund manually from the reservation page (override amount).
