@@ -135,6 +135,17 @@ export default async function GuidePage({
                   <figcaption className="photo-caption mt-2">{s.embed.credit}</figcaption>
                 </figure>
               )}
+              {s.related && s.related.length > 0 && (
+                <ul className="mt-4 space-y-2">
+                  {s.related.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="text-sm font-semibold text-[var(--accent-700)] hover:underline">
+                        {l.label} <span aria-hidden>→</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {s.links && s.links.length > 0 && (
                 <ul className="mt-4 space-y-2">
                   {s.links.map((l) => (

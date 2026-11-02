@@ -10,6 +10,8 @@
  * emitted in the sitemap or linked, so there is no thin content.
  */
 
+import { expandGuide } from "./expansions";
+
 export interface Guide {
   slug: string;
   propertySlug: string;
@@ -26,6 +28,8 @@ export interface Guide {
     list?: string[];
     /** Official external sources (live snow, weather, roads). Opened in a new tab. */
     links?: { label: string; href: string }[];
+    /** Internal links (blog articles, other pages) shown under the section. */
+    related?: { label: string; href: string }[];
     /** Official live widget embedded as-is (e.g. AEMET forecast), with its credit. */
     embed?: { src: string; title: string; height: number; credit: string };
   }[];
@@ -33,7 +37,7 @@ export interface Guide {
   published: boolean;
 }
 
-export const guides: Guide[] = [
+const baseGuides: Guide[] = [
   // ---------------------------------------------------------------- Javalambre
   {
     slug: "guia-de-javalambre",
@@ -43,9 +47,9 @@ export const guides: Guide[] = [
     keyword: "guía de Javalambre",
     title: "Guía de Javalambre: qué ver, esquiar y dónde alojarse",
     description:
-      "Guía práctica de la sierra de Javalambre (Teruel): la estación de esquí, el observatorio, los pueblos de Gúdar-Javalambre, cómo llegar y dónde dormir.",
+      "Guía práctica de la montaña de Javalambre (Teruel): la estación de esquí, el observatorio, los pueblos de Gúdar-Javalambre, cómo llegar y dónde dormir.",
     h1: "Guía de Javalambre",
-    lead: "La sierra de Javalambre, en el sur de la provincia de Teruel, es montaña de verdad sin masificación: una estación de esquí familiar, cielos de los más limpios de Europa y pueblos de piedra como Camarena de la Sierra, a los pies de la estación. Esta guía reúne lo esencial para organizar la escapada.",
+    lead: "La montaña de Javalambre, en el sur de la provincia de Teruel, es montaña de verdad sin masificación: una estación de esquí familiar, cielos de los más limpios de Europa y pueblos de piedra como Camarena de la Sierra, a los pies de la estación. Esta guía reúne lo esencial para organizar la escapada.",
     sections: [
       {
         heading: "Dónde está y cómo llegar",
@@ -65,7 +69,7 @@ export const guides: Guide[] = [
         heading: "Más allá del esquí",
         body: [
           "El Observatorio Astrofísico de Javalambre (OAJ) ha convertido la zona en un referente de turismo de estrellas: es uno de los lugares con menor contaminación lumínica del continente.",
-          "En verano, la sierra es terreno de senderismo y BTT, y los pueblos de la comarca —La Puebla de Valverde, Camarena de la Sierra, Manzanera— ofrecen gastronomía de montaña y rutas tranquilas.",
+          "En verano, la montaña es terreno de senderismo y BTT, y los pueblos de la comarca —La Puebla de Valverde, Camarena de la Sierra, Manzanera— ofrecen gastronomía de montaña y rutas tranquilas.",
         ],
       },
     ],
@@ -226,7 +230,7 @@ export const guides: Guide[] = [
         heading: "En invierno: cadenas y estado de la carretera",
         body: [
           "La última parte del trayecto es carretera de montaña. En días de nieve o hielo lleva cadenas o neumáticos de invierno y consulta antes las incidencias de la DGT. El parte de la estación indica además si los accesos y aparcamientos están abiertos.",
-          "Reposta en Teruel o en la A-23 antes de la subida: en la sierra hay pocas gasolineras.",
+          "Reposta en Teruel o en la A-23 antes de la subida: en la montaña hay pocas gasolineras.",
         ],
         links: [{ label: "DGT: estado de las carreteras", href: "https://infocar.dgt.es/etraffic/" }],
       },
@@ -335,9 +339,9 @@ export const guides: Guide[] = [
     keyword: "qué hacer en Javalambre sin esquiar",
     title: "Qué hacer en Javalambre sin esquiar",
     description:
-      "Planes en la sierra de Javalambre que no dependen de las pistas: observación de estrellas, senderismo, pueblos de Gúdar-Javalambre y Teruel.",
+      "Planes en la montaña de Javalambre que no dependen de las pistas: observación de estrellas, senderismo, pueblos de Gúdar-Javalambre y Teruel.",
     h1: "Qué hacer en Javalambre sin esquiar",
-    lead: "La sierra de Javalambre es mucho más que su estación de esquí. Si viajas fuera de temporada, o simplemente no esquías, estos planes llenan un fin de semana.",
+    lead: "La montaña de Javalambre es mucho más que su estación de esquí. Si viajas fuera de temporada, o simplemente no esquías, estos planes llenan un fin de semana.",
     sections: [
       {
         heading: "Observación de estrellas",
@@ -348,7 +352,7 @@ export const guides: Guide[] = [
       {
         heading: "Senderismo y naturaleza",
         body: [
-          "En primavera y verano hay rutas por sabinares, nacimientos de agua y las cumbres de la sierra. El pico de Javalambre supera los 2.000 m y ofrece panorámicas hacia el Mediterráneo en días claros.",
+          "En primavera y verano hay rutas por sabinares, nacimientos de agua y las cumbres de Javalambre. El pico de Javalambre supera los 2.000 m y ofrece panorámicas hacia el Mediterráneo en días claros.",
         ],
       },
       {
@@ -393,7 +397,7 @@ export const guides: Guide[] = [
       {
         heading: "Compra y abastecimiento",
         body: [
-          "Para una estancia de varios días es práctico hacer una compra grande en Teruel capital antes de subir, ya que en los pueblos de la sierra los comercios son pequeños y con horarios limitados. Cocinar en el apartamento ahorra tiempo y dinero.",
+          "Para una estancia de varios días es práctico hacer una compra grande en Teruel capital antes de subir, ya que en los pueblos de montaña los comercios son pequeños y con horarios limitados. Cocinar en el apartamento ahorra tiempo y dinero.",
         ],
       },
       {
@@ -693,6 +697,9 @@ export const guides: Guide[] = [
     published: true,
   },
 ];
+
+/** Guides with the DinoRANK-audit expansions applied (./expansions). */
+export const guides: Guide[] = baseGuides.map(expandGuide);
 
 export function getGuide(propertySlug: string, slug: string): Guide | undefined {
   return guides.find((g) => g.propertySlug === propertySlug && g.slug === slug);
