@@ -287,10 +287,9 @@ export const javalambre: PropertyContent = {
 
   cancellationPolicy: {
     summary:
-      "Cancelación gratuita hasta 30 días antes de la entrada; reembolso del 50 % entre 29 y 7 días; sin reembolso en los 7 días previos.",
+      "Cancelación gratuita hasta 14 días antes de la entrada; si se cancela en los 14 días previos a la llegada, se cobra el importe total de la reserva.",
     tiers: [
-      { daysBefore: 30, refundPercent: 100 },
-      { daysBefore: 7, refundPercent: 50 },
+      { daysBefore: 14, refundPercent: 100 },
       { daysBefore: 0, refundPercent: 0 },
     ],
     status: "authored",
@@ -336,7 +335,7 @@ export const javalambre: PropertyContent = {
       },
     ],
     cancellationSummary:
-      "Free cancellation up to 30 days before check-in. After that, terms apply per the property's policy.",
+      "Free cancellation up to 14 days before check-in. Cancellations within 14 days of arrival are charged the full amount of the booking.",
     highlights: [
       {
         title: "About 10 minutes' drive from the Javalambre slopes",
