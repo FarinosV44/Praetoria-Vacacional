@@ -75,7 +75,7 @@ export function organizationJsonLd() {
     name: SITE,
     legalName: company.legalName,
     url: BASE,
-    logo: absoluteUrl("/icon.svg"),
+    logo: absoluteUrl("/logo.png"),
     email: company.email,
     telephone: company.phone,
     taxID: company.taxId,
@@ -195,7 +195,7 @@ export function articleJsonLd(input: {
     publisher: {
       "@type": "Organization",
       name: SITE,
-      logo: { "@type": "ImageObject", url: absoluteUrl("/icon.svg") },
+      logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
     },
   };
 }
