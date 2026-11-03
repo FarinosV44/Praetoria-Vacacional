@@ -116,6 +116,16 @@ export function websiteJsonLd() {
  * that are backed by real, owner-confirmed content — placeholder blocks are
  * omitted so structured data never contradicts the visible page (issue #26).
  */
+/** "De 15:00 a 20:00" → "15:00" (first clock time in a free-text range). */
+function firstTime(text: string): string | undefined {
+  return text.match(/\b\d{1,2}:\d{2}\b/)?.[0]?.padStart(5, "0");
+}
+/** "De 8:00 a 11:00" → "11:00" (last clock time; the check-out deadline). */
+function lastTime(text: string): string | undefined {
+  const all = text.match(/\b\d{1,2}:\d{2}\b/g);
+  return all?.[all.length - 1]?.padStart(5, "0");
+}
+
 export function propertyJsonLd(p: PropertyContent, opts: { ratingValue?: number; reviewCount?: number }) {
   const geoReady = p.location.status === "authored";
   const rating = opts.ratingValue ?? p.rating?.value;
@@ -128,11 +138,23 @@ export function propertyJsonLd(p: PropertyContent, opts: { ratingValue?: number;
     ...(p.instagram ? { sameAs: [instagramUrl(p.instagram)] } : {}),
     description: p.seo.metaDescription,
     image: propertyPhotos(p.slug).map((g) => absoluteUrl(g.src)),
-    numberOfRooms: p.capacity.bedrooms,
-    occupancy: { "@type": "QuantitativeValue", maxValue: p.capacity.guests },
-    floorSize: p.capacity.sizeSqm
-      ? { "@type": "QuantitativeValue", value: p.capacity.sizeSqm, unitCode: "MTK" }
-      : undefined,
+    // Google's vacation-rental rich result requires `identifier` and `containsPlace`.
+    identifier: `praetoria-vacacional-${p.slug}`,
+    additionalType: "Apartment",
+    brand: { "@type": "Brand", name: SITE },
+    knowsLanguage: ["es", "en"],
+    ...(firstTime(p.stayInfo.checkIn) ? { checkinTime: firstTime(p.stayInfo.checkIn) } : {}),
+    ...(lastTime(p.stayInfo.checkOut) ? { checkoutTime: lastTime(p.stayInfo.checkOut) } : {}),
+    containsPlace: {
+      "@type": "Accommodation",
+      additionalType: "EntirePlace",
+      numberOfBedrooms: p.capacity.bedrooms,
+      numberOfBathroomsTotal: p.capacity.bathrooms,
+      occupancy: { "@type": "QuantitativeValue", value: p.capacity.guests },
+      ...(p.capacity.sizeSqm
+        ? { floorSize: { "@type": "QuantitativeValue", value: p.capacity.sizeSqm, unitCode: "MTK" } }
+        : {}),
+    },
     address: {
       "@type": "PostalAddress",
       addressLocality: p.location.city,
