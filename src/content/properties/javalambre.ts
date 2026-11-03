@@ -18,9 +18,9 @@ export const javalambre: PropertyContent = {
   experience: "ski",
   currency: "EUR",
   instagram: "javalambresuperski",
-  tagline: "Apartamento en Camarena de la Sierra, a 10 minutos de las pistas de Javalambre",
+  tagline: "Apartamento en Javalambre, en Camarena de la Sierra a 10 minutos de las pistas",
   shortIntro:
-    "Un apartamento nuevo de 70 m² en Camarena de la Sierra, un pueblo serrano de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Dormitorio principal luminoso con dos balcones, habitación infantil con juguetes, chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
+    "Un apartamento en Javalambre, nuevo y de 70 m², en Camarena de la Sierra, un pueblo de montaña de piedra y fuentes, con vistas a la montaña y a unos 10 minutos en coche de las pistas de Javalambre. Dormitorio principal luminoso con dos balcones, habitación infantil con juguetes, chimenea de pellets, cocina completa, parking gratis y guardaesquís: una de las escapadas de nieve más cómodas desde Valencia, sin necesidad de organizar un gran viaje de montaña.",
 
   idealFor: [
     "Familias con niños",
@@ -295,10 +295,10 @@ export const javalambre: PropertyContent = {
   },
 
   seo: {
-    metaTitle: "Alojamiento en Javalambre · Camarena de la Sierra",
+    metaTitle: "Apartamento en Javalambre · Camarena de la Sierra",
     metaDescription:
-      "Apartamento nuevo de 70 m² en Camarena de la Sierra, a 10 min de las pistas de Javalambre. Chimenea, cocina completa, parking y guardaesquís. Reserva directa.",
-    h1: "Apartamento en Camarena de la Sierra, junto a la estación de Javalambre",
+      "Apartamento en Javalambre para hasta 6 personas: 70 m² en Camarena de la Sierra, a 10 min de las pistas. Chimenea, parking y guardaesquís. Reserva directa.",
+    h1: "Apartamento en Javalambre, en Camarena de la Sierra a 10 minutos de las pistas",
     ogImage: "/images/properties/javalambre/salon-comedor-1200.webp",
   },
 
