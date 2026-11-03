@@ -6,10 +6,12 @@ import { test, expect, type APIRequestContext } from "@playwright/test";
  * 4-night minimum; a 2-night hole between two bookings must still be bookable.
  */
 
-// A summer date next year (inside Valencia's 06-15…09-15 season).
+// A summer date next year (inside Valencia's 06-15…09-15 season): day 1 = 1 July,
+// day 32 = 1 August. Using a day offset lets the search window cover two months.
 function july(day: number): string {
   const y = new Date().getUTCFullYear() + 1;
-  return `${y}-07-${String(day).padStart(2, "0")}`;
+  const d = new Date(Date.UTC(y, 6, day));
+  return d.toISOString().slice(0, 10);
 }
 
 async function seedHold(request: APIRequestContext, checkIn: string, checkOut: string) {
@@ -44,13 +46,22 @@ test("a stay that exactly fills a 2-night gap is bookable below the 4-night mini
   request,
 }) => {
   test.setTimeout(240_000);
-  // Walk the window forward until both 4-night seeds land on free dates.
-  let base = 3;
-  for (; base < 20; base += 6) {
-    const a = await seedHold(request, july(base), july(base + 4)); // e.g. 3→7
-    const b = await seedHold(request, july(base + 6), july(base + 10)); // e.g. 9→13
-    if (a && b) break;
+  // Find a 10-night window that is completely free, then seed both 4-night holds
+  // inside it. Windows never overlap, so holds left behind by an earlier run or a
+  // retry (the in-memory repo keeps them) can never turn a half-seeded window into
+  // a false "gap" — the cause of the intermittent CI failure.
+  let base = -1;
+  for (let candidate = 3; candidate + 10 <= 58; candidate += 11) {
+    const window = await quote(request, july(candidate), july(candidate + 10));
+    if (window.reason === "No disponible para estas fechas") continue;
+    const a = await seedHold(request, july(candidate), july(candidate + 4)); // e.g. 3→7
+    const b = await seedHold(request, july(candidate + 6), july(candidate + 10)); // e.g. 9→13
+    if (a && b) {
+      base = candidate;
+      break;
+    }
   }
+  expect(base, "no free 10-night window in July–August to seed the gap").toBeGreaterThan(0);
   const gapIn = july(base + 4); // 7
   const gapOut = july(base + 6); // 9  → exactly the 2-night hole
 
