@@ -10,6 +10,20 @@ import { instagramUrl } from "./social";
 const SITE = publicEnv.siteName;
 const BASE = publicEnv.siteUrl.replace(/\/$/, "");
 
+/**
+ * Tab and search-result icons. Bump the `v` query when the artwork changes:
+ * browsers cache favicons apart from everything else and ignore normal
+ * revalidation, so a new URL is what makes them load the new one.
+ */
+const ICON_VERSION = "v=2";
+export const faviconLinks = [
+  { url: `/favicon.ico?${ICON_VERSION}`, sizes: "16x16 32x32 48x48" },
+  { url: `/favicon.svg?${ICON_VERSION}`, type: "image/svg+xml" },
+  { url: `/icon-192.png?${ICON_VERSION}`, sizes: "192x192", type: "image/png" },
+];
+export const appleTouchIcon = `/apple-touch-icon.png?${ICON_VERSION}`;
+export const siteManifest = `/site.webmanifest?${ICON_VERSION}`;
+
 export function absoluteUrl(path = "/"): string {
   return `${BASE}${path.startsWith("/") ? path : `/${path}`}`;
 }

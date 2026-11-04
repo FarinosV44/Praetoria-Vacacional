@@ -915,3 +915,14 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 - **Policy.** Both properties are non-refundable on the web (single tier
   `{ daysBefore: 0, refundPercent: 0 }`), matching that Booking rate. Supersedes D-045.
   The admin can still refund manually from the reservation page (override amount).
+
+## D-048 — favicon: night blue and gold
+**Date:** 2026-11-04 · owner decision
+- **Symbol.** A peak drawn so it also reads as the A of the logo, the logo's shallow horizon
+  curve across it and a short line of sea below: mountain and coast in three strokes. Night
+  blue `#0E1C33`, warm gold `#D9B26F`, no gradients. Replaces the terracotta «P» (`icon.svg`).
+- **Files.** `public/favicon.svg` is the master; `scripts/generate-favicons.mjs` regenerates
+  every raster icon from it. It holds three drawings chosen by painted size: the full symbol and
+  hand-drawn versions on the 32 and 16 pixel grids, where the full one blurs.
+- **Scope.** The admin phone app keeps its own «P» icons (`public/admin-icons`).
+- **Cache.** Icon URLs carry `?v=N` (`ICON_VERSION` in `src/lib/seo.ts`); bump it when the art changes.

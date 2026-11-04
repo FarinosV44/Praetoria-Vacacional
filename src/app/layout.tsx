@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { publicEnv } from "@/lib/env";
-import { absoluteUrl, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import {
+  absoluteUrl,
+  appleTouchIcon,
+  faviconLinks,
+  organizationJsonLd,
+  siteManifest,
+  websiteJsonLd,
+} from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -29,7 +36,8 @@ export const metadata: Metadata = {
   description:
     "Dos apartamentos con reserva directa: frente al mar en la playa de la Llastra, al sur de Valencia, y junto a las pistas de Javalambre.",
   applicationName: publicEnv.siteName,
-  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
+  icons: { icon: faviconLinks, apple: appleTouchIcon },
+  manifest: siteManifest,
   alternates: { canonical: absoluteUrl("/") },
   openGraph: {
     type: "website",
