@@ -3,6 +3,7 @@ import "./admin.css";
 import { requireAdmin } from "@/domains/admin/auth";
 import { logoutAction } from "@/domains/admin/actions";
 import { DEMO_MODE } from "@/lib/env";
+import { faviconLinks } from "@/lib/seo";
 import { getCurrentRole, ROLE_LABEL } from "@/domains/admin/roles";
 import { getAdminContext } from "@/domains/admin/context";
 import { AdminNav } from "@/components/admin/AdminNav";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   // the /admin/movil start screen.
   manifest: "/admin.webmanifest",
   appleWebApp: { capable: true, title: "Praetoria", statusBarStyle: "default" },
-  icons: { icon: "/icon.svg", apple: "/admin-icons/apple-touch-180.png" },
+  icons: { icon: faviconLinks, apple: "/admin-icons/apple-touch-180.png" },
 };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
