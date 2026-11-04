@@ -28,13 +28,3 @@ export function Wordmark({
     />
   );
 }
-
-/** Square monogram used for the favicon and small marks (concept 1, "P"). */
-export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden focusable="false">
-      <rect width="64" height="64" fill="currentColor" />
-      <path d="M22 50V14h13.5c7.7 0 12.5 4.4 12.5 11.2S43.2 36.4 35.5 36.4H29.6V50Z M29.6 30.2h5.3c3.6 0 5.6-1.8 5.6-5s-2-5-5.6-5h-5.3Z" fill="#f7f5f0" fillRule="evenodd" />
-    </svg>
-  );
-}
