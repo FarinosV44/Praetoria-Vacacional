@@ -934,7 +934,9 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   `reservar/[property]`). Any new dynamic route with a `loading.tsx` needs the same.
 - **Content signal.** `search=yes, ai-input=yes, ai-train=no`, in `agent-content.ts`. It states a
   preference, it does not block anyone. `robots.ts` became a route handler because Next's
-  robots metadata has no field for it.
+  robots metadata has no field for it. Lighthouse reports the line as an unknown directive and
+  scores SEO at 0.92, so PageSpeed will show that warning. By owner decision the line stays and
+  CI skips only the `robots-txt` audit; `agent-content.test.ts` checks the file's rules instead.
 - **Markdown.** `/index.md`, also served at `/` to `Accept: text/markdown`. It must stay
   `no-store`: Hostinger's CDN caches `/`, and a stored copy could reach visitors. The home's HTML
   has no `Vary: Accept` because Next replaces that header on prerendered pages. It works anyway:
