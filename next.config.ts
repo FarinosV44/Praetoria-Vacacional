@@ -53,7 +53,20 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // What the home offers to AI agents (RFC 8288).
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value:
+              '</llms.txt>; rel="describedby"; type="text/plain", </index.md>; rel="alternate"; type="text/markdown"',
+          },
+        ],
+      },
+    ];
   },
   async redirects() {
     // Guide URLs moved to destination hubs (issue #46). The old pillar guides

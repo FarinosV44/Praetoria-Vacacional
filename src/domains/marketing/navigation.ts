@@ -25,6 +25,7 @@ const staticInfoRoutes: SiteRoute[] = [
   { path: "/propietarios", changefreq: "monthly", priority: 0.7, section: "info" },
   { path: "/guias", changefreq: "weekly", priority: 0.5, section: "guia" },
   { path: "/blog", changefreq: "weekly", priority: 0.5, section: "blog" },
+  { path: "/sobre-nosotros", changefreq: "monthly", priority: 0.4, section: "info" },
   { path: "/contacto", changefreq: "monthly", priority: 0.4, section: "info" },
 ];
 
