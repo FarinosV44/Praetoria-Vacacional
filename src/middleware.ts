@@ -25,6 +25,13 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(target, 301);
   }
 
+  // AI agents asking for Markdown get the home in that format (see app/index.md).
+  if (pathname === "/" && req.headers.get("accept")?.includes("text/markdown")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/index.md";
+    return NextResponse.rewrite(url);
+  }
+
   if ((pathname === "/admin" || pathname.startsWith("/admin/")) && pathname !== "/admin/login") {
     const hasSession =
       req.cookies.has("pv_admin") ||

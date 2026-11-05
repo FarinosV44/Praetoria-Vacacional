@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { BookingBar } from "@/components/booking/BookingBar";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { WebMcpTools } from "@/components/WebMcpTools";
 
 /**
  * Renders the public site header / footer around the page — except under
@@ -40,6 +41,7 @@ export function SiteChrome({
       {footer}
       <BookingBar locale={locale} />
       <WhatsAppButton number={whatsappNumber} locale={locale} />
+      <WebMcpTools />
     </>
   );
 }

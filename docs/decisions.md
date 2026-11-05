@@ -926,3 +926,22 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   hand-drawn versions on the 32 and 16 pixel grids, where the full one blurs.
 - **Scope.** The admin phone app keeps its own «P» icons (`public/admin-icons`).
 - **Cache.** Icon URLs carry `?v=N` (`ICON_VERSION` in `src/lib/seo.ts`); bump it when the art changes.
+
+## D-049 — readable by AI agents
+**Date:** 2026-11-05 · external agent-readiness audit
+- **Soft 404.** `loading.tsx` starts the stream with status 200 before the page can call
+  `notFound()`, so unknown slugs are rejected in a layout above it (`[property]` and
+  `reservar/[property]`). Any new dynamic route with a `loading.tsx` needs the same.
+- **Content signal.** `search=yes, ai-input=yes, ai-train=no`, in `agent-content.ts`. It states a
+  preference, it does not block anyone. `robots.ts` became a route handler because Next's
+  robots metadata has no field for it. Lighthouse reports the line as an unknown directive and
+  scores SEO at 0.92, so PageSpeed will show that warning. By owner decision the line stays and
+  CI skips only the `robots-txt` audit; `agent-content.test.ts` checks the file's rules instead.
+- **Markdown.** `/index.md`, also served at `/` to `Accept: text/markdown`. It must stay
+  `no-store`: Hostinger's CDN caches `/`, and a stored copy could reach visitors. The home's HTML
+  has no `Vary: Accept` because Next replaces that header on prerendered pages. It works anyway:
+  checked live, the CDN passes requests with `Accept: text/markdown` to the origin (`DYNAMIC`).
+- **WebMCP.** One read-only tool over the public search endpoint. The API is a draft, so the
+  registration is feature-detected and can fail without affecting the page.
+- **No MCP Server Card.** There is no MCP server, and a card describing one would be false. Publish
+  it only if a server is built.
