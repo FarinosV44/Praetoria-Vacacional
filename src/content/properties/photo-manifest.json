@@ -805,6 +805,23 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "bar-redo-les-palmeres",
+      "source": "owner",
+      "order": 9.5,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 45%",
+      "alt": "El Redó, el bar redondo de toldos azules en primera línea de la playa de Les Palmeres (Sueca), visto desde la arena",
+      "caption": "El Redó, en la playa de Les Palmeres",
+      "captionEn": "El Redó, on Les Palmeres beach",
+      "aspect": 0.6347,
+      "widths": [
+        480,
+        768,
+        1200
+      ]
     }
   ]
 }
