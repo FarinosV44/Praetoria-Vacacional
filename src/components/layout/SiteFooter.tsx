@@ -100,6 +100,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link className={colLink} href="/sobre-nosotros">
+                Sobre nosotros
+              </Link>
+            </li>
+            <li>
               <Link className={colLink} href="/contacto">
                 Contacto
               </Link>
