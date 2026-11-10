@@ -29,7 +29,7 @@ export const company = {
     countryCode: "ES",
   },
 
-  email: "info@praetoriaabogados.com",
+  email: "info@praetoriaabogados.es",
   phone: "+34 649181290",
   whatsapp: "+34 649181290",
 
