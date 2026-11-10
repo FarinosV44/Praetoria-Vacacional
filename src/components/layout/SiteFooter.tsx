@@ -141,6 +141,15 @@ export function SiteFooter() {
             {company.legalName} ({company.legalForm}) · NIF {company.taxId} ·{" "}
             {companyAddressOneLine()}
           </p>
+          <p>
+            Grupo Praetoria ·{" "}
+            <a
+              href="https://praetoriaabogados.es/"
+              className="underline underline-offset-2 hover:text-white"
+            >
+              Praetoria Abogados
+            </a>
+          </p>
         </div>
       </div>
     </footer>
