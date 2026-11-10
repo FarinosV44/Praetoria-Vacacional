@@ -39,7 +39,7 @@ describe("company (PRAETORIA, S.L.) — issue #56 Part A", () => {
       "Registro Mercantil de Valencia",
       "V-225491",
       "1000449168073",
-      "info@praetoriaabogados.com",
+      "info@praetoriaabogados.es",
       "+34 649181290",
     ]) {
       expect(p).toContain(needle);
