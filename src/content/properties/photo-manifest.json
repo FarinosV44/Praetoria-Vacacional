@@ -329,6 +329,42 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "rincon-juegos-trineo",
+      "source": "owner",
+      "order": 8.25,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "45% 55%",
+      "alt": "Rincón de juegos del apartamento: trineo rojo, silla, estantería con cuentos, juegos de mesa, peluches y un correpasillos",
+      "caption": "Rincón de juegos: trineo, cuentos y juegos de mesa",
+      "captionEn": "Play corner: sledge, storybooks and board games",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
+    },
+    {
+      "base": "rincon-cuentos-juegos",
+      "source": "owner",
+      "order": 8.26,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "60% 55%",
+      "alt": "Estantería infantil con cuentos, Scrabble y otros juegos de mesa, una pelota y peluches, junto al trineo para la nieve",
+      "caption": "Cuentos, juegos de mesa y juguetes para los más pequeños",
+      "captionEn": "Storybooks, board games and toys for the little ones",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
     }
   ],
   "valencia": [

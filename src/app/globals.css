@@ -642,6 +642,9 @@
   margin-top: 1.6em;
 }
 .blog-prose h4 { font-weight: 600; margin-top: 1.4em; }
+.blog-prose figure { margin: 1.8em 0; }
+.blog-prose figure img { width: 100%; height: auto; border-radius: 0.75rem; }
+.blog-prose figcaption { margin-top: 0.5em; font-size: 0.875rem; opacity: 0.75; text-align: center; }
 .blog-prose a {
   color: var(--accent-700);
   text-decoration: underline;
