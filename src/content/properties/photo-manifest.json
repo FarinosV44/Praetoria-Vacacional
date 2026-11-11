@@ -365,6 +365,24 @@
         1200,
         1600
       ]
+    },
+    {
+      "base": "habitacion-ninos-atardecer",
+      "source": "owner",
+      "order": 8.35,
+      "kind": "alojamiento",
+      "category": "dormitorio",
+      "focal": "40% 55%",
+      "alt": "Habitación de los niños con litera de madera, trineo rojo, estantería con cuentos y peluches y balcón con la luz cálida del atardecer",
+      "caption": "La habitación de los niños al atardecer",
+      "captionEn": "The children's room at sunset",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768,
+        1200,
+        1600
+      ]
     }
   ],
   "valencia": [
