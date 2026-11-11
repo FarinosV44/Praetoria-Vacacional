@@ -4,7 +4,8 @@
  * The project ships no Markdown dependency and blog content is authored only by
  * the trusted admin, so rather than pull in a full parser we render a fixed,
  * well-understood subset and HTML-escape everything else. The output tag set is
- * closed (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr) and every
+ * closed (h2–h4, p, ul/ol/li, blockquote, a, strong, em, code, hr, figure/img)
+ * and every
  * link URL is validated, so the result is safe to inject even if someone pastes
  * raw HTML into the editor.
  *
@@ -15,6 +16,8 @@
  *   1.                 ordered list items
  *   >                  blockquote
  *   ---                horizontal rule
+ *   ![alt](/images/… "pie")  a figure — only the site's own /images/ files,
+ *                      on a line of its own; the optional title is the caption
  *   **bold**  *italic* _italic_  `code`  [text](href)
  */
 
@@ -41,7 +44,11 @@ export function safeHref(raw: string): string | null {
   return null;
 }
 
-const BLOCK_START = /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|-{3,}$|\*{3,}$|_{3,}$)/;
+const BLOCK_START = /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|-{3,}$|\*{3,}$|_{3,}$|!\[)/;
+
+/** A block image: only the site's own raster files under /images/, no traversal. */
+const IMAGE_BLOCK =
+  /^!\[([^\]]*)\]\((\/images\/(?:[\w-]+\/)*[\w.-]+\.(?:webp|avif|jpe?g|png))(?:\s+"([^"]*)")?\)$/i;
 
 function inline(src: string): string {
   // Escape first, then reintroduce the known inline constructs.
@@ -101,6 +108,18 @@ export function renderMarkdown(md: string): string {
       continue;
     }
 
+    // Figure
+    const image = IMAGE_BLOCK.exec(trimmed);
+    if (image && !(image[2] ?? "").includes("..")) {
+      closeList();
+      const alt = escapeHtml(image[1] ?? "");
+      const src = escapeHtml(image[2] ?? "");
+      const caption = image[3] ? `<figcaption>${inline(image[3])}</figcaption>` : "";
+      out.push(`<figure><img src="${src}" alt="${alt}" loading="lazy" decoding="async" />${caption}</figure>`);
+      i += 1;
+      continue;
+    }
+
     // Heading
     const heading = /^(#{1,6})\s+(.*)$/.exec(trimmed);
     if (heading) {
@@ -144,7 +163,9 @@ export function renderMarkdown(md: string): string {
     const buf: string[] = [];
     while (i < lines.length) {
       const cur = (lines[i] ?? "").trim();
-      if (cur === "" || BLOCK_START.test(cur)) break;
+      // Always consume the first line: a line that merely LOOKS like a block start
+      // (e.g. `![` that is not a valid figure) must not stall the loop.
+      if (cur === "" || (buf.length > 0 && BLOCK_START.test(cur))) break;
       buf.push(cur);
       i += 1;
     }

@@ -41,6 +41,23 @@ describe("blog markdown renderer", () => {
     expect(renderMarkdown("[x](javascript:evil)")).toBe("<p>x</p>");
   });
 
+  it("renders a site image as a figure with its caption", () => {
+    expect(
+      renderMarkdown('![Rincón de juegos](/images/properties/javalambre/x-1200.webp "Juguetes y cuentos")'),
+    ).toBe(
+      '<figure><img src="/images/properties/javalambre/x-1200.webp" alt="Rincón de juegos" loading="lazy" decoding="async" /><figcaption>Juguetes y cuentos</figcaption></figure>',
+    );
+    expect(renderMarkdown("![Sin pie](/images/a.jpg)")).toBe(
+      '<figure><img src="/images/a.jpg" alt="Sin pie" loading="lazy" decoding="async" /></figure>',
+    );
+  });
+
+  it("never renders images from outside /images/ nor escapes the alt", () => {
+    expect(renderMarkdown("![x](https://evil.example/a.png)")).not.toContain("<img");
+    expect(renderMarkdown("![x](/images/../a.svg)")).not.toContain("<img");
+    expect(renderMarkdown('![a"><script>](/images/a.webp)')).not.toContain("<script>");
+  });
+
   it("renders a horizontal rule and blockquote", () => {
     expect(renderMarkdown("---")).toBe("<hr />");
     expect(renderMarkdown("> cita")).toBe("<blockquote>cita</blockquote>");
