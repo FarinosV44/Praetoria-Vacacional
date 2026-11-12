@@ -876,6 +876,38 @@
         768,
         1200
       ]
+    },
+    {
+      "base": "paseo-maritimo-palmeras-viento",
+      "source": "owner",
+      "order": 14.4,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 50%",
+      "alt": "Paseo marítimo de la playa de la Llastra con palmeras mecidas por el viento, el mar a la izquierda, dunas protegidas y el sol de invierno",
+      "caption": "El paseo marítimo en un día de viento y sol",
+      "captionEn": "The seafront promenade on a sunny, windy day",
+      "aspect": 1.3333,
+      "widths": [
+        480,
+        768
+      ]
+    },
+    {
+      "base": "calle-palmeras-casa-verde",
+      "source": "owner",
+      "order": 14.5,
+      "kind": "entorno",
+      "category": "entorno",
+      "focal": "50% 55%",
+      "alt": "Calle tranquila junto a la playa con palmeras altas, cielo azul con nubes y una casa de veraneo verde al fondo",
+      "caption": "Las calles de casitas y palmeras junto al apartamento",
+      "captionEn": "Quiet streets of beach houses and palm trees by the apartment",
+      "aspect": 0.75,
+      "widths": [
+        480,
+        768
+      ]
     }
   ]
 }
