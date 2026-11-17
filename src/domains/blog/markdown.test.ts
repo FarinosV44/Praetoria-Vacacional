@@ -98,5 +98,10 @@ describe("blog markdown renderer", () => {
     expect(renderMarkdown(":::cards\n### A\nb")).toContain("blog-card");
     expect(renderMarkdown(":::\ntexto")).toBe("<p>texto</p>");
   });
+  it("allows licensed Unsplash photos as figures, nothing else external", () => {
+    const html = renderMarkdown('![Llaves](https://images.unsplash.com/photo-1724304406928-c43b01912fa1?auto=format&fit=crop&w=1200&q=80 "Foto: Unsplash")');
+    expect(html).toContain('src="https://images.unsplash.com/photo-1724304406928-c43b01912fa1?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"');
+    expect(renderMarkdown("![x](https://images.unsplash.com.evil.example/photo-1.jpg)")).not.toContain("<img");
+    expect(renderMarkdown("![x](https://evil.example/photo-1)")).not.toContain("<img");
+  });
 });
-

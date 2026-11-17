@@ -16,7 +16,8 @@
  *   1.                 ordered list items
  *   >                  blockquote
  *   ---                horizontal rule
- *   ![alt](/images/… "pie")  a figure — only the site's own /images/ files,
+ *   ![alt](/images/… "pie")  a figure — the site's own /images/ files or an
+ *                      images.unsplash.com photo,
  *                      on a line of its own; the optional title is the caption
  *   **bold**  *italic* _italic_  `code`  [text](href)
  *   [[Texto]](href)    a call-to-action button, on a line of its own
@@ -118,9 +119,9 @@ export function extractFaqs(md: string): { question: string; answer: string }[] 
   return out;
 }
 
-/** A block image: only the site's own raster files under /images/, no traversal. */
+/** A block image: the site's own raster files under /images/ (no traversal) or a licensed Unsplash photo. */
 const IMAGE_BLOCK =
-  /^!\[([^\]]*)\]\((\/images\/(?:[\w-]+\/)*[\w.-]+\.(?:webp|avif|jpe?g|png))(?:\s+"([^"]*)")?\)$/i;
+  /^!\[([^\]]*)\]\((\/images\/(?:[\w-]+\/)*[\w.-]+\.(?:webp|avif|jpe?g|png)|https:\/\/images\.unsplash\.com\/photo-[\w-]+(?:\?[\w=&%.-]*)?)(?:\s+"([^"]*)")?\)$/i;
 
 function inline(src: string): string {
   // Escape first, then reintroduce the known inline constructs.
