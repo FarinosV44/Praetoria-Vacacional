@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
-import { pageMetadata, articleJsonLd } from "@/lib/seo";
+import { pageMetadata, articleJsonLd, faqJsonLd } from "@/lib/seo";
 import { getPublicPostBySlug, listPublicPosts } from "@/domains/blog/store";
-import { renderMarkdown } from "@/domains/blog/markdown";
+import { extractFaqs, renderMarkdown } from "@/domains/blog/markdown";
 import {
   autoExcerpt,
   ctaForPost,
@@ -60,6 +60,7 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const html = renderMarkdown(post.bodyMarkdown);
+  const faqs = extractFaqs(post.bodyMarkdown);
   const cta = ctaForPost(post);
   const ctaProperty = cta?.propertySlug ? getPropertyBySlug(cta.propertySlug) : null;
   const related = relatedPosts(post, await listPublicPosts(), 3);
@@ -84,6 +85,7 @@ export default async function BlogPostPage({
           author: post.author,
         })}
       />
+      {faqs.length > 0 && <JsonLd data={faqJsonLd(faqs)} />}
       <Breadcrumbs items={crumbs} />
 
       <article className="container-page py-8">
