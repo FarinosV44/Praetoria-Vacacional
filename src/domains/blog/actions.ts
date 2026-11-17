@@ -7,7 +7,7 @@ import { assertCapability } from "@/domains/admin/roles";
 import { logAction } from "@/domains/admin/audit";
 import { reportError } from "@/lib/observability/report";
 import { getPropertyBySlug } from "@/domains/properties/registry";
-import { blogPostFormSchema } from "./schema";
+import { blogPostFormSchema, blogPostSchema } from "./schema";
 import { slugify } from "./helpers";
 import { deletePost, getPostById, savePost, slugTaken } from "./store";
 import type { BlogPost } from "./types";
@@ -130,6 +130,21 @@ export async function saveBlogPostAction(
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
+
+  // The store ignores documents that fail the persisted schema on read, so a
+  // post saved with, say, a 41-character tag would vanish silently. Reject it here.
+  const longTag = post.tags.find((t) => t.length > 40);
+  if (longTag) {
+    return { ok: false, error: `La etiqueta «${longTag}» supera los 40 caracteres` };
+  }
+  const persisted = blogPostSchema.safeParse(post);
+  if (!persisted.success) {
+    const issue = persisted.error.issues[0];
+    return {
+      ok: false,
+      error: `Campo no válido: ${issue?.path.join(".") || "artículo"} (${issue?.message ?? "formato"})`,
+    };
+  }
 
   try {
     await savePost(post);
