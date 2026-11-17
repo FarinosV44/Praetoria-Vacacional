@@ -673,6 +673,61 @@
   border-top: 1px solid var(--color-line);
   margin-block: 2em;
 }
+/* Call-to-action button line: [[Texto]](href) */
+.blog-prose .blog-cta { margin-block: 1.6em; text-align: center; }
+.blog-prose .blog-cta a.pv-btn { color: var(--accent-contrast); text-decoration: none; }
+.blog-prose .blog-cta--whatsapp a.pv-btn { background: #128c4a; color: #fff; }
+.blog-prose .blog-cta--whatsapp a.pv-btn:hover { background: #0b6b37; }
+/* Cards (:::cards) and FAQ (:::faq) */
+.blog-prose .blog-cards { display: grid; gap: 1rem; margin-block: 1.6em; }
+@media (min-width: 640px) { .blog-prose .blog-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.blog-prose .blog-card {
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-top: 3px solid var(--accent-500);
+  border-radius: var(--radius-card, 0.75rem);
+  padding: 1.1rem 1.2rem;
+  font-size: 0.975rem;
+  line-height: 1.6;
+}
+.blog-prose .blog-card h3,
+.blog-prose .blog-faq__item h3,
+.blog-prose .blog-steps h3 { margin-top: 0; font-size: 1.1rem; line-height: 1.3; }
+.blog-prose .blog-card > * + *,
+.blog-prose .blog-faq__item > * + *,
+.blog-prose .blog-steps li > * + * { margin-top: 0.5em; }
+.blog-prose .blog-faq { margin-block: 1.4em; }
+.blog-prose .blog-faq__item { border-bottom: 1px solid var(--color-line); padding-block: 1rem; }
+/* Steps (:::steps): numbered vertical track */
+.blog-prose ol.blog-steps { list-style: none; padding-left: 0; counter-reset: blog-step; margin-block: 1.6em; }
+.blog-prose ol.blog-steps > li {
+  counter-increment: blog-step;
+  position: relative;
+  padding: 0 0 1.4rem 3.4rem;
+}
+.blog-prose ol.blog-steps > li + li { margin-top: 0; }
+.blog-prose ol.blog-steps > li::before {
+  content: counter(blog-step);
+  position: absolute; left: 0; top: 0;
+  width: 2.4rem; height: 2.4rem; border-radius: 999px;
+  display: grid; place-items: center;
+  background: var(--accent-600); color: var(--accent-contrast);
+  font-weight: 700; font-family: var(--font-display);
+}
+.blog-prose ol.blog-steps > li:not(:last-child)::after {
+  content: ""; position: absolute; left: 1.15rem; top: 2.6rem; bottom: 0.2rem;
+  width: 2px; background: var(--color-line);
+}
+/* Highlighted panel (:::box) */
+.blog-prose .blog-box {
+  background: var(--accent-50);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card, 0.75rem);
+  padding: clamp(1.2rem, 0.8rem + 2vw, 2rem);
+  margin-block: 2em;
+}
+.blog-prose .blog-box > :first-child { margin-top: 0; }
+.blog-prose .blog-box > * + * { margin-top: 1em; }
 
 /* =============================================================================
  * Creative direction 2026 — photography helpers (#100/#101)

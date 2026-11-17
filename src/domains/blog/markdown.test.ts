@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderMarkdown, safeHref, escapeHtml, markdownToText } from "./markdown";
+import { renderMarkdown, safeHref, escapeHtml, markdownToText, extractFaqs } from "./markdown";
 
 describe("blog markdown renderer", () => {
   it("maps # to h2 so the page keeps a single h1", () => {
@@ -70,4 +70,33 @@ describe("blog markdown renderer", () => {
   it("escapeHtml covers the five entities", () => {
     expect(escapeHtml(`<>&"'`)).toBe("&lt;&gt;&amp;&quot;&#39;");
   });
+  it("renders a button line and marks WhatsApp buttons", () => {
+    const html = renderMarkdown("[[Escríbenos]](https://wa.me/34600000000?text=Hola%20qu%C3%A9%20tal)");
+    expect(html).toContain('class="blog-cta blog-cta--whatsapp"');
+    expect(html).toContain('href="https://wa.me/34600000000?text=Hola%20qu%C3%A9%20tal"');
+    expect(html).toContain('target="_blank"');
+    expect(renderMarkdown("[[Ir]](javascript:alert(1))")).not.toContain("<a");
+  });
+
+  it("renders cards, steps, box and faq blocks", () => {
+    const md = ":::cards\n### Uno\nTexto **a**\n### Dos\n- x\n:::\n\n:::steps\n### Paso\nHaz esto\n:::\n\n:::box\n# Título\nCuerpo\n:::";
+    const html = renderMarkdown(md);
+    expect(html).toContain('<div class="blog-cards"><div class="blog-card"><h3>Uno</h3><p>Texto <strong>a</strong></p></div>');
+    expect(html).toContain("<ul>\n<li>x</li>\n</ul>");
+    expect(html).toContain('<ol class="blog-steps"><li><h3>Paso</h3><p>Haz esto</p></li></ol>');
+    expect(html).toContain('<section class="blog-box"><h2>Título</h2>\n<p>Cuerpo</p></section>');
+    expect(html).not.toContain(":::");
+  });
+
+  it("extracts FAQ items for structured data", () => {
+    const md = "Intro\n\n:::faq\n### ¿Pregunta?\nRespuesta con [enlace](/x).\n### Sin respuesta\n:::";
+    expect(extractFaqs(md)).toEqual([{ question: "¿Pregunta?", answer: "Respuesta con enlace." }]);
+    expect(renderMarkdown(md)).toContain('<div class="blog-faq"><div class="blog-faq__item"><h3>¿Pregunta?</h3>');
+  });
+
+  it("an unclosed fence or stray marker never hangs or leaks", () => {
+    expect(renderMarkdown(":::cards\n### A\nb")).toContain("blog-card");
+    expect(renderMarkdown(":::\ntexto")).toBe("<p>texto</p>");
+  });
 });
+
