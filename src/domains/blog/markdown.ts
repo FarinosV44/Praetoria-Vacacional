@@ -19,6 +19,10 @@
  *   ![alt](/images/… "pie")  a figure — only the site's own /images/ files,
  *                      on a line of its own; the optional title is the caption
  *   **bold**  *italic* _italic_  `code`  [text](href)
+ *   [[Texto]](href)    a call-to-action button, on a line of its own
+ *   :::cards / :::steps / :::faq   a block of items, each opened by `### Title`
+ *   :::box             a highlighted panel (any of the above inside, except blocks)
+ *   :::                closes the block
  */
 
 import { currentInternalPath } from "@/lib/legacy-paths";
@@ -44,7 +48,75 @@ export function safeHref(raw: string): string | null {
   return null;
 }
 
-const BLOCK_START = /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|-{3,}$|\*{3,}$|_{3,}$|!\[)/;
+const BLOCK_START = /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|-{3,}$|\*{3,}$|_{3,}$|!\[|:::|\[\[)/;
+
+/** A button line: `[[Texto]](href)` alone on its line. */
+const BUTTON_LINE = /^\[\[([^\]]+)\]\]\(([^)\s]+)\)$/;
+
+/** Opening line of a fenced block. */
+const FENCE_OPEN = /^:::(cards|steps|faq|box)$/;
+
+type FenceKind = "cards" | "steps" | "faq" | "box";
+
+/** Split a block body into `### Title` items. Text before the first title is dropped. */
+function splitItems(body: string[]): { title: string; body: string }[] {
+  const items: { title: string; body: string[] }[] = [];
+  for (const line of body) {
+    const t = /^###\s+(.*)$/.exec(line.trim());
+    if (t) items.push({ title: (t[1] ?? "").trim(), body: [] });
+    else if (items.length > 0) items[items.length - 1]!.body.push(line);
+  }
+  return items.map((it) => ({ title: it.title, body: it.body.join("\n").trim() }));
+}
+
+function renderButton(text: string, href: string): string | null {
+  const checked = safeHref(href);
+  if (!checked) return null;
+  const safe = checked.startsWith("/") ? currentInternalPath(checked) : checked;
+  const external = /^https?:\/\//i.test(safe);
+  const attrs = external ? ' rel="noopener" target="_blank"' : "";
+  const wa = /^https:\/\/wa\.me\//i.test(safe) ? " blog-cta--whatsapp" : "";
+  return `<p class="blog-cta${wa}"><a class="pv-btn pv-btn--lg pv-btn--primary" href="${escapeHtml(safe)}"${attrs}>${inline(text)}</a></p>`;
+}
+
+function renderFence(kind: FenceKind, body: string[]): string {
+  if (kind === "box") {
+    return `<section class="blog-box">${renderMarkdown(body.join("\n"), false)}</section>`;
+  }
+  const items = splitItems(body);
+  if (kind === "steps") {
+    const lis = items
+      .map((it) => `<li><h3>${inline(it.title)}</h3>${renderMarkdown(it.body, false)}</li>`)
+      .join("");
+    return `<ol class="blog-steps">${lis}</ol>`;
+  }
+  const cls = kind === "faq" ? "blog-faq" : "blog-cards";
+  const itemCls = kind === "faq" ? "blog-faq__item" : "blog-card";
+  const divs = items
+    .map((it) => `<div class="${itemCls}"><h3>${inline(it.title)}</h3>${renderMarkdown(it.body, false)}</div>`)
+    .join("");
+  return `<div class="${cls}">${divs}</div>`;
+}
+
+/** Questions and plain-text answers of every `:::faq` block (for FAQPage JSON-LD). */
+export function extractFaqs(md: string): { question: string; answer: string }[] {
+  const lines = (md ?? "").replace(/\r\n?/g, "\n").split("\n");
+  const out: { question: string; answer: string }[] = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    if ((lines[i] ?? "").trim() !== ":::faq") continue;
+    const body: string[] = [];
+    i += 1;
+    while (i < lines.length && (lines[i] ?? "").trim() !== ":::") {
+      body.push(lines[i] ?? "");
+      i += 1;
+    }
+    for (const it of splitItems(body)) {
+      const answer = markdownToText(it.body);
+      if (it.title && answer) out.push({ question: markdownToText(it.title), answer });
+    }
+  }
+  return out;
+}
 
 /** A block image: only the site's own raster files under /images/, no traversal. */
 const IMAGE_BLOCK =
@@ -77,7 +149,7 @@ function inline(src: string): string {
   return s;
 }
 
-export function renderMarkdown(md: string): string {
+export function renderMarkdown(md: string, allowFences = true): string {
   const lines = (md ?? "").replace(/\r\n?/g, "\n").split("\n");
   const out: string[] = [];
   let i = 0;
@@ -106,6 +178,38 @@ export function renderMarkdown(md: string): string {
       out.push("<hr />");
       i += 1;
       continue;
+    }
+
+    // Fenced block (:::cards / :::steps / :::faq / :::box … :::)
+    const fence = allowFences ? FENCE_OPEN.exec(trimmed) : null;
+    if (fence) {
+      closeList();
+      const body: string[] = [];
+      i += 1;
+      while (i < lines.length && (lines[i] ?? "").trim() !== ":::") {
+        body.push(lines[i] ?? "");
+        i += 1;
+      }
+      i += 1; // closing ::: (or end of input)
+      out.push(renderFence(fence[1] as FenceKind, body));
+      continue;
+    }
+    if (/^:::/.test(trimmed)) {
+      // Stray or nested fence marker: drop it rather than print it.
+      i += 1;
+      continue;
+    }
+
+    // Button
+    const button = BUTTON_LINE.exec(trimmed);
+    if (button) {
+      const html = renderButton(button[1] ?? "", (button[2] ?? "").replace(/&amp;/g, "&"));
+      if (html) {
+        closeList();
+        out.push(html);
+        i += 1;
+        continue;
+      }
     }
 
     // Figure
@@ -179,6 +283,8 @@ export function renderMarkdown(md: string): string {
 /** Plain-text projection of a Markdown body — for excerpts and reading time. */
 export function markdownToText(md: string): string {
   return (md ?? "")
+    .replace(/^:::\w*\s*$/gm, " ")
+    .replace(/\[\[([^\]]+)\]\]\([^)]*\)/g, "$1")
     .replace(/`{1,3}[^`]*`{1,3}/g, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")

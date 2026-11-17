@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageMetadata, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
@@ -39,6 +40,24 @@ const ZONES = [
     body: "El pueblo más cercano a las pistas de Javalambre: esquí en invierno, setas en otoño y montaña en primavera y verano.",
   },
 ] as const;
+
+const PAPERWORK_GUIDES = [
+  {
+    href: "/blog/gestion-administrativa-apartamentos-turisticos",
+    eyebrow: "Registros y viajeros",
+    title: "Tu apartamento turístico, sin papeleo ni complicaciones",
+    body: "SES.HOSPEDAJES, registro de turismo de la Comunitat Valenciana y qué ha pasado con el Registro Único.",
+  },
+  {
+    href: "/blog/iva-apartamentos-turisticos-diciembre-2026",
+    eyebrow: "Facturas e IVA",
+    title: "El IVA del 10 % en apartamentos turísticos desde diciembre de 2026",
+    body: "Qué estancias llevan IVA, cuándo hay que facturar y cómo encaja el modelo 303.",
+  },
+] as const;
+
+const PAPERWORK_WA =
+  "Hola, tengo un apartamento turístico y me gustaría que Praetoria Vacacional se encargara de mis registros y obligaciones administrativas. ¿Podéis informarme?";
 
 export default function PropietariosPage() {
   // Evocative, owner-supplied view of the coast — not an interior shot.
@@ -123,6 +142,49 @@ export default function PropietariosPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 3b · Paperwork only — for owners who already rent on their own */}
+      <section
+        id="tramites"
+        aria-labelledby="paperwork-heading"
+        className="py-[clamp(3.5rem,2.5rem+3vw,6rem)]"
+      >
+        <div className="container-page max-w-4xl">
+          <p className="eyebrow">Gestión integral para propietarios</p>
+          <h2 id="paperwork-heading" className="mt-3 display-3 max-w-2xl">
+            ¿Ya alquilas por tu cuenta? Te quitamos el papeleo
+          </h2>
+          <p className="lede mt-4 max-w-2xl">
+            Registros turísticos, comunicaciones de viajeros, facturación, IVA y seguimiento de
+            obligaciones. No hace falta que cambies de plataforma ni que nos des las llaves: tú sigues
+            con tus reservas y nosotros nos ocupamos de los trámites que nos encargues.
+          </p>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+            {PAPERWORK_GUIDES.map((g) => (
+              <li key={g.href}>
+                <Link
+                  href={g.href}
+                  className="pv-card pv-card--interactive block h-full !p-5"
+                >
+                  <span className="eyebrow">{g.eyebrow}</span>
+                  <span className="mt-2 block text-base font-semibold">{g.title}</span>
+                  <span className="mt-2 block text-sm text-[var(--color-ink-soft)]">{g.body}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-8">
+            <a
+              href={`https://wa.me/${wa}?text=${encodeURIComponent(PAPERWORK_WA)}`}
+              target="_blank"
+              rel="noopener"
+              className="pv-btn pv-btn--lg pv-btn--ink"
+            >
+              Quiero que gestionéis los trámites de mi apartamento
+            </a>
+          </p>
         </div>
       </section>
 
