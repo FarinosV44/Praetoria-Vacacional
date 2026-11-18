@@ -407,6 +407,40 @@ Remaining before V1 "done" (issue #22):
    landings/guides (EN content = translation effort, owner-gated #85).
 5. `develop → main` merge + Vercel deploy — the user's call.
 
+## Owner paperwork service (#173–#178) — branch `feat/tramites-propietarios`
+
+New business line: owners who run their own bookings delegate SES.HOSPEDAJES paperwork.
+Decisions D-050 to D-054. Not merged, not deployed.
+
+Built: landing `/gestion-tramites-alquiler-turistico` + two guides, versioned catalogue and
+quote engine, online sign-up (`/alta-tramites`), owner auth (Supabase Auth or demo store),
+portal «Mi carpeta» (`/mi-cuenta/tramites`), Stripe one-off checkout with invoice + webhook,
+admin «Servicios a propietarios» (`/admin/tramites`), migration with RLS, audit trail,
+encrypted traveller data. Tests: unit (domain), RLS A/B on Postgres, e2e
+`e2e/tramites.spec.ts` (sign-up → pay → report → admin submits + proof → owner sees it;
+owner B gets 404 on owner A's data).
+
+### Activation checklist (in this order, each needs the owner's go-ahead)
+
+1. Legal review of `/legal/condiciones-tramites` (terms, representation mandate, art. 28 GDPR
+   processor terms), the landing copy and the guides. Bump `TRAMITES_LEGAL_VERSIONS` if texts change.
+2. Tax advisor confirms VAT treatment (21 % set in the catalogue).
+3. Apply `supabase/migrations/20261118120000_tramites_propietarios.sql`; run
+   `supabase/tests/tramites_rls.test.sql`; check bucket `owner-documents` is private.
+4. Set `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` at build time (owner login needs it), Supabase
+   Auth email templates pointing to `/mi-cuenta/acceso/confirmar`.
+5. Generate `TRAMITES_DATA_KEY` (`openssl rand -base64 32`), store it outside the repo, back it up:
+   losing it makes stored traveller data unreadable.
+6. Stripe **test** mode: run the full flow, check the webhook (`kind=tramites_order`) and the invoice.
+7. Give staff the «Gestor de trámites» role; MFA on.
+8. `TRAMITES_CONTRATACION=on` (sign-up + payment). Then Stripe **live** keys.
+9. `TRAMITES_INDEXAR=on` (indexing + sitemap), then request indexing in Search Console.
+
+Pending / not built: monthly plan checkout (blocked by design), antivirus scan of uploads,
+automatic submission to SES.HOSPEDAJES (no official authorised integration verified),
+printable mandate page, admin nav still lists other sections for the «tramites» role
+(they redirect back to `/admin/tramites`).
+
 ## Branches
 
 Both `develop` and `main` are on origin and level. `main` history: `b5ee968`

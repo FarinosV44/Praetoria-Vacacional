@@ -945,3 +945,58 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
   registration is feature-detected and can fail without affecting the page.
 - **No MCP Server Card.** There is no MCP server, and a card describing one would be false. Publish
   it only if a server is built.
+
+## D-050 — owner paperwork service: no NRUA, no annual deposit
+**Date:** 2026-11-18 · issues #173–#178 · owner decision («Sin NRUA ni depósito»)
+- The Supreme Court (STS 620/2026, BOE 8 June 2026) annulled the Registro Único procedure and the
+  periodic information duty (arts. 9 and 10 RD 1312/2024). RDL 29/2026 (6 Oct) did not recreate
+  the registry; it only asks for the identifying number in listings where one exists.
+- `nrua_solicitud` and `deposito_anual` stay in the catalogue with `enabled: false`. A disabled
+  service is not shown, quoted or orderable. Re-enable only if a new rule brings it back, and
+  review the landing, the guide and the legal texts first.
+- SES.HOSPEDAJES (RD 933/2021) is the core of the service: alta 60 € + IVA once per property,
+  15 € + IVA per reservation (covers booking, cancellation and arrival communications).
+  Historical review is «desde 75 €», manual quote, never charged online.
+
+## D-051 — owner uploads: content sniffing, private bucket, manual review
+**Date:** 2026-11-18 · #176
+- Only PDF, PNG and JPEG, detected by magic bytes (the extension must agree), 10 MB max.
+  Display names are sanitised; storage keys are `accountId/uuid`, never the file name.
+- Files live in the private `owner-documents` bucket. Downloads go through the server with
+  `Content-Disposition: attachment`, `nosniff` and a sandbox CSP, and are audited.
+- There is no antivirus scan yet. Every owner document is reviewed by a person before it is
+  marked valid. Add a scanner (e.g. ClamAV in a worker) before accepting high volumes.
+- An official proof (`justificante_oficial`) is uploaded by staff only, is immutable and is
+  required to close a filing.
+
+## D-052 — reservation credits («saldo de reservas») instead of per-report charges
+**Date:** 2026-11-18 · #175
+- The pay-per-use plan sells reservation credits up front. Each reported reservation consumes
+  one; without credits the report is accepted, flagged `pendiente` and settled when credits are
+  bought. No automatic charges. Unused credits do not expire while the account is active and are
+  refunded on cancellation (terms §7).
+- «Gestión continua» (29 €/month) is visible as «Próximamente» and `purchasable: false`.
+  `createSubscriptionCheckout` throws until commercial approval and a Stripe recurring price.
+
+## D-053 — launch switches
+**Date:** 2026-11-18 · #178
+- `TRAMITES_CONTRATACION=on` enables online sign-up and payment. Without it the landing CTA
+  leads to a free pre-registration form (no account, no charge). Demo mode does not
+  enable it either: the public site may run in demo, where a simulated payment would look real.
+- `TRAMITES_INDEXAR=on` makes the landing and its guides indexable and puts them in the
+  sitemap. Until then they carry `noindex`.
+- `TRAMITES_DATA_KEY` (32 bytes, base64) encrypts traveller data with AES-256-GCM. In
+  production without the key, traveller data is refused rather than stored in clear.
+
+## D-054 — manual submission only (phase 1)
+**Date:** 2026-11-18 · #177
+- There is no official, authorised API integration with SES.HOSPEDAJES or the Colegio de
+  Registradores in this project. Staff submit in the official site and record the real date,
+  channel and operation code. «Presentado» requires that record; «Finalizado» requires the
+  official proof; a reservation filing closes only when booking and arrival (and cancellation,
+  if any) are all recorded.
+- A reservation reported after the 24 h window is flagged «fuera de plazo». Copy must never
+  say that a late communication cures the breach.
+- The `tramites` admin role sees only «Servicios a propietarios» data rights
+  (`tramites.write`, `tramites.sensitive`); «Solo lectura» cannot open the section. Decrypted
+  traveller data needs `tramites.sensitive` and each view is audited.

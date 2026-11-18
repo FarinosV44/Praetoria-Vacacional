@@ -3,7 +3,7 @@
  * has a role; every mutating server action checks a capability, never a raw "is
  * authenticated". The current user/role comes from `getAdminContext()`.
  */
-export type AdminRole = "admin" | "gestion" | "lectura";
+export type AdminRole = "admin" | "gestion" | "tramites" | "lectura";
 
 export type Capability =
   | "reservations.write"
@@ -14,7 +14,11 @@ export type Capability =
   | "promotions.write"
   | "content.write"
   | "operations.write"
-  | "settings.write";
+  | "settings.write"
+  /** Servicios a propietarios (#177): gestionar expedientes, documentos y mensajes. */
+  | "tramites.write"
+  /** Ver datos de viajeros de clientes (descifrados). Solo quien presenta los partes. */
+  | "tramites.sensitive";
 
 const MATRIX: Record<AdminRole, Capability[]> = {
   // full control
@@ -28,6 +32,8 @@ const MATRIX: Record<AdminRole, Capability[]> = {
     "content.write",
     "operations.write",
     "settings.write",
+    "tramites.write",
+    "tramites.sensitive",
   ],
   // day-to-day operations, no configuration
   gestion: [
@@ -39,7 +45,10 @@ const MATRIX: Record<AdminRole, Capability[]> = {
     "promotions.write",
     "content.write",
     "operations.write",
+    "tramites.write",
   ],
+  // gestor de trámites (#177): solo «Servicios a propietarios»
+  tramites: ["tramites.write", "tramites.sensitive"],
   // read-only
   lectura: [],
 };
@@ -47,6 +56,7 @@ const MATRIX: Record<AdminRole, Capability[]> = {
 export const ROLE_LABEL: Record<AdminRole, string> = {
   admin: "Administrador",
   gestion: "Gestión",
+  tramites: "Gestor de trámites",
   lectura: "Solo lectura",
 };
 

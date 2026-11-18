@@ -75,7 +75,16 @@ function fmtShort(iso: string, locale: Locale) {
 
 /** Routes where a persistent booking bar would be noise or redundant. */
 // /propietarios speaks to owners, not guests — no booking bar there.
-const HIDDEN_PREFIXES = ["/admin", "/reservar", "/reserva", "/en/reservar", "/propietarios"];
+const HIDDEN_PREFIXES = [
+  "/admin",
+  "/reservar",
+  "/reserva",
+  "/en/reservar",
+  "/propietarios",
+  "/gestion-tramites-alquiler-turistico",
+  "/alta-tramites",
+  "/mi-cuenta",
+];
 /** Pages that carry their own tailored on-page booking module + sticky CTA —
  *  the mobile bottom bar is suppressed there (the desktop floating bar stays). */
 const OWN_BOOKING_UI = /^\/(en\/?)?(javalambre|valencia)?$/;
@@ -169,9 +178,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
     setOpen(false);
   };
 
-  const shown = draft.property
-    ? results.filter((r) => r.propertySlug === draft.property)
-    : results;
+  const shown = draft.property ? results.filter((r) => r.propertySlug === draft.property) : results;
 
   return (
     <>
@@ -181,15 +188,13 @@ export function BookingBar({ locale }: { locale: Locale }) {
           scrolled ? "hidden sm:flex" : "hidden"
         }`}
       >
-        <div className="flex items-center gap-3 rounded-full bg-white/95 py-2 pl-5 pr-2 shadow-[var(--shadow-lg)] backdrop-blur">
+        <div className="flex items-center gap-3 rounded-full bg-white/95 py-2 pr-2 pl-5 shadow-[var(--shadow-lg)] backdrop-blur">
           <span className="text-sm font-medium">
             {stay.property
               ? PROPERTIES.find((p) => p.slug === stay.property)?.name.split(" ")[0]
               : t.heading}
           </span>
-          {hasDates && (
-            <span className="text-sm text-[var(--color-ink-soft)]">{label}</span>
-          )}
+          {hasDates && <span className="text-sm text-[var(--color-ink-soft)]">{label}</span>}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -294,7 +299,11 @@ export function BookingBar({ locale }: { locale: Locale }) {
                   ))}
                 </select>
               </label>
-              <button type="submit" disabled={status === "loading"} className="pv-btn pv-btn--primary">
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="pv-btn pv-btn--primary"
+              >
                 {status === "loading" ? t.checking : t.price}
               </button>
             </form>
@@ -322,7 +331,7 @@ export function BookingBar({ locale }: { locale: Locale }) {
                     </div>
                     {!r.available && r.alternatives.length > 0 && (
                       <div className="mt-2 border-t border-[var(--color-line)] pt-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-faint)]">
+                        <p className="text-xs font-semibold tracking-[0.12em] text-[var(--color-ink-faint)] uppercase">
                           {t.nearby}
                         </p>
                         <ul className="mt-1.5 space-y-1.5">

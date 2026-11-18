@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import "./admin.css";
 import { requireAdmin } from "@/domains/admin/auth";
 import { logoutAction } from "@/domains/admin/actions";
@@ -23,6 +25,12 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   const role = await getCurrentRole();
+  // El gestor de trámites solo trabaja en «Servicios a propietarios» (D-054).
+  if (role === "tramites") {
+    const path = (await headers()).get("x-pv-pathname") ?? "";
+    if (path && !path.startsWith("/admin/tramites") && !path.startsWith("/admin/seguridad"))
+      redirect("/admin/tramites");
+  }
   const ctx = await getAdminContext();
   return (
     <div className="admin-shell">
