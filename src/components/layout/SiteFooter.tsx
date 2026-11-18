@@ -100,6 +100,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link className={colLink} href="/gestion-tramites-alquiler-turistico">
+                Registro de viajeros y trámites
+              </Link>
+            </li>
+            <li>
               <Link className={colLink} href="/sobre-nosotros">
                 Sobre nosotros
               </Link>

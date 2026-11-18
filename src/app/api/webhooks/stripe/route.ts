@@ -4,6 +4,7 @@ import { getRepository } from "@/lib/repository";
 import { stripe, stripeWebhookEnabled } from "@/domains/payments/stripe";
 import { finalizeReservation, markPaymentFailed } from "@/domains/booking/checkout";
 import { reportError } from "@/lib/observability/report";
+import { handleTramitesStripeEvent } from "@/domains/tramites/webhook";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +38,10 @@ export async function POST(req: Request) {
   if (!fresh) return new Response("Already processed", { status: 200 });
 
   try {
+    // Servicio de trámites para propietarios (#175): sus eventos llevan
+    // `metadata.kind` propio y nunca tocan el flujo de reservas.
+    if (await handleTramitesStripeEvent(event)) return new Response("ok", { status: 200 });
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;

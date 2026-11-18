@@ -22,7 +22,7 @@ async function guard() {
 const inviteSchema = z.object({
   email: z.string().trim().email().max(200),
   fullName: z.string().trim().max(120).optional(),
-  role: z.enum(["admin", "gestion", "lectura"]),
+  role: z.enum(["admin", "gestion", "tramites", "lectura"]),
 });
 
 export async function inviteAdminUserAction(_prev: unknown, formData: FormData): Promise<Result> {
@@ -104,7 +104,7 @@ async function wouldOrphanAdmins(targetId: string, stillAdmin: boolean): Promise
 export async function updateAdminUserRoleAction(formData: FormData): Promise<void> {
   await guard();
   const id = idSchema.parse(String(formData.get("id") ?? ""));
-  const role = z.enum(["admin", "gestion", "lectura"]).parse(String(formData.get("role") ?? ""));
+  const role = z.enum(["admin", "gestion", "tramites", "lectura"]).parse(String(formData.get("role") ?? ""));
   if (await wouldOrphanAdmins(id, role === "admin")) throw new Error("Debe quedar al menos un administrador activo");
   await getRepository().updateAdminUser(id, { role });
   await logAction("admin_user.role", { entity: "admin_user", entityId: id, meta: { role } });

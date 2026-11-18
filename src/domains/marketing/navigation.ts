@@ -23,6 +23,10 @@ const staticInfoRoutes: SiteRoute[] = [
   { path: "/", changefreq: "weekly", priority: 1, section: "home" },
   { path: "/ventajas-reserva-directa", changefreq: "monthly", priority: 0.6, section: "info" },
   { path: "/propietarios", changefreq: "monthly", priority: 0.7, section: "info" },
+  // Servicio de trámites para propietarios (#174) y sus guías (#178).
+  { path: "/gestion-tramites-alquiler-turistico", changefreq: "monthly", priority: 0.8, section: "info" },
+  { path: "/gestion-tramites-alquiler-turistico/registro-viajeros-ses-hospedajes", changefreq: "monthly", priority: 0.6, section: "guia" },
+  { path: "/gestion-tramites-alquiler-turistico/registro-unico-nrua-anulado", changefreq: "monthly", priority: 0.6, section: "guia" },
   { path: "/guias", changefreq: "weekly", priority: 0.5, section: "guia" },
   { path: "/blog", changefreq: "weekly", priority: 0.5, section: "blog" },
   { path: "/sobre-nosotros", changefreq: "monthly", priority: 0.4, section: "info" },
@@ -34,6 +38,7 @@ const legalRoutes: SiteRoute[] = [
   "/legal/privacidad",
   "/legal/cookies",
   "/legal/condiciones-reserva",
+  "/legal/condiciones-tramites",
 ].map((path) => ({ path, changefreq: "monthly" as const, priority: 0.3, section: "legal" as const }));
 
 export async function getIndexableRoutes(): Promise<SiteRoute[]> {
@@ -119,7 +124,7 @@ export async function guideLinksFor(
 }
 
 /** Routes that must never be indexed (issues #14, #32). */
-export const noindexPrefixes = ["/admin", "/api", "/reservar", "/reserva", "/checkout"];
+export const noindexPrefixes = ["/admin", "/api", "/reservar", "/reserva", "/checkout", "/mi-cuenta", "/alta-tramites"];
 
 /** Landings for a property, for internal-link blocks on the property page. */
 export function landingLinksFor(propertySlug: string): { path: string; label: string }[] {

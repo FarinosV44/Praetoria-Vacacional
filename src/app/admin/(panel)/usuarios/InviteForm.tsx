@@ -31,6 +31,7 @@ export function InviteForm() {
         <select name="role" defaultValue="gestion" className="h-10 rounded-lg border border-[var(--color-line)] px-2">
           <option value="admin">Administrador</option>
           <option value="gestion">Gestión</option>
+          <option value="tramites">Gestor de trámites</option>
           <option value="lectura">Solo lectura</option>
         </select>
       </label>
