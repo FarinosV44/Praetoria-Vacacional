@@ -981,7 +981,8 @@ The live "now" dashboard at `/admin` is unchanged; this is the historical view.
 ## D-053 — launch switches
 **Date:** 2026-11-18 · #178
 - `TRAMITES_CONTRATACION=on` enables online sign-up and payment. Without it the landing CTA
-  leads to a free pre-registration form (no account, no charge). Demo mode enables it.
+  leads to a free pre-registration form (no account, no charge). Demo mode does not
+  enable it either: the public site may run in demo, where a simulated payment would look real.
 - `TRAMITES_INDEXAR=on` makes the landing and its guides indexable and puts them in the
   sitemap. Until then they carry `noindex`.
 - `TRAMITES_DATA_KEY` (32 bytes, base64) encrypts traveller data with AES-256-GCM. In

@@ -1,5 +1,4 @@
 import "server-only";
-import { DEMO_MODE } from "@/lib/env";
 import { ownerAuthMode } from "./auth";
 
 /**
@@ -8,11 +7,13 @@ import { ownerAuthMode } from "./auth";
  * ofrece una «prealta» (solicitud sin cobro) y WhatsApp.
  *
  *   TRAMITES_CONTRATACION=on   → alta online + pago + portal
- *   (ausente)                  → solo prealta (salvo modo demo/preview)
+ *   (ausente)                  → solo prealta
+ *
+ * También en modo demo hace falta activarlo a mano: la web pública puede estar
+ * funcionando en demo, y ahí un alta con «pago simulado» parecería real.
  */
 export function contratacionActiva(): boolean {
   if (ownerAuthMode() === "disabled") return false;
-  if (DEMO_MODE) return true;
   return process.env.TRAMITES_CONTRATACION?.trim().toLowerCase() === "on";
 }
 
