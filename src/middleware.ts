@@ -13,7 +13,9 @@ import { NextResponse, type NextRequest } from "next/server";
  * hydration bootstrap — but keeps every other directive locked down
  * (object-src none, frame-ancestors none, base-uri self, allow-listed hosts).
  */
-const NOINDEX_PREFIXES = ["/admin", "/reservar", "/reserva", "/api", "/mi-reserva"];
+const NOINDEX_PREFIXES = ["/admin", "/reservar", "/reserva", "/api", "/mi-reserva", "/mi-cuenta", "/alta-tramites"];
+/** Áreas privadas de propietarios (#176): nunca en caché compartida. */
+const NO_STORE_PREFIXES = ["/mi-cuenta", "/alta-tramites"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -47,6 +49,9 @@ export function middleware(req: NextRequest) {
   const res = NextResponse.next();
   if (NOINDEX_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     res.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  if (NO_STORE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    res.headers.set("Cache-Control", "private, no-store");
   }
   return res;
 }

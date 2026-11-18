@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { DEFAULT_CATALOG, catalogSchema, serviceByCode, type Catalog, type ServiceCode } from "./catalog";
 import { buildCreditsQuote, buildQuote, type Quote } from "./pricing";
-import { deadlineFor, reportedLate } from "./deadlines";
+import { deadlineFor, madridLocalToIso, reportedLate } from "./deadlines";
 import { canTransition, defaultChecklist, filingTitle, OWNER_STATUS, STATUS_LABEL } from "./workflow";
 import { checkUpload } from "./upload";
 import { encryptJson, decryptJson, travellerEncryptionReady } from "./crypto";
@@ -425,7 +425,7 @@ export async function reportReservation(ctx: OwnerContext, input: ReservationRep
 
   const account = (await store.getAccount(property.accountId))!;
   const at = now();
-  const bookedAt = new Date(input.bookedAt).toISOString();
+  const bookedAt = madridLocalToIso(input.bookedAt);
   let billing: ReservationReport["billing"] = "pendiente";
   if (account.reservationCredits > 0) {
     await store.adjustCredits(account.id, -1);
@@ -484,7 +484,7 @@ export async function cancelReservation(ctx: OwnerContext, reportId: string, can
   const report = await store.getReport(reportId);
   if (!report || !ownsAccount(ctx, report.accountId)) return { ok: false as const, error: "Reserva no encontrada." };
   if (report.cancelledAt) return { ok: false as const, error: "Esta reserva ya consta como anulada." };
-  const cancelledAt = new Date(cancelledAtIso).toISOString();
+  const cancelledAt = madridLocalToIso(cancelledAtIso);
   await store.updateReport(report.id, { cancelledAt });
   const filing = (await store.listFilings({ accountId: report.accountId })).find((f) => f.reservationReportId === report.id);
   if (filing) {

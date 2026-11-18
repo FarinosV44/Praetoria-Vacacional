@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canTransition, allowedTransitions } from "./workflow";
-import { deadlineFor, deadlineState, madridMidnight, nextPending, reportedLate } from "./deadlines";
+import { deadlineFor, deadlineState, madridLocalToIso, madridMidnight, nextPending, reportedLate } from "./deadlines";
 import { checkUpload, sanitizeFilename, sniffMime } from "./upload";
 import type { ReservationReport } from "./types";
 
@@ -56,6 +56,12 @@ describe("plazos RD 933/2021 (24 h desde cada hecho)", () => {
   it("medianoche de Madrid en invierno (+1) y verano (+2)", () => {
     expect(madridMidnight("2026-11-20").toISOString()).toBe("2026-11-19T23:00:00.000Z");
     expect(madridMidnight("2026-07-15").toISOString()).toBe("2026-07-14T22:00:00.000Z");
+  });
+
+  it("hora local de Madrid del formulario → UTC", () => {
+    expect(madridLocalToIso("2026-11-18T10:30")).toBe("2026-11-18T09:30:00.000Z");
+    expect(madridLocalToIso("2026-07-01T10:30")).toBe("2026-07-01T08:30:00.000Z");
+    expect(madridLocalToIso("2026-11-18T10:30:00.000Z")).toBe("2026-11-18T10:30:00.000Z");
   });
 
   it("reserva: 24 h desde que se formaliza", () => {

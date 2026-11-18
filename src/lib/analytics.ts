@@ -17,7 +17,13 @@ type EventName =
   | "checkout_abandoned"
   | "contact_click"
   | "select_alternative_dates"
-  | "generate_lead";
+  | "generate_lead"
+  // Servicio de trámites para propietarios (#174). Sin datos personales.
+  | "lead_start"
+  | "plan_selected"
+  | "signup_complete"
+  | "checkout_start"
+  | "service_order_complete";
 
 type Params = Record<string, string | number | boolean | undefined>;
 

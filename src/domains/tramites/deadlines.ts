@@ -36,6 +36,18 @@ export function madridMidnight(isoDate: string): Date {
   return new Date(Date.UTC(y, m - 1, d, -1, 0, 0));
 }
 
+/**
+ * «2026-11-18T10:30» (input datetime-local, hora de Madrid, sin zona) → ISO UTC.
+ * Si ya trae zona (Z o ±hh:mm) se respeta tal cual.
+ */
+export function madridLocalToIso(local: string): string {
+  if (/[zZ]|[+-]\d{2}:\d{2}$/.test(local)) return new Date(local).toISOString();
+  const [date, time = "00:00"] = local.split("T") as [string, string?];
+  const [h, m] = time.split(":").map(Number) as [number, number];
+  const base = madridMidnight(date);
+  return new Date(base.getTime() + (h * 60 + m) * 60_000).toISOString();
+}
+
 /** Momento del hecho que dispara cada comunicación. */
 export function eventMoment(r: Pick<ReservationReport, "bookedAt" | "checkIn" | "cancelledAt">, e: ReportEvent): Date | null {
   switch (e) {
