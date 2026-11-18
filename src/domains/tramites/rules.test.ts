@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { canTransition, allowedTransitions } from "./workflow";
-import { deadlineFor, deadlineState, madridLocalToIso, madridMidnight, nextPending, reportedLate } from "./deadlines";
+import {
+  deadlineFor,
+  deadlineState,
+  madridLocalToIso,
+  madridMidnight,
+  nextPending,
+  reportedLate,
+} from "./deadlines";
 import { checkUpload, sanitizeFilename, sniffMime } from "./upload";
 import type { ReservationReport } from "./types";
 
@@ -10,7 +17,10 @@ describe("flujo del expediente", () => {
     expect(canTransition("pendiente_documentacion", "en_revision").ok).toBe(true);
     expect(canTransition("en_revision", "listo_para_presentar").ok).toBe(true);
     expect(
-      canTransition("listo_para_presentar", "presentado", { submittedAt: "2026-11-18T10:00:00Z", submissionChannel: "ses_hospedajes_web" }).ok,
+      canTransition("listo_para_presentar", "presentado", {
+        submittedAt: "2026-11-18T10:00:00Z",
+        submissionChannel: "ses_hospedajes_web",
+      }).ok,
     ).toBe(true);
     expect(canTransition("presentado", "finalizado", { hasOfficialProof: true }).ok).toBe(true);
   });
@@ -74,16 +84,20 @@ describe("plazos RD 933/2021 (24 h desde cada hecho)", () => {
 
   it("anulación solo cuando existe", () => {
     expect(deadlineFor(base, "anulacion")).toBeNull();
-    expect(deadlineFor({ ...base, cancelledAt: "2026-11-15T12:00:00.000Z" }, "anulacion")?.toISOString()).toBe(
-      "2026-11-16T12:00:00.000Z",
-    );
+    expect(
+      deadlineFor({ ...base, cancelledAt: "2026-11-15T12:00:00.000Z" }, "anulacion")?.toISOString(),
+    ).toBe("2026-11-16T12:00:00.000Z");
   });
 
   it("estados: a tiempo, vence pronto, vencido, hecho", () => {
     expect(deadlineState(base, "reserva", new Date("2026-11-10T12:00:00Z")).state).toBe("a_tiempo");
-    expect(deadlineState(base, "reserva", new Date("2026-11-11T05:00:00Z")).state).toBe("vence_pronto");
+    expect(deadlineState(base, "reserva", new Date("2026-11-11T05:00:00Z")).state).toBe(
+      "vence_pronto",
+    );
     expect(deadlineState(base, "reserva", new Date("2026-11-12T00:00:00Z")).state).toBe("vencido");
-    expect(deadlineState({ ...base, communicatedReservaAt: "2026-11-10T11:00:00Z" }, "reserva").state).toBe("hecho");
+    expect(
+      deadlineState({ ...base, communicatedReservaAt: "2026-11-10T11:00:00Z" }, "reserva").state,
+    ).toBe("hecho");
   });
 
   it("reserva anulada antes de la llegada: no hay parte de entrada", () => {
@@ -97,7 +111,10 @@ describe("plazos RD 933/2021 (24 h desde cada hecho)", () => {
   });
 
   it("siguiente comunicación pendiente", () => {
-    const n = nextPending({ ...base, communicatedReservaAt: "2026-11-10T11:00:00Z" }, new Date("2026-11-19T12:00:00Z"));
+    const n = nextPending(
+      { ...base, communicatedReservaAt: "2026-11-10T11:00:00Z" },
+      new Date("2026-11-19T12:00:00Z"),
+    );
     expect(n?.event).toBe("entrada");
   });
 });

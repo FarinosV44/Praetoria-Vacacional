@@ -18,11 +18,36 @@ import type { ChecklistItem, Filing, FilingStatus } from "./types";
 const NEXT: Record<FilingStatus, FilingStatus[]> = {
   solicitado: ["pendiente_documentacion", "en_revision", "suspendido", "cancelado"],
   pendiente_documentacion: ["en_revision", "suspendido", "cancelado", "incidencia"],
-  en_revision: ["pendiente_documentacion", "listo_para_presentar", "incidencia", "suspendido", "cancelado"],
-  listo_para_presentar: ["presentado", "pendiente_documentacion", "incidencia", "suspendido", "cancelado"],
+  en_revision: [
+    "pendiente_documentacion",
+    "listo_para_presentar",
+    "incidencia",
+    "suspendido",
+    "cancelado",
+  ],
+  listo_para_presentar: [
+    "presentado",
+    "pendiente_documentacion",
+    "incidencia",
+    "suspendido",
+    "cancelado",
+  ],
   presentado: ["finalizado", "subsanacion", "incidencia"],
-  subsanacion: ["pendiente_documentacion", "en_revision", "listo_para_presentar", "presentado", "incidencia", "cancelado"],
-  incidencia: ["pendiente_documentacion", "en_revision", "listo_para_presentar", "suspendido", "cancelado"],
+  subsanacion: [
+    "pendiente_documentacion",
+    "en_revision",
+    "listo_para_presentar",
+    "presentado",
+    "incidencia",
+    "cancelado",
+  ],
+  incidencia: [
+    "pendiente_documentacion",
+    "en_revision",
+    "listo_para_presentar",
+    "suspendido",
+    "cancelado",
+  ],
   suspendido: ["pendiente_documentacion", "en_revision", "cancelado"],
   finalizado: [],
   cancelado: [],
@@ -45,10 +70,16 @@ export function canTransition(
 ): { ok: true } | { ok: false; reason: string } {
   if (from === to) return { ok: false, reason: "El expediente ya está en ese estado." };
   if (!NEXT[from].includes(to)) {
-    return { ok: false, reason: `No se puede pasar de «${STATUS_LABEL[from]}» a «${STATUS_LABEL[to]}».` };
+    return {
+      ok: false,
+      reason: `No se puede pasar de «${STATUS_LABEL[from]}» a «${STATUS_LABEL[to]}».`,
+    };
   }
   if (to === "presentado" && (!ctx.submittedAt || !ctx.submissionChannel)) {
-    return { ok: false, reason: "Para marcarlo como presentado registra la fecha y el canal de presentación." };
+    return {
+      ok: false,
+      reason: "Para marcarlo como presentado registra la fecha y el canal de presentación.",
+    };
   }
   if (to === "finalizado" && !ctx.hasOfficialProof) {
     return { ok: false, reason: "Sube el justificante oficial antes de finalizar el expediente." };
@@ -70,7 +101,10 @@ export const STATUS_LABEL: Record<FilingStatus, string> = {
 };
 
 /** Lo que ve el propietario: pocas palabras y sin jerga interna. */
-export const OWNER_STATUS: Record<FilingStatus, { label: string; tone: "warn" | "info" | "ok" | "neutral" | "danger" }> = {
+export const OWNER_STATUS: Record<
+  FilingStatus,
+  { label: string; tone: "warn" | "info" | "ok" | "neutral" | "danger" }
+> = {
   solicitado: { label: "Recibido", tone: "info" },
   pendiente_documentacion: { label: "Falta documentación", tone: "warn" },
   en_revision: { label: "En revisión", tone: "info" },
@@ -94,9 +128,17 @@ export function defaultChecklist(code: ServiceCode): ChecklistItem[] {
       return [
         { key: "mandato", label: "Autorización de representación firmada", done: false },
         { key: "titular", label: "Identidad del titular verificada", done: false },
-        { key: "vivienda", label: "Datos de la vivienda y registro turístico comprobados", done: false },
+        {
+          key: "vivienda",
+          label: "Datos de la vivienda y registro turístico comprobados",
+          done: false,
+        },
         { key: "alta", label: "Alta presentada en SES.HOSPEDAJES", done: false },
-        { key: "justificante", label: "Justificante y código de establecimiento subidos", done: false },
+        {
+          key: "justificante",
+          label: "Justificante y código de establecimiento subidos",
+          done: false,
+        },
       ];
     case "comunicacion_reserva":
       return [
@@ -133,5 +175,9 @@ export function filingTitle(code: ServiceCode, propertyAlias: string): string {
 }
 
 export function needsAttention(f: Pick<Filing, "status" | "requestedDocuments">): boolean {
-  return f.status === "pendiente_documentacion" || f.status === "subsanacion" || f.requestedDocuments.length > 0;
+  return (
+    f.status === "pendiente_documentacion" ||
+    f.status === "subsanacion" ||
+    f.requestedDocuments.length > 0
+  );
 }

@@ -81,18 +81,46 @@ describe("presupuesto (por uso)", () => {
   });
 
   it("rechaza cantidades fuera de rango y viviendas de más", () => {
-    expect(buildQuote(DEFAULT_CATALOG, { planCode: "por_uso", properties: [prop("A")], reservationCredits: -1, historicalReview: false }).ok).toBe(false);
-    expect(buildQuote(DEFAULT_CATALOG, { planCode: "por_uso", properties: [prop("A")], reservationCredits: 201, historicalReview: false }).ok).toBe(false);
+    expect(
+      buildQuote(DEFAULT_CATALOG, {
+        planCode: "por_uso",
+        properties: [prop("A")],
+        reservationCredits: -1,
+        historicalReview: false,
+      }).ok,
+    ).toBe(false);
+    expect(
+      buildQuote(DEFAULT_CATALOG, {
+        planCode: "por_uso",
+        properties: [prop("A")],
+        reservationCredits: 201,
+        historicalReview: false,
+      }).ok,
+    ).toBe(false);
     const many = Array.from({ length: 21 }, (_, i) => prop(`P${i}`, true));
-    expect(buildQuote(DEFAULT_CATALOG, { planCode: "por_uso", properties: many, reservationCredits: 0, historicalReview: false }).ok).toBe(false);
+    expect(
+      buildQuote(DEFAULT_CATALOG, {
+        planCode: "por_uso",
+        properties: many,
+        reservationCredits: 0,
+        historicalReview: false,
+      }).ok,
+    ).toBe(false);
   });
 
   it("un servicio desactivado no se puede pedir aunque lo intenten", () => {
     const off: Catalog = {
       ...DEFAULT_CATALOG,
-      services: DEFAULT_CATALOG.services.map((s) => (s.code === "ses_alta" ? { ...s, enabled: false } : s)),
+      services: DEFAULT_CATALOG.services.map((s) =>
+        s.code === "ses_alta" ? { ...s, enabled: false } : s,
+      ),
     };
-    const q = buildQuote(off, { planCode: "por_uso", properties: [prop("A", true)], reservationCredits: 0, historicalReview: false });
+    const q = buildQuote(off, {
+      planCode: "por_uso",
+      properties: [prop("A", true)],
+      reservationCredits: 0,
+      historicalReview: false,
+    });
     expect(q.ok).toBe(false);
   });
 
@@ -119,7 +147,9 @@ describe("gestión continua (propuesta por validar)", () => {
   it("cuando se aprueba: cuota por vivienda, alta aparte", () => {
     const approved: Catalog = {
       ...DEFAULT_CATALOG,
-      plans: DEFAULT_CATALOG.plans.map((p) => (p.code === "gestion_continua" ? { ...p, purchasable: true } : p)),
+      plans: DEFAULT_CATALOG.plans.map((p) =>
+        p.code === "gestion_continua" ? { ...p, purchasable: true } : p,
+      ),
     };
     const q = buildQuote(approved, {
       planCode: "gestion_continua",
@@ -135,6 +165,10 @@ describe("gestión continua (propuesta por validar)", () => {
   it("dos reservas incluidas al mes, sin acumulación; extras a 12 €", () => {
     expect(monthlyUsage(DEFAULT_CATALOG, 0)).toEqual({ included: 0, extra: 0, extraNetCents: 0 });
     expect(monthlyUsage(DEFAULT_CATALOG, 2)).toEqual({ included: 2, extra: 0, extraNetCents: 0 });
-    expect(monthlyUsage(DEFAULT_CATALOG, 5)).toEqual({ included: 2, extra: 3, extraNetCents: 3600 });
+    expect(monthlyUsage(DEFAULT_CATALOG, 5)).toEqual({
+      included: 2,
+      extra: 3,
+      extraNetCents: 3600,
+    });
   });
 });

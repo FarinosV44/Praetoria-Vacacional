@@ -49,7 +49,10 @@ export function madridLocalToIso(local: string): string {
 }
 
 /** Momento del hecho que dispara cada comunicación. */
-export function eventMoment(r: Pick<ReservationReport, "bookedAt" | "checkIn" | "cancelledAt">, e: ReportEvent): Date | null {
+export function eventMoment(
+  r: Pick<ReservationReport, "bookedAt" | "checkIn" | "cancelledAt">,
+  e: ReportEvent,
+): Date | null {
   switch (e) {
     case "reserva":
       return new Date(r.bookedAt);
@@ -76,7 +79,11 @@ export function deadlineState(
   now: Date = new Date(),
 ): { state: DeadlineState; due: Date | null } {
   const done =
-    e === "reserva" ? r.communicatedReservaAt : e === "anulacion" ? r.communicatedAnulacionAt : r.communicatedEntradaAt;
+    e === "reserva"
+      ? r.communicatedReservaAt
+      : e === "anulacion"
+        ? r.communicatedAnulacionAt
+        : r.communicatedEntradaAt;
   const due = deadlineFor(r, e);
   if (!due) return { state: "no_aplica", due: null };
   // Una reserva anulada antes de la entrada ya no genera parte de entrada.
@@ -94,7 +101,9 @@ export function deadlineState(
  * primer hecho, el expediente se marca «fuera de plazo» para revisión humana.
  * Comunicar tarde no borra un incumplimiento anterior (#178).
  */
-export function reportedLate(r: Pick<ReservationReport, "bookedAt" | "checkIn" | "cancelledAt" | "reportedAt">): boolean {
+export function reportedLate(
+  r: Pick<ReservationReport, "bookedAt" | "checkIn" | "cancelledAt" | "reportedAt">,
+): boolean {
   const due = deadlineFor(r, "reserva");
   return !!due && new Date(r.reportedAt).getTime() > due.getTime();
 }
@@ -104,7 +113,8 @@ export function nextPending(r: ReservationReport, now: Date = new Date()) {
   const order: ReportEvent[] = ["reserva", "anulacion", "entrada"];
   for (const e of order) {
     const s = deadlineState(r, e, now);
-    if (s.state === "a_tiempo" || s.state === "vence_pronto" || s.state === "vencido") return { event: e, ...s };
+    if (s.state === "a_tiempo" || s.state === "vence_pronto" || s.state === "vencido")
+      return { event: e, ...s };
   }
   return null;
 }

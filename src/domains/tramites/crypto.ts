@@ -34,7 +34,8 @@ export function travellerEncryptionReady(): boolean {
 
 export function encryptJson(value: unknown): string {
   const k = key();
-  if (!k) throw new Error("TRAMITES_DATA_KEY no configurada: no se pueden guardar datos de viajeros.");
+  if (!k)
+    throw new Error("TRAMITES_DATA_KEY no configurada: no se pueden guardar datos de viajeros.");
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", k, iv);
   const plain = Buffer.from(JSON.stringify(value), "utf8");

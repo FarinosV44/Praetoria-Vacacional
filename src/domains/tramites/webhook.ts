@@ -20,7 +20,10 @@ export async function handleTramitesStripeEvent(event: Stripe.Event): Promise<bo
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.payment_status !== "paid") return true;
-        const pi = typeof session.payment_intent === "string" ? session.payment_intent : (session.payment_intent?.id ?? null);
+        const pi =
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : (session.payment_intent?.id ?? null);
         await markOrderPaid(orderId, {
           paymentIntentId: pi,
           checkoutSessionId: session.id,
@@ -61,7 +64,11 @@ export async function handleTramitesStripeEvent(event: Stripe.Event): Promise<bo
             : sub.status === "canceled"
               ? "cancelada"
               : existing.status;
-      await store.upsertSubscription({ ...existing, status, cancelAtPeriodEnd: sub.cancel_at_period_end });
+      await store.upsertSubscription({
+        ...existing,
+        status,
+        cancelAtPeriodEnd: sub.cancel_at_period_end,
+      });
     }
     return true;
   }

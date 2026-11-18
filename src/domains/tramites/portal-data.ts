@@ -10,7 +10,8 @@ import { isOpen, needsAttention } from "./workflow";
  * contexto: una fila de otra cuenta nunca llega a la vista.
  */
 
-const mine = <T extends { accountId: string }>(ctx: OwnerContext, rows: T[]) => rows.filter((r) => ownsAccount(ctx, r.accountId));
+const mine = <T extends { accountId: string }>(ctx: OwnerContext, rows: T[]) =>
+  rows.filter((r) => ownsAccount(ctx, r.accountId));
 
 export async function portalSnapshot(ctx: OwnerContext) {
   const s = ownerReadStore();
@@ -37,8 +38,12 @@ export type PortalSnapshot = Awaited<ReturnType<typeof portalSnapshot>>;
 
 export function attention(snap: PortalSnapshot, now = new Date()) {
   const docsPending = snap.filings.filter((f) => isOpen(f.status) && needsAttention(f));
-  const unpaid = snap.orders.filter((o) => o.status === "pendiente_pago" || o.status === "pendiente_verificacion");
-  const reportsMissingData = snap.reports.filter((r) => !r.cancelledAt && !r.travellerDataEnc && r.checkIn >= now.toISOString().slice(0, 10));
+  const unpaid = snap.orders.filter(
+    (o) => o.status === "pendiente_pago" || o.status === "pendiente_verificacion",
+  );
+  const reportsMissingData = snap.reports.filter(
+    (r) => !r.cancelledAt && !r.travellerDataEnc && r.checkIn >= now.toISOString().slice(0, 10),
+  );
   const deadlines = snap.reports
     .map((r) => ({ r, n: nextPending(r, now) }))
     .filter((x) => x.n && (x.n.state === "vence_pronto" || x.n.state === "vencido"));

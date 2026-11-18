@@ -42,11 +42,19 @@ function check(error: { message: string } | null, what: string): void {
   if (error) throw new Error(`${what}: ${error.message}`);
 }
 
-export function supabaseTramites(client: () => SupabaseClient | Promise<SupabaseClient>): TramitesStore {
+export function supabaseTramites(
+  client: () => SupabaseClient | Promise<SupabaseClient>,
+): TramitesStore {
   const db = async () => client();
 
   async function insert<T>(table: string, value: object, what: string): Promise<T> {
-    const { data, error } = await (await db()).from(table).insert(toRow(value)).select("*").single();
+    const { data, error } = await (
+      await db()
+    )
+      .from(table)
+      .insert(toRow(value))
+      .select("*")
+      .single();
     check(error, what);
     return fromRow<T>(data)!;
   }
@@ -58,8 +66,16 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
   async function patch<T>(table: string, id: string, value: object, what: string): Promise<T> {
     const body = toRow(value);
     delete body.id;
-    if (table !== "owner_documents" && table !== "reservation_reports") body.updated_at = new Date().toISOString();
-    const { data, error } = await (await db()).from(table).update(body).eq("id", id).select("*").single();
+    if (table !== "owner_documents" && table !== "reservation_reports")
+      body.updated_at = new Date().toISOString();
+    const { data, error } = await (
+      await db()
+    )
+      .from(table)
+      .update(body)
+      .eq("id", id)
+      .select("*")
+      .single();
     check(error, what);
     return fromRow<T>(data)!;
   }
@@ -70,13 +86,20 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     createAccount: (a) => insert("owner_accounts", a, "Crear cuenta"),
     getAccount: (id) => getById("owner_accounts", id),
     async listAccounts() {
-      const { data, error } = await (await db()).from("owner_accounts").select("*").order("created_at", { ascending: false });
+      const { data, error } = await (
+        await db()
+      )
+        .from("owner_accounts")
+        .select("*")
+        .order("created_at", { ascending: false });
       check(error, "Cuentas");
       return rows(data);
     },
     updateAccount: (id, p) => patch("owner_accounts", id, p, "Actualizar cuenta"),
     async adjustCredits(accountId, delta) {
-      const { data, error } = await (await db()).rpc("tramites_adjust_credits", {
+      const { data, error } = await (
+        await db()
+      ).rpc("tramites_adjust_credits", {
         p_account: accountId,
         p_delta: Math.trunc(delta),
       });
@@ -85,7 +108,9 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     },
 
     async getInternalNotes(accountId) {
-      const { data, error } = await (await db())
+      const { data, error } = await (
+        await db()
+      )
         .from("owner_internal_notes")
         .select("notes")
         .eq("account_id", accountId)
@@ -94,25 +119,39 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
       return (data as { notes?: string } | null)?.notes ?? "";
     },
     async setInternalNotes(accountId, notes) {
-      const { error } = await (await db())
+      const { error } = await (
+        await db()
+      )
         .from("owner_internal_notes")
         .upsert({ account_id: accountId, notes, updated_at: new Date().toISOString() });
       check(error, "Notas");
     },
 
     async addMembership(m) {
-      const { error } = await (await db())
+      const { error } = await (
+        await db()
+      )
         .from("owner_memberships")
         .upsert(toRow(m), { onConflict: "account_id,user_id", ignoreDuplicates: true });
       check(error, "Miembro");
     },
     async listMembershipsByUser(userId) {
-      const { data, error } = await (await db()).from("owner_memberships").select("*").eq("user_id", userId);
+      const { data, error } = await (
+        await db()
+      )
+        .from("owner_memberships")
+        .select("*")
+        .eq("user_id", userId);
       check(error, "Miembros");
       return rows(data);
     },
     async listMembershipsByAccount(accountId) {
-      const { data, error } = await (await db()).from("owner_memberships").select("*").eq("account_id", accountId);
+      const { data, error } = await (
+        await db()
+      )
+        .from("owner_memberships")
+        .select("*")
+        .eq("account_id", accountId);
       check(error, "Miembros");
       return rows(data);
     },
@@ -131,7 +170,10 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     createOrder: (o) => insert("service_orders", o, "Crear pedido"),
     getOrder: (id) => getById("service_orders", id),
     async listOrders(filter = {}) {
-      let q = (await db()).from("service_orders").select("*").order("created_at", { ascending: false });
+      let q = (await db())
+        .from("service_orders")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (filter.accountId) q = q.eq("account_id", filter.accountId);
       const { data, error } = await q;
       check(error, "Pedidos");
@@ -156,7 +198,13 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
       check(error, "Historial");
     },
     async listEvents(filingId) {
-      const { data, error } = await (await db()).from("filing_events").select("*").eq("filing_id", filingId).order("at");
+      const { data, error } = await (
+        await db()
+      )
+        .from("filing_events")
+        .select("*")
+        .eq("filing_id", filingId)
+        .order("at");
       check(error, "Historial");
       return rows(data);
     },
@@ -164,7 +212,10 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     addDocument: (d) => insert("owner_documents", d, "Guardar documento"),
     getDocument: (id) => getById("owner_documents", id),
     async listDocuments(filter = {}) {
-      let q = (await db()).from("owner_documents").select("*").order("created_at", { ascending: false });
+      let q = (await db())
+        .from("owner_documents")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (filter.accountId) q = q.eq("account_id", filter.accountId);
       if (filter.propertyId) q = q.eq("property_id", filter.propertyId);
       if (filter.filingId) q = q.eq("filing_id", filter.filingId);
@@ -174,7 +225,9 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     },
     updateDocument: (id, p) => patch("owner_documents", id, p, "Actualizar documento"),
     async putBlob(key, bytes, mime) {
-      const { error } = await (await db()).storage
+      const { error } = await (
+        await db()
+      ).storage
         .from(OWNER_DOCUMENTS_BUCKET)
         .upload(key, bytes, { contentType: mime, upsert: false });
       check(error, "Subir archivo");
@@ -188,7 +241,10 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     createReport: (r) => insert("reservation_reports", r, "Guardar reserva"),
     getReport: (id) => getById("reservation_reports", id),
     async listReports(filter = {}) {
-      let q = (await db()).from("reservation_reports").select("*").order("check_in", { ascending: false });
+      let q = (await db())
+        .from("reservation_reports")
+        .select("*")
+        .order("check_in", { ascending: false });
       if (filter.accountId) q = q.eq("account_id", filter.accountId);
       if (filter.propertyId) q = q.eq("property_id", filter.propertyId);
       const { data, error } = await q;
@@ -199,7 +255,13 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
 
     addMessage: (m) => insert("client_messages", m, "Enviar mensaje"),
     async listMessages(accountId) {
-      const { data, error } = await (await db()).from("client_messages").select("*").eq("account_id", accountId).order("created_at");
+      const { data, error } = await (
+        await db()
+      )
+        .from("client_messages")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("created_at");
       check(error, "Mensajes");
       return rows(data);
     },
@@ -207,8 +269,16 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
       const now = new Date().toISOString();
       const q =
         by === "owner"
-          ? (await db()).from("client_messages").update({ read_by_owner_at: now }).eq("author", "admin").is("read_by_owner_at", null)
-          : (await db()).from("client_messages").update({ read_by_admin_at: now }).eq("author", "owner").is("read_by_admin_at", null);
+          ? (await db())
+              .from("client_messages")
+              .update({ read_by_owner_at: now })
+              .eq("author", "admin")
+              .is("read_by_owner_at", null)
+          : (await db())
+              .from("client_messages")
+              .update({ read_by_admin_at: now })
+              .eq("author", "owner")
+              .is("read_by_admin_at", null);
       const { error } = await q.eq("account_id", accountId);
       check(error, "Mensajes");
     },
@@ -225,7 +295,9 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
       return rows(data);
     },
     async getSubscriptionByStripeId(stripeId) {
-      const { data, error } = await (await db())
+      const { data, error } = await (
+        await db()
+      )
         .from("service_subscriptions")
         .select("*")
         .eq("stripe_subscription_id", stripeId)
@@ -251,7 +323,9 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
     },
 
     async getCatalog(): Promise<Catalog | null> {
-      const { data, error } = await (await db())
+      const { data, error } = await (
+        await db()
+      )
         .from("service_price_catalog")
         .select("catalog")
         .order("created_at", { ascending: false })
@@ -262,7 +336,9 @@ export function supabaseTramites(client: () => SupabaseClient | Promise<Supabase
       return parsed.success ? parsed.data : null;
     },
     async saveCatalog(c, actor) {
-      const { error } = await (await db())
+      const { error } = await (
+        await db()
+      )
         .from("service_price_catalog")
         .insert({ version: c.version, catalog: c, created_by: actor });
       check(error, "Guardar catálogo");

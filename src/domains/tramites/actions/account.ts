@@ -15,7 +15,8 @@ import {
 import { getOwnerContext } from "../context";
 import { audit } from "../service";
 
-export type AccountResult = { ok: true; message?: string; demoUrl?: string } | { ok: false; error: string };
+export type AccountResult =
+  { ok: true; message?: string; demoUrl?: string } | { ok: false; error: string };
 
 /** Solo rutas internas de la carpeta: evita redirecciones abiertas. */
 function safeNext(raw: unknown): string {
@@ -35,7 +36,8 @@ export async function ownerLoginAction(_prev: unknown, formData: FormData): Prom
   if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera unos minutos." };
   const r = await signInOwner(email, password);
   if (!r.ok) return { ok: false, error: r.error };
-  if (r.needsVerification) return { ok: false, error: "Confirma primero tu correo con el enlace que te enviamos." };
+  if (r.needsVerification)
+    return { ok: false, error: "Confirma primero tu correo con el enlace que te enviamos." };
   redirect(safeNext(formData.get("next")));
 }
 
@@ -47,21 +49,37 @@ export async function ownerLogoutAction(): Promise<void> {
 export async function ownerRevokeSessionsAction(): Promise<void> {
   const ctx = await getOwnerContext();
   if (!ctx) redirect("/mi-cuenta/acceso");
-  await audit({ type: "owner", id: ctx.session.userId, label: "Cliente" }, "sesiones.cerrar", ctx.account.id, "cuenta", ctx.account.id, {});
+  await audit(
+    { type: "owner", id: ctx.session.userId, label: "Cliente" },
+    "sesiones.cerrar",
+    ctx.account.id,
+    "cuenta",
+    ctx.account.id,
+    {},
+  );
   await revokeOwnerSessions(ctx.session.userId);
   redirect("/mi-cuenta/acceso");
 }
 
-export async function ownerForgotAction(_prev: unknown, formData: FormData): Promise<AccountResult> {
+export async function ownerForgotAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<AccountResult> {
   const email = String(formData.get("email") ?? "").trim();
   const limited = await rateLimit(await ipKey("tramites-forgot"), 5, 60 * 60_000);
   if (!limited.ok) return { ok: false, error: "Demasiadas solicitudes. Inténtalo más tarde." };
   const site = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  const r = await requestOwnerPasswordReset(email, `${site}/mi-cuenta/acceso/confirmar?next=/mi-cuenta/acceso/nueva-clave`);
+  const r = await requestOwnerPasswordReset(
+    email,
+    `${site}/mi-cuenta/acceso/confirmar?next=/mi-cuenta/acceso/nueva-clave`,
+  );
   return {
     ok: true,
-    message: "Si el correo tiene una carpeta, te hemos enviado un enlace para crear una contraseña nueva.",
-    ...(r.demoResetToken ? { demoUrl: `/mi-cuenta/acceso/nueva-clave?token=${r.demoResetToken}` } : {}),
+    message:
+      "Si el correo tiene una carpeta, te hemos enviado un enlace para crear una contraseña nueva.",
+    ...(r.demoResetToken
+      ? { demoUrl: `/mi-cuenta/acceso/nueva-clave?token=${r.demoResetToken}` }
+      : {}),
   };
 }
 

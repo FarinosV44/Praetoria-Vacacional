@@ -23,12 +23,18 @@ import {
 } from "../service";
 import { serverStore } from "../repo";
 import { createOrderCheckout } from "../stripe";
-import { documentKindSchema, propertyInputSchema, reservationReportSchema, travellerBundleSchema } from "../schema";
+import {
+  documentKindSchema,
+  propertyInputSchema,
+  reservationReportSchema,
+  travellerBundleSchema,
+} from "../schema";
 import { buildQuote } from "../pricing";
 import { shortRef } from "../ids";
 import { TRAMITES_LEGAL_VERSIONS } from "@/content/tramites-legal";
 
-export type PortalResult = { ok: true; message?: string; id?: string } | { ok: false; error: string };
+export type PortalResult =
+  { ok: true; message?: string; id?: string } | { ok: false; error: string };
 
 const site = () => env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
 
@@ -90,11 +96,15 @@ export async function buyCreditsAction(formData: FormData): Promise<void> {
 
 // ------------------------------------------------------------- reservas ----
 
-export async function reportReservationAction(_prev: unknown, formData: FormData): Promise<PortalResult> {
+export async function reportReservationAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<PortalResult> {
   const ctx = await getOwnerContext();
   if (!ctx) return { ok: false, error: "Tu sesión ha caducado. Vuelve a entrar." };
   const parsed = reservationReportSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   const r = await reportReservation(ctx, parsed.data);
   if (!r.ok) return r;
   revalidatePath("/mi-cuenta/tramites", "layout");
@@ -110,7 +120,10 @@ export async function cancelReservationAction(formData: FormData): Promise<void>
   redirect(`/mi-cuenta/tramites/reservas/${id}`);
 }
 
-export async function saveTravellersAction(_prev: unknown, formData: FormData): Promise<PortalResult> {
+export async function saveTravellersAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<PortalResult> {
   const ctx = await getOwnerContext();
   if (!ctx) return { ok: false, error: "Tu sesión ha caducado. Vuelve a entrar." };
   let payload: unknown;
@@ -120,22 +133,33 @@ export async function saveTravellersAction(_prev: unknown, formData: FormData): 
     return { ok: false, error: "Datos no válidos." };
   }
   const parsed = travellerBundleSchema.safeParse(payload);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos de los viajeros." };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Revisa los datos de los viajeros.",
+    };
   const r = await saveTravellerData(ctx, String(formData.get("reportId") ?? ""), parsed.data);
   if (!r.ok) return r;
   revalidatePath("/mi-cuenta/tramites", "layout");
-  return { ok: true, message: "Datos guardados de forma cifrada. Ya podemos presentar la comunicación." };
+  return {
+    ok: true,
+    message: "Datos guardados de forma cifrada. Ya podemos presentar la comunicación.",
+  };
 }
 
 // ----------------------------------------------------------- documentos ----
 
-export async function uploadDocumentAction(_prev: unknown, formData: FormData): Promise<PortalResult> {
+export async function uploadDocumentAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<PortalResult> {
   const ctx = await getOwnerContext();
   if (!ctx) return { ok: false, error: "Tu sesión ha caducado. Vuelve a entrar." };
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Elige un archivo." };
   const kind = documentKindSchema.safeParse(formData.get("kind"));
-  if (!kind.success || kind.data === "justificante_oficial") return { ok: false, error: "Indica qué documento es." };
+  if (!kind.success || kind.data === "justificante_oficial")
+    return { ok: false, error: "Indica qué documento es." };
   const propertyId = String(formData.get("propertyId") ?? "") || null;
   const filingId = String(formData.get("filingId") ?? "") || null;
   const r = await storeDocument({
@@ -154,10 +178,18 @@ export async function uploadDocumentAction(_prev: unknown, formData: FormData): 
 
 // ------------------------------------------------------------- mensajes ----
 
-export async function ownerMessageAction(_prev: unknown, formData: FormData): Promise<PortalResult> {
+export async function ownerMessageAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<PortalResult> {
   const ctx = await getOwnerContext();
   if (!ctx) return { ok: false, error: "Tu sesión ha caducado. Vuelve a entrar." };
-  const r = await postMessage(ctx.account.id, "owner", ctx.account.contactName, String(formData.get("body") ?? ""));
+  const r = await postMessage(
+    ctx.account.id,
+    "owner",
+    ctx.account.contactName,
+    String(formData.get("body") ?? ""),
+  );
   if (!r.ok) return r;
   revalidatePath("/mi-cuenta/tramites/mensajes");
   return { ok: true, message: "Mensaje enviado." };
@@ -173,11 +205,15 @@ const editableProperty = z.object({
   maxGuests: z.coerce.number().int().min(0).max(60).optional().default(0),
 });
 
-export async function updatePropertyAction(_prev: unknown, formData: FormData): Promise<PortalResult> {
+export async function updatePropertyAction(
+  _prev: unknown,
+  formData: FormData,
+): Promise<PortalResult> {
   const ctx = await getOwnerContext();
   if (!ctx) return { ok: false, error: "Tu sesión ha caducado. Vuelve a entrar." };
   const parsed = editableProperty.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   const p = await ownerGet(ctx, (s) => s.getProperty(parsed.data.propertyId));
   if (!p) return { ok: false, error: "Vivienda no encontrada." };
   await serverStore().updateProperty(p.id, {
@@ -200,10 +236,14 @@ export async function addPropertyAction(_prev: unknown, formData: FormData): Pro
   const raw = Object.fromEntries(formData);
   const parsed = propertyInputSchema.safeParse({
     ...raw,
-    platforms: String(raw.platforms ?? "").split(",").map((x) => x.trim()).filter(Boolean),
+    platforms: String(raw.platforms ?? "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean),
     wantsSesAlta: raw.wantsSesAlta === "on",
   });
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   const d = parsed.data;
   const store = serverStore();
   const at = new Date().toISOString();

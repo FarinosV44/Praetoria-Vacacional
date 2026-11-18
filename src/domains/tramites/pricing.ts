@@ -1,10 +1,4 @@
-import {
-  planByCode,
-  serviceByCode,
-  vatOf,
-  type Catalog,
-  type PlanCode,
-} from "./catalog";
+import { planByCode, serviceByCode, vatOf, type Catalog, type PlanCode } from "./catalog";
 import type { OrderLine } from "./types";
 
 /**
@@ -86,7 +80,8 @@ export function buildQuote(catalog: Catalog, input: QuoteInput): Quote {
   }
 
   if (plan?.code === "por_uso" && credits > 0) {
-    if (!reserva?.enabled) errors.push("La comunicación de reservas no está disponible ahora mismo.");
+    if (!reserva?.enabled)
+      errors.push("La comunicación de reservas no está disponible ahora mismo.");
     else if (credits < catalog.minReservationCredits)
       errors.push(`El mínimo son ${catalog.minReservationCredits} reservas.`);
     else

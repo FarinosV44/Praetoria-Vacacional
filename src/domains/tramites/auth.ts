@@ -33,10 +33,17 @@ export interface OwnerSession {
 }
 
 export type AuthResult =
-  | { ok: true; userId: string; needsVerification: boolean; demoVerifyToken?: string; existing?: boolean }
+  | {
+      ok: true;
+      userId: string;
+      needsVerification: boolean;
+      demoVerifyToken?: string;
+      existing?: boolean;
+    }
   | { ok: false; error: string };
 
-const GENERIC_LOGIN_ERROR = "El correo o la contraseña no son correctos, o la cuenta aún no está verificada.";
+const GENERIC_LOGIN_ERROR =
+  "El correo o la contraseña no son correctos, o la cuenta aún no está verificada.";
 
 // ----------------------------------------------------------------- demo ----
 
@@ -95,7 +102,8 @@ async function demoSession(): Promise<OwnerSession | null> {
   if (parts.length !== 3) return null;
   const [userId, issued, mac] = parts as [string, string, string];
   const expected = sign(`${userId}.${issued}`);
-  if (mac.length !== expected.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) return null;
+  if (mac.length !== expected.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(expected)))
+    return null;
   const age = (Date.now() - Number(issued)) / 1000;
   if (!(age >= 0 && age < MAX_AGE)) return null;
   const u = demoUsers().get(userId);
@@ -139,11 +147,16 @@ export async function getOwnerSession(): Promise<OwnerSession | null> {
   return null;
 }
 
-export async function signUpOwner(email: string, password: string, redirectTo: string): Promise<AuthResult> {
+export async function signUpOwner(
+  email: string,
+  password: string,
+  redirectTo: string,
+): Promise<AuthResult> {
   const mode = ownerAuthMode();
   const e = email.trim().toLowerCase();
   if (mode === "demo") {
-    if (findDemoByEmail(e)) return { ok: true, userId: "", needsVerification: true, existing: true };
+    if (findDemoByEmail(e))
+      return { ok: true, userId: "", needsVerification: true, existing: true };
     const salt = randomBytes(16).toString("hex");
     const user: DemoUser = {
       id: randomUUID(),
@@ -156,10 +169,17 @@ export async function signUpOwner(email: string, password: string, redirectTo: s
       sessionsValidFrom: 0,
     };
     demoUsers().set(user.id, user);
-    return { ok: true, userId: user.id, needsVerification: true, demoVerifyToken: user.verifyToken! };
+    return {
+      ok: true,
+      userId: user.id,
+      needsVerification: true,
+      demoVerifyToken: user.verifyToken!,
+    };
   }
   if (mode === "supabase") {
-    const { data, error } = await (await sb()).auth.signUp({
+    const { data, error } = await (
+      await sb()
+    ).auth.signUp({
       email: e,
       password,
       options: { emailRedirectTo: redirectTo },
@@ -216,10 +236,14 @@ export async function revokeOwnerSessions(userId: string): Promise<void> {
     (await cookies()).delete(COOKIE);
     return;
   }
-  if (mode === "supabase") await (await sb()).auth.signOut({ scope: "global" }).catch(() => undefined);
+  if (mode === "supabase")
+    await (await sb()).auth.signOut({ scope: "global" }).catch(() => undefined);
 }
 
-export async function requestOwnerPasswordReset(email: string, redirectTo: string): Promise<{ demoResetToken?: string }> {
+export async function requestOwnerPasswordReset(
+  email: string,
+  redirectTo: string,
+): Promise<{ demoResetToken?: string }> {
   const mode = ownerAuthMode();
   if (mode === "demo") {
     const u = findDemoByEmail(email);
@@ -230,13 +254,20 @@ export async function requestOwnerPasswordReset(email: string, redirectTo: strin
     return {};
   }
   if (mode === "supabase") {
-    await (await sb()).auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo }).catch(() => undefined);
+    await (
+      await sb()
+    ).auth
+      .resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo })
+      .catch(() => undefined);
   }
   return {};
 }
 
 /** Cambia la contraseña: con sesión de recuperación (Supabase) o con token (demo). */
-export async function setOwnerPassword(newPassword: string, demoToken?: string): Promise<{ ok: boolean; error?: string }> {
+export async function setOwnerPassword(
+  newPassword: string,
+  demoToken?: string,
+): Promise<{ ok: boolean; error?: string }> {
   const mode = ownerAuthMode();
   if (mode === "demo") {
     const u = demoToken

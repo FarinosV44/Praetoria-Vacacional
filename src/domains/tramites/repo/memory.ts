@@ -67,13 +67,20 @@ export function resetMemoryTramites(): void {
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
-const byNewest = <T extends { createdAt: string }>(a: T, b: T) => b.createdAt.localeCompare(a.createdAt);
+const byNewest = <T extends { createdAt: string }>(a: T, b: T) =>
+  b.createdAt.localeCompare(a.createdAt);
 
-function patchIn<T extends { id: string }>(map: Map<string, T>, id: string, patch: Partial<T>, what: string): T {
+function patchIn<T extends { id: string }>(
+  map: Map<string, T>,
+  id: string,
+  patch: Partial<T>,
+  what: string,
+): T {
   const cur = map.get(id);
   if (!cur) throw new Error(`${what} no encontrado`);
   const next = { ...cur, ...clone(patch), id: cur.id } as T;
-  if ("updatedAt" in next) (next as unknown as { updatedAt: string }).updatedAt = new Date().toISOString();
+  if ("updatedAt" in next)
+    (next as unknown as { updatedAt: string }).updatedAt = new Date().toISOString();
   map.set(id, next);
   return clone(next);
 }
@@ -114,10 +121,14 @@ export const memoryTramites: TramitesStore = {
       s().memberships.push(clone(m));
   },
   async listMembershipsByUser(userId) {
-    return s().memberships.filter((m) => m.userId === userId).map(clone);
+    return s()
+      .memberships.filter((m) => m.userId === userId)
+      .map(clone);
   },
   async listMembershipsByAccount(accountId) {
-    return s().memberships.filter((m) => m.accountId === accountId).map(clone);
+    return s()
+      .memberships.filter((m) => m.accountId === accountId)
+      .map(clone);
   },
 
   async createProperty(p) {
@@ -229,7 +240,9 @@ export const memoryTramites: TramitesStore = {
   async listReports(filter = {}) {
     return [...s().reports.values()]
       .filter(
-        (r) => (!filter.accountId || r.accountId === filter.accountId) && (!filter.propertyId || r.propertyId === filter.propertyId),
+        (r) =>
+          (!filter.accountId || r.accountId === filter.accountId) &&
+          (!filter.propertyId || r.propertyId === filter.propertyId),
       )
       .map(clone)
       .sort((a, b) => b.checkIn.localeCompare(a.checkIn));
@@ -261,7 +274,9 @@ export const memoryTramites: TramitesStore = {
     s().subscriptions.set(sub.id, clone(sub));
   },
   async listSubscriptions(filter = {}) {
-    return [...s().subscriptions.values()].filter((x) => !filter.accountId || x.accountId === filter.accountId).map(clone);
+    return [...s().subscriptions.values()]
+      .filter((x) => !filter.accountId || x.accountId === filter.accountId)
+      .map(clone);
   },
   async getSubscriptionByStripeId(stripeId) {
     const x = [...s().subscriptions.values()].find((v) => v.stripeSubscriptionId === stripeId);

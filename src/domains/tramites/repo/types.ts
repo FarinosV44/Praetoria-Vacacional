@@ -57,7 +57,11 @@ export interface TramitesStore {
   // Expedientes
   createFiling(f: Filing): Promise<Filing>;
   getFiling(id: string): Promise<Filing | null>;
-  listFilings(filter?: { accountId?: string; propertyId?: string; orderId?: string }): Promise<Filing[]>;
+  listFilings(filter?: {
+    accountId?: string;
+    propertyId?: string;
+    orderId?: string;
+  }): Promise<Filing[]>;
   updateFiling(id: string, patch: Partial<Filing>): Promise<Filing>;
   addEvent(e: FilingEvent): Promise<void>;
   listEvents(filingId: string): Promise<FilingEvent[]>;
@@ -65,8 +69,15 @@ export interface TramitesStore {
   // Documentos
   addDocument(d: OwnerDocument): Promise<OwnerDocument>;
   getDocument(id: string): Promise<OwnerDocument | null>;
-  listDocuments(filter?: { accountId?: string; propertyId?: string; filingId?: string }): Promise<OwnerDocument[]>;
-  updateDocument(id: string, patch: Partial<Pick<OwnerDocument, "status" | "reviewNote">>): Promise<OwnerDocument>;
+  listDocuments(filter?: {
+    accountId?: string;
+    propertyId?: string;
+    filingId?: string;
+  }): Promise<OwnerDocument[]>;
+  updateDocument(
+    id: string,
+    patch: Partial<Pick<OwnerDocument, "status" | "reviewNote">>,
+  ): Promise<OwnerDocument>;
   putBlob(storageKey: string, bytes: Uint8Array, mime: string): Promise<void>;
   /** Contenido del fichero; el llamador ya ha comprobado el permiso sobre la fila. */
   getBlob(storageKey: string): Promise<Uint8Array | null>;

@@ -1,9 +1,27 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
-import { DEFAULT_CATALOG, catalogSchema, serviceByCode, type Catalog, type ServiceCode } from "./catalog";
+import {
+  DEFAULT_CATALOG,
+  catalogSchema,
+  serviceByCode,
+  type Catalog,
+  type ServiceCode,
+} from "./catalog";
 import { buildCreditsQuote, buildQuote, type Quote } from "./pricing";
-import { deadlineFor, madridLocalToIso, reportedLate } from "./deadlines";
-import { canTransition, defaultChecklist, filingTitle, OWNER_STATUS, STATUS_LABEL } from "./workflow";
+import {
+  deadlineFor,
+  deadlineState,
+  EVENT_LABEL,
+  madridLocalToIso,
+  reportedLate,
+} from "./deadlines";
+import {
+  canTransition,
+  defaultChecklist,
+  filingTitle,
+  OWNER_STATUS,
+  STATUS_LABEL,
+} from "./workflow";
 import { checkUpload } from "./upload";
 import { encryptJson, decryptJson, travellerEncryptionReady } from "./crypto";
 import { shortRef } from "./ids";
@@ -24,7 +42,6 @@ import type {
   OwnerAccount,
   OwnerDocument,
   ReservationReport,
-  ServiceOrder,
   SubmissionChannel,
 } from "./types";
 
@@ -46,12 +63,19 @@ export async function getActiveCatalog(): Promise<Catalog> {
   }
 }
 
-export async function saveCatalog(raw: unknown, actor: Actor): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function saveCatalog(
+  raw: unknown,
+  actor: Actor,
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const parsed = catalogSchema.safeParse(raw);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Catálogo no válido." };
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Catálogo no válido." };
   const current = await getActiveCatalog();
   if (parsed.data.version === current.version)
-    return { ok: false, error: "Cambia el nombre de la versión: los encargos anteriores conservan la suya." };
+    return {
+      ok: false,
+      error: "Cambia el nombre de la versión: los encargos anteriores conservan la suya.",
+    };
   await serverStore().saveCatalog(parsed.data, actor.label);
   await audit(actor, "catalogo.guardar", null, "catalogo", parsed.data.version, {});
   return { ok: true };
@@ -68,7 +92,16 @@ export async function audit(
   meta: AuditEvent["meta"],
 ): Promise<void> {
   try {
-    await serverStore().addAudit({ id: randomUUID(), at: now(), actor, action, accountId, targetType, targetId, meta });
+    await serverStore().addAudit({
+      id: randomUUID(),
+      at: now(),
+      actor,
+      action,
+      accountId,
+      targetType,
+      targetId,
+      meta,
+    });
   } catch {
     /* la auditoría nunca bloquea la operación */
   }
@@ -78,7 +111,12 @@ async function event(
   filing: Pick<Filing, "id" | "accountId">,
   actor: Actor,
   kind: FilingEvent["kind"],
-  opts: { from?: FilingStatus | null; to?: FilingStatus | null; message?: string | null; visibleToOwner?: boolean } = {},
+  opts: {
+    from?: FilingStatus | null;
+    to?: FilingStatus | null;
+    message?: string | null;
+    visibleToOwner?: boolean;
+  } = {},
 ): Promise<void> {
   await serverStore().addEvent({
     id: randomUUID(),
@@ -95,7 +133,11 @@ async function event(
 }
 
 export const SYSTEM: Actor = { type: "system", id: null, label: "Sistema" };
-export const ownerActor = (ctx: OwnerContext): Actor => ({ type: "owner", id: ctx.session.userId, label: "Cliente" });
+export const ownerActor = (ctx: OwnerContext): Actor => ({
+  type: "owner",
+  id: ctx.session.userId,
+  label: "Cliente",
+});
 
 // ---------------------------------------------------- alta y contratación ----
 
@@ -120,16 +162,23 @@ export async function createEngagement(
   const quote = buildQuote(catalog, {
     planCode: input.planCode,
     // Ids temporales («#0», «#1»…) que luego se sustituyen por los reales.
-    properties: input.properties.map((p, i) => ({ propertyId: `#${i}`, alias: p.alias, sesAlta: p.wantsSesAlta })),
+    properties: input.properties.map((p, i) => ({
+      propertyId: `#${i}`,
+      alias: p.alias,
+      sesAlta: p.wantsSesAlta,
+    })),
     reservationCredits: input.reservationCredits,
     historicalReview: input.historicalReview,
   });
-  if (!quote.ok) return { ok: false, error: quote.errors[0] ?? "Revisa los servicios elegidos.", quote };
+  if (!quote.ok)
+    return { ok: false, error: quote.errors[0] ?? "Revisa los servicios elegidos.", quote };
 
   const store = serverStore();
   const at = now();
 
-  let account: OwnerAccount | null = auth.existingAccountId ? await store.getAccount(auth.existingAccountId) : null;
+  let account: OwnerAccount | null = auth.existingAccountId
+    ? await store.getAccount(auth.existingAccountId)
+    : null;
   if (!account) {
     account = await store.createAccount({
       id: randomUUID(),
@@ -147,7 +196,12 @@ export async function createEngagement(
       createdAt: at,
       updatedAt: at,
     });
-    await store.addMembership({ accountId: account.id, userId: auth.userId, role: "titular", createdAt: at });
+    await store.addMembership({
+      accountId: account.id,
+      userId: auth.userId,
+      role: "titular",
+      createdAt: at,
+    });
   }
 
   const properties: ManagedProperty[] = [];
@@ -191,7 +245,11 @@ export async function createEngagement(
     netCents: quote.netCents,
     vatCents: quote.vatCents,
     totalCents: quote.totalCents,
-    status: !payable ? "solicitud_especial" : auth.emailVerified ? "pendiente_pago" : "pendiente_verificacion",
+    status: !payable
+      ? "solicitud_especial"
+      : auth.emailVerified
+        ? "pendiente_pago"
+        : "pendiente_verificacion",
     acceptance: {
       termsVersion: TRAMITES_LEGAL_VERSIONS.terms,
       privacyVersion: TRAMITES_LEGAL_VERSIONS.privacy,
@@ -226,13 +284,21 @@ export async function createEngagement(
       });
   }
 
-  await audit({ type: "owner", id: auth.userId, label: "Cliente" }, "alta.crear", account.id, "pedido", order.id, {
-    viviendas: properties.length,
-    plan: input.planCode,
-    total: order.totalCents,
-    termsVersion: TRAMITES_LEGAL_VERSIONS.terms,
-  });
-  if (!payable) await mail.emailInternalNewOrder(order, "solicitud_especial").catch(() => undefined);
+  await audit(
+    { type: "owner", id: auth.userId, label: "Cliente" },
+    "alta.crear",
+    account.id,
+    "pedido",
+    order.id,
+    {
+      viviendas: properties.length,
+      plan: input.planCode,
+      total: order.totalCents,
+      termsVersion: TRAMITES_LEGAL_VERSIONS.terms,
+    },
+  );
+  if (!payable)
+    await mail.emailInternalNewOrder(order, "solicitud_especial").catch(() => undefined);
 
   return { ok: true, orderId: payable ? order.id : null, needsVerification: !auth.emailVerified };
 }
@@ -244,7 +310,8 @@ export async function activateAfterVerification(accountId: string): Promise<void
   if (!account || account.status !== "pendiente_verificacion") return;
   await store.updateAccount(accountId, { status: "activo" });
   for (const o of await store.listOrders({ accountId })) {
-    if (o.status === "pendiente_verificacion") await store.updateOrder(o.id, { status: "pendiente_pago" });
+    if (o.status === "pendiente_verificacion")
+      await store.updateOrder(o.id, { status: "pendiente_pago" });
   }
   await audit(SYSTEM, "cuenta.verificada", accountId, "cuenta", accountId, {});
 }
@@ -294,7 +361,12 @@ async function openFiling(o: {
  */
 export async function markOrderPaid(
   orderId: string,
-  p: { paymentIntentId: string | null; checkoutSessionId: string | null; amountCents: number; invoiceUrl?: string | null },
+  p: {
+    paymentIntentId: string | null;
+    checkoutSessionId: string | null;
+    amountCents: number;
+    invoiceUrl?: string | null;
+  },
 ): Promise<{ ok: boolean; already?: boolean; reason?: string }> {
   const store = serverStore();
   const order = await store.getOrder(orderId);
@@ -318,7 +390,9 @@ export async function markOrderPaid(
   });
 
   // Efectos del encargo.
-  const credits = order.lines.filter((l) => l.serviceCode === "saldo_reservas").reduce((s, l) => s + l.quantity, 0);
+  const credits = order.lines
+    .filter((l) => l.serviceCode === "saldo_reservas")
+    .reduce((s, l) => s + l.quantity, 0);
   if (credits > 0) await store.adjustCredits(order.accountId, credits);
 
   const properties = await store.listProperties({ accountId: order.accountId });
@@ -333,7 +407,9 @@ export async function markOrderPaid(
       orderId: order.id,
       status: "pendiente_documentacion",
     });
-    await store.updateFiling(f.id, { requestedDocuments: ["autorizacion_representacion", "dni_titular", "registro_turistico"] });
+    await store.updateFiling(f.id, {
+      requestedDocuments: ["autorizacion_representacion", "dni_titular", "registro_turistico"],
+    });
     await event(f, SYSTEM, "solicitud", {
       message:
         "Para preparar el alta necesitamos: la autorización de representación firmada, el documento de identidad del titular y el justificante del registro turístico de la vivienda.",
@@ -344,7 +420,10 @@ export async function markOrderPaid(
   if (credits > 0) await settlePendingReports(order.accountId);
 
   const fresh = (await store.getOrder(order.id))!;
-  await audit(SYSTEM, "pago.confirmado", order.accountId, "pedido", order.id, { total: order.totalCents, credits });
+  await audit(SYSTEM, "pago.confirmado", order.accountId, "pedido", order.id, {
+    total: order.totalCents,
+    credits,
+  });
   const account = await store.getAccount(order.accountId);
   if (account) await mail.emailOrderPaid(account.email, fresh).catch(() => undefined);
   await mail.emailInternalNewOrder(fresh, "pagado").catch(() => undefined);
@@ -421,7 +500,8 @@ export async function ownerGet<T extends { accountId: string }>(
 export async function reportReservation(ctx: OwnerContext, input: ReservationReportInput) {
   const store = serverStore();
   const property = await store.getProperty(input.propertyId);
-  if (!property || !ownsAccount(ctx, property.accountId)) return { ok: false as const, error: "Vivienda no encontrada." };
+  if (!property || !ownsAccount(ctx, property.accountId))
+    return { ok: false as const, error: "Vivienda no encontrada." };
 
   const account = (await store.getAccount(property.accountId))!;
   const at = now();
@@ -471,47 +551,78 @@ export async function reportReservation(ctx: OwnerContext, input: ReservationRep
     });
   if (billing === "pendiente")
     await event(filing, SYSTEM, "solicitud", {
-      message: "No te queda saldo de reservas. Compra más saldo en «Pagos» para que podamos tramitarla.",
+      message:
+        "No te queda saldo de reservas. Compra más saldo en «Pagos» para que podamos tramitarla.",
     });
 
-  await audit(ownerActor(ctx), "reserva.comunicar", account.id, "reserva", report.id, { late, billing });
-  await mail.emailInternalOwnerActivity("Nueva reserva comunicada", account.id).catch(() => undefined);
+  await audit(ownerActor(ctx), "reserva.comunicar", account.id, "reserva", report.id, {
+    late,
+    billing,
+  });
+  await mail
+    .emailInternalOwnerActivity("Nueva reserva comunicada", account.id)
+    .catch(() => undefined);
   return { ok: true as const, reportId: report.id, filingId: filing.id, late, billing };
 }
 
-export async function cancelReservation(ctx: OwnerContext, reportId: string, cancelledAtIso: string) {
+export async function cancelReservation(
+  ctx: OwnerContext,
+  reportId: string,
+  cancelledAtIso: string,
+) {
   const store = serverStore();
   const report = await store.getReport(reportId);
-  if (!report || !ownsAccount(ctx, report.accountId)) return { ok: false as const, error: "Reserva no encontrada." };
-  if (report.cancelledAt) return { ok: false as const, error: "Esta reserva ya consta como anulada." };
+  if (!report || !ownsAccount(ctx, report.accountId))
+    return { ok: false as const, error: "Reserva no encontrada." };
+  if (report.cancelledAt)
+    return { ok: false as const, error: "Esta reserva ya consta como anulada." };
   const cancelledAt = madridLocalToIso(cancelledAtIso);
   await store.updateReport(report.id, { cancelledAt });
-  const filing = (await store.listFilings({ accountId: report.accountId })).find((f) => f.reservationReportId === report.id);
+  const filing = (await store.listFilings({ accountId: report.accountId })).find(
+    (f) => f.reservationReportId === report.id,
+  );
   if (filing) {
     await store.updateFiling(filing.id, {
       dueAt: deadlineFor({ ...report, cancelledAt }, "anulacion")?.toISOString() ?? filing.dueAt,
     });
-    await event(filing, ownerActor(ctx), "nota", { message: "El cliente comunica la anulación de la reserva." });
+    await event(filing, ownerActor(ctx), "nota", {
+      message: "El cliente comunica la anulación de la reserva.",
+    });
   }
   await audit(ownerActor(ctx), "reserva.anular", report.accountId, "reserva", report.id, {});
-  await mail.emailInternalOwnerActivity("Reserva anulada por el cliente", report.accountId).catch(() => undefined);
+  await mail
+    .emailInternalOwnerActivity("Reserva anulada por el cliente", report.accountId)
+    .catch(() => undefined);
   return { ok: true as const };
 }
 
-export async function saveTravellerData(ctx: OwnerContext, reportId: string, bundle: TravellerBundle) {
+export async function saveTravellerData(
+  ctx: OwnerContext,
+  reportId: string,
+  bundle: TravellerBundle,
+) {
   if (!travellerEncryptionReady())
-    return { ok: false as const, error: "Ahora mismo no podemos recibir datos de viajeros. Escríbenos y lo resolvemos." };
+    return {
+      ok: false as const,
+      error: "Ahora mismo no podemos recibir datos de viajeros. Escríbenos y lo resolvemos.",
+    };
   for (const t of bundle.travellers) {
     if (t.docType !== "NINGUNO" && !t.docNumber)
       return { ok: false as const, error: "Falta el número de documento de algún viajero." };
   }
   const store = serverStore();
   const report = await store.getReport(reportId);
-  if (!report || !ownsAccount(ctx, report.accountId)) return { ok: false as const, error: "Reserva no encontrada." };
+  if (!report || !ownsAccount(ctx, report.accountId))
+    return { ok: false as const, error: "Reserva no encontrada." };
   if (bundle.travellers.length > report.travellers + 2)
     return { ok: false as const, error: "Hay más viajeros que los indicados en la reserva." };
-  await store.updateReport(report.id, { travellerDataEnc: encryptJson(bundle), travellerDataAt: now() });
-  const filing = (await store.listFilings({ accountId: report.accountId })).find((f) => f.reservationReportId === report.id);
+  await store.updateReport(report.id, {
+    travellerDataEnc: encryptJson(bundle),
+    travellerDataAt: now(),
+  });
+  const filing = (await store.listFilings({ accountId: report.accountId })).find(
+    (f) => f.reservationReportId === report.id,
+  );
   if (filing) {
     await event(filing, ownerActor(ctx), "documento", {
       message: `Datos de ${bundle.travellers.length} ${bundle.travellers.length === 1 ? "viajero" : "viajeros"} recibidos.`,
@@ -526,7 +637,10 @@ export async function saveTravellerData(ctx: OwnerContext, reportId: string, bun
 }
 
 /** Solo gestores con `tramites.sensitive`: descifra y deja constancia. */
-export async function readTravellerData(reportId: string, actor: Actor): Promise<TravellerBundle | null> {
+export async function readTravellerData(
+  reportId: string,
+  actor: Actor,
+): Promise<TravellerBundle | null> {
   const report = await serverStore().getReport(reportId);
   if (!report?.travellerDataEnc) return null;
   await audit(actor, "viajeros.ver", report.accountId, "reserva", report.id, {});
@@ -555,7 +669,8 @@ export async function storeDocument(o: {
   let filing: Filing | null = null;
   if (o.filingId) {
     filing = await store.getFiling(o.filingId);
-    if (!filing || filing.accountId !== o.accountId) return { ok: false, error: "Expediente no válido." };
+    if (!filing || filing.accountId !== o.accountId)
+      return { ok: false, error: "Expediente no válido." };
   }
   const id = randomUUID();
   const storageKey = `${o.accountId}/${randomUUID()}`;
@@ -579,17 +694,29 @@ export async function storeDocument(o: {
   });
   if (filing) {
     const remaining = filing.requestedDocuments.filter((k) => k !== doc.kind);
-    if (remaining.length !== filing.requestedDocuments.length) await store.updateFiling(filing.id, { requestedDocuments: remaining });
+    if (remaining.length !== filing.requestedDocuments.length)
+      await store.updateFiling(filing.id, { requestedDocuments: remaining });
     await event(filing, o.actor, "documento", {
-      message: o.officialProof ? `Justificante oficial añadido: ${doc.filename}` : `Documento recibido: ${doc.filename}`,
+      message: o.officialProof
+        ? `Justificante oficial añadido: ${doc.filename}`
+        : `Documento recibido: ${doc.filename}`,
     });
   }
-  await audit(o.actor, o.officialProof ? "documento.justificante" : "documento.subir", o.accountId, "documento", doc.id, {
-    tipo: doc.kind,
-    bytes: doc.sizeBytes,
-  });
+  await audit(
+    o.actor,
+    o.officialProof ? "documento.justificante" : "documento.subir",
+    o.accountId,
+    "documento",
+    doc.id,
+    {
+      tipo: doc.kind,
+      bytes: doc.sizeBytes,
+    },
+  );
   if (o.actor.type === "owner")
-    await mail.emailInternalOwnerActivity("Documento recibido de un cliente", o.accountId).catch(() => undefined);
+    await mail
+      .emailInternalOwnerActivity("Documento recibido de un cliente", o.accountId)
+      .catch(() => undefined);
   return { ok: true, doc };
 }
 
@@ -613,20 +740,31 @@ export async function adminDownload(docId: string, actor: Actor) {
   return { doc, bytes };
 }
 
-export async function reviewDocument(docId: string, status: "validado" | "rechazado", note: string, actor: Actor) {
+export async function reviewDocument(
+  docId: string,
+  status: "validado" | "rechazado",
+  note: string,
+  actor: Actor,
+) {
   const store = serverStore();
   const doc = await store.getDocument(docId);
   if (!doc) return { ok: false as const, error: "Documento no encontrado." };
-  if (doc.isOfficialProof) return { ok: false as const, error: "Un justificante oficial no se revisa ni se sustituye." };
+  if (doc.isOfficialProof)
+    return { ok: false as const, error: "Un justificante oficial no se revisa ni se sustituye." };
   await store.updateDocument(doc.id, { status, reviewNote: note || null });
   if (doc.filingId) {
     const filing = await store.getFiling(doc.filingId);
     if (filing) {
       await event(filing, actor, "documento", {
-        message: status === "validado" ? `Documento validado: ${doc.filename}` : `Documento no válido: ${doc.filename}${note ? ` — ${note}` : ""}`,
+        message:
+          status === "validado"
+            ? `Documento validado: ${doc.filename}`
+            : `Documento no válido: ${doc.filename}${note ? ` — ${note}` : ""}`,
       });
       if (status === "rechazado" && !filing.requestedDocuments.includes(doc.kind))
-        await store.updateFiling(filing.id, { requestedDocuments: [...filing.requestedDocuments, doc.kind] });
+        await store.updateFiling(filing.id, {
+          requestedDocuments: [...filing.requestedDocuments, doc.kind],
+        });
     }
   }
   await audit(actor, `documento.${status}`, doc.accountId, "documento", doc.id, {});
@@ -646,36 +784,81 @@ export async function transition(filingId: string, to: FilingStatus, actor: Acto
     hasOfficialProof: docs.some((d) => d.isOfficialProof),
   });
   if (!check.ok) return { ok: false as const, error: check.reason };
+  if (to === "finalizado" && filing.reservationReportId) {
+    // Una reserva solo se cierra cuando están presentadas todas sus comunicaciones.
+    const report = await store.getReport(filing.reservationReportId);
+    const pending = report
+      ? (["reserva", "anulacion", "entrada"] as const).filter((e) => {
+          const st = deadlineState(report, e).state;
+          return st !== "hecho" && st !== "no_aplica";
+        })
+      : [];
+    if (pending.length > 0)
+      return {
+        ok: false as const,
+        error: `Falta registrar la comunicación de: ${pending.map((e) => EVENT_LABEL[e].toLowerCase()).join(", ")}.`,
+      };
+  }
   const closing = to === "finalizado" || to === "cancelado";
   await store.updateFiling(filing.id, { status: to, ...(closing ? { closedAt: now() } : {}) });
   await event(filing, actor, "estado", { from: filing.status, to, message: note || null });
-  await audit(actor, "expediente.estado", filing.accountId, "expediente", filing.id, { de: filing.status, a: to });
+  await audit(actor, "expediente.estado", filing.accountId, "expediente", filing.id, {
+    de: filing.status,
+    a: to,
+  });
 
-  const notify: FilingStatus[] = ["pendiente_documentacion", "presentado", "subsanacion", "finalizado"];
+  const notify: FilingStatus[] = [
+    "pendiente_documentacion",
+    "presentado",
+    "subsanacion",
+    "finalizado",
+  ];
   if (actor.type === "admin" && notify.includes(to)) {
     const account = await store.getAccount(filing.accountId);
     if (account) {
-      const fn = to === "pendiente_documentacion" ? mail.emailDocumentsRequested(account.email, filing.reference, filing.id)
-        : mail.emailFilingUpdate(account.email, filing.reference, filing.id, OWNER_STATUS[to].label);
+      const fn =
+        to === "pendiente_documentacion"
+          ? mail.emailDocumentsRequested(account.email, filing.reference, filing.id)
+          : mail.emailFilingUpdate(
+              account.email,
+              filing.reference,
+              filing.id,
+              OWNER_STATUS[to].label,
+            );
       await fn.catch(() => undefined);
     }
   }
   return { ok: true as const };
 }
 
-export async function requestDocuments(filingId: string, kinds: DocumentKind[], message: string, actor: Actor) {
+export async function requestDocuments(
+  filingId: string,
+  kinds: DocumentKind[],
+  message: string,
+  actor: Actor,
+) {
   const store = serverStore();
   const filing = await store.getFiling(filingId);
   if (!filing) return { ok: false as const, error: "Expediente no encontrado." };
   const merged = [...new Set([...filing.requestedDocuments, ...kinds])];
   await store.updateFiling(filing.id, { requestedDocuments: merged });
-  await event(filing, actor, "solicitud", { message: message || "Necesitamos documentación adicional." });
-  await audit(actor, "expediente.solicitar_documentos", filing.accountId, "expediente", filing.id, { tipos: kinds.join(",") });
-  if (filing.status !== "pendiente_documentacion" && canTransition(filing.status, "pendiente_documentacion").ok) {
+  await event(filing, actor, "solicitud", {
+    message: message || "Necesitamos documentación adicional.",
+  });
+  await audit(actor, "expediente.solicitar_documentos", filing.accountId, "expediente", filing.id, {
+    tipos: kinds.join(","),
+  });
+  if (
+    filing.status !== "pendiente_documentacion" &&
+    canTransition(filing.status, "pendiente_documentacion").ok
+  ) {
     return transition(filing.id, "pendiente_documentacion", actor);
   }
   const account = await store.getAccount(filing.accountId);
-  if (account) await mail.emailDocumentsRequested(account.email, filing.reference, filing.id).catch(() => undefined);
+  if (account)
+    await mail
+      .emailDocumentsRequested(account.email, filing.reference, filing.id)
+      .catch(() => undefined);
   return { ok: true as const };
 }
 
@@ -685,7 +868,12 @@ export async function requestDocuments(filingId: string, kinds: DocumentKind[], 
  */
 export async function registerSubmission(
   filingId: string,
-  s: { submittedAt: string; channel: SubmissionChannel; ref: string; reportEvent?: "reserva" | "anulacion" | "entrada" | null },
+  s: {
+    submittedAt: string;
+    channel: SubmissionChannel;
+    ref: string;
+    reportEvent?: "reserva" | "anulacion" | "entrada" | null;
+  },
   actor: Actor,
 ) {
   const store = serverStore();
@@ -701,7 +889,11 @@ export async function registerSubmission(
   });
   if (filing.reservationReportId && s.reportEvent) {
     const field =
-      s.reportEvent === "reserva" ? "communicatedReservaAt" : s.reportEvent === "anulacion" ? "communicatedAnulacionAt" : "communicatedEntradaAt";
+      s.reportEvent === "reserva"
+        ? "communicatedReservaAt"
+        : s.reportEvent === "anulacion"
+          ? "communicatedAnulacionAt"
+          : "communicatedEntradaAt";
     await store.updateReport(filing.reservationReportId, { [field]: submittedAt.toISOString() });
   }
   const label = s.reportEvent ? ` (${s.reportEvent})` : "";
@@ -712,10 +904,19 @@ export async function registerSubmission(
     canal: s.channel,
     hecho: s.reportEvent ?? null,
   });
+  // Lleva el expediente a «presentado» recorriendo los pasos intermedios, para
+  // que el historial muestre cada estado. Desde «pendiente de documentación» no
+  // se avanza solo: alguien tiene que revisar qué faltaba.
+  const PATH: Partial<Record<FilingStatus, FilingStatus[]>> = {
+    solicitado: ["en_revision", "listo_para_presentar", "presentado"],
+    en_revision: ["listo_para_presentar", "presentado"],
+    listo_para_presentar: ["presentado"],
+    subsanacion: ["presentado"],
+  };
   const fresh = (await store.getFiling(filing.id))!;
-  if (fresh.status === "listo_para_presentar" || fresh.status === "subsanacion" || fresh.status === "en_revision") {
-    if (canTransition(fresh.status, "presentado", { submittedAt: fresh.submittedAt, submissionChannel: fresh.submissionChannel }).ok)
-      return transition(fresh.id, "presentado", actor);
+  for (const step of PATH[fresh.status] ?? []) {
+    const r = await transition(fresh.id, step, actor);
+    if (!r.ok) return r;
   }
   return { ok: true as const };
 }
@@ -724,7 +925,9 @@ export async function setChecklistItem(filingId: string, key: string, done: bool
   const store = serverStore();
   const filing = await store.getFiling(filingId);
   if (!filing) return;
-  await store.updateFiling(filing.id, { checklist: filing.checklist.map((c) => (c.key === key ? { ...c, done } : c)) });
+  await store.updateFiling(filing.id, {
+    checklist: filing.checklist.map((c) => (c.key === key ? { ...c, done } : c)),
+  });
   await event(filing, actor, "nota", {
     message: `${done ? "Hecho" : "Pendiente"}: ${filing.checklist.find((c) => c.key === key)?.label ?? key}`,
     visibleToOwner: false,
@@ -734,7 +937,10 @@ export async function setChecklistItem(filingId: string, key: string, done: bool
 export async function addInternalNote(filingId: string, note: string, actor: Actor) {
   const filing = await serverStore().getFiling(filingId);
   if (!filing || !note.trim()) return;
-  await event(filing, actor, "nota", { message: note.trim().slice(0, 2000), visibleToOwner: false });
+  await event(filing, actor, "nota", {
+    message: note.trim().slice(0, 2000),
+    visibleToOwner: false,
+  });
 }
 
 export async function assignFiling(filingId: string, email: string | null, actor: Actor) {
@@ -742,7 +948,10 @@ export async function assignFiling(filingId: string, email: string | null, actor
   const filing = await store.getFiling(filingId);
   if (!filing) return;
   await store.updateFiling(filing.id, { assigneeEmail: email });
-  await event(filing, actor, "nota", { message: `Asignado a ${email ?? "nadie"}.`, visibleToOwner: false });
+  await event(filing, actor, "nota", {
+    message: `Asignado a ${email ?? "nadie"}.`,
+    visibleToOwner: false,
+  });
 }
 
 // ---------------------------------------------------------- mensajes ----
@@ -772,7 +981,9 @@ export async function postMessage(
     const account = await store.getAccount(accountId);
     if (account) await mail.emailNewMessage(account.email).catch(() => undefined);
   } else {
-    await mail.emailInternalOwnerActivity("Mensaje nuevo de un cliente", accountId).catch(() => undefined);
+    await mail
+      .emailInternalOwnerActivity("Mensaje nuevo de un cliente", accountId)
+      .catch(() => undefined);
   }
   return { ok: true as const };
 }

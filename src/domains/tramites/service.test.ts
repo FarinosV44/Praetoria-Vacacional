@@ -1,8 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Next solo existe dentro de una petición: simulamos lo mínimo que tocan los módulos.
-vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined, set() {}, delete() {} }) }));
-vi.mock("next/navigation", () => ({ redirect: (u: string) => { throw new Error(`redirect:${u}`); } }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: () => undefined, set() {}, delete() {} }),
+}));
+vi.mock("next/navigation", () => ({
+  redirect: (u: string) => {
+    throw new Error(`redirect:${u}`);
+  },
+}));
 
 import { resetMemoryTramites, memoryTramites } from "./repo/memory";
 import {
@@ -62,11 +68,19 @@ function engagement(email: string, overrides: Partial<EngagementInput> = {}): En
 }
 
 async function newClient(userId: string, email: string) {
-  const r = await createEngagement(engagement(email), { userId, existingAccountId: null, emailVerified: true }, { ipHash: null, userAgent: null });
+  const r = await createEngagement(
+    engagement(email),
+    { userId, existingAccountId: null, emailVerified: true },
+    { ipHash: null, userAgent: null },
+  );
   if (!r.ok) throw new Error(r.error);
   const memberships = await memoryTramites.listMembershipsByUser(userId);
   const account = (await memoryTramites.getAccount(memberships[0]!.accountId))!;
-  const ctx: OwnerContext = { session: { userId, email, emailVerified: true }, memberships, account };
+  const ctx: OwnerContext = {
+    session: { userId, email, emailVerified: true },
+    memberships,
+    account,
+  };
   return { ctx, orderId: r.orderId! };
 }
 
@@ -87,7 +101,11 @@ describe("contratación y pago", () => {
   });
 
   it("sin email verificado el pedido espera a la verificación", async () => {
-    const r = await createEngagement(engagement("b@test.es"), { userId: "u-b", existingAccountId: null, emailVerified: false }, { ipHash: null, userAgent: null });
+    const r = await createEngagement(
+      engagement("b@test.es"),
+      { userId: "u-b", existingAccountId: null, emailVerified: false },
+      { ipHash: null, userAgent: null },
+    );
     expect(r.ok && r.needsVerification).toBe(true);
     const order = (await memoryTramites.listOrders())[0]!;
     expect(order.status).toBe("pendiente_verificacion");
@@ -95,8 +113,16 @@ describe("contratación y pago", () => {
 
   it("el pago confirmado abre el expediente de alta, carga el saldo y es idempotente", async () => {
     const { ctx, orderId } = await newClient("u-a", "a@test.es");
-    const first = await markOrderPaid(orderId, { paymentIntentId: "pi_1", checkoutSessionId: "cs_1", amountCents: 10890 });
-    const second = await markOrderPaid(orderId, { paymentIntentId: "pi_1", checkoutSessionId: "cs_1", amountCents: 10890 });
+    const first = await markOrderPaid(orderId, {
+      paymentIntentId: "pi_1",
+      checkoutSessionId: "cs_1",
+      amountCents: 10890,
+    });
+    const second = await markOrderPaid(orderId, {
+      paymentIntentId: "pi_1",
+      checkoutSessionId: "cs_1",
+      amountCents: 10890,
+    });
     expect(first.ok).toBe(true);
     expect(second.already).toBe(true);
     expect((await memoryTramites.getAccount(ctx.account.id))!.reservationCredits).toBe(2);
@@ -109,14 +135,23 @@ describe("contratación y pago", () => {
 
   it("un importe distinto no confirma el pedido", async () => {
     const { orderId } = await newClient("u-a", "a@test.es");
-    const r = await markOrderPaid(orderId, { paymentIntentId: "pi", checkoutSessionId: null, amountCents: 100 });
+    const r = await markOrderPaid(orderId, {
+      paymentIntentId: "pi",
+      checkoutSessionId: null,
+      amountCents: 100,
+    });
     expect(r.ok).toBe(false);
     expect((await memoryTramites.getOrder(orderId))!.status).toBe("pendiente_pago");
   });
 
   it("la revisión histórica crea una solicitud especial sin cobro", async () => {
     const r = await createEngagement(
-      engagement("c@test.es", { reservationCredits: 0, historicalReview: true, historicalNotes: "Seis estancias de 2025", properties: [{ ...engagement("x").properties[0]!, wantsSesAlta: false }] }),
+      engagement("c@test.es", {
+        reservationCredits: 0,
+        historicalReview: true,
+        historicalNotes: "Seis estancias de 2025",
+        properties: [{ ...engagement("x").properties[0]!, wantsSesAlta: false }],
+      }),
       { userId: "u-c", existingAccountId: null, emailVerified: true },
       { ipHash: null, userAgent: null },
     );
@@ -130,7 +165,11 @@ describe("contratación y pago", () => {
 describe("reservas, viajeros y saldo", () => {
   it("cada reserva consume saldo; sin saldo queda pendiente y se liquida al comprar", async () => {
     const { ctx, orderId } = await newClient("u-a", "a@test.es");
-    await markOrderPaid(orderId, { paymentIntentId: "pi", checkoutSessionId: null, amountCents: 10890 });
+    await markOrderPaid(orderId, {
+      paymentIntentId: "pi",
+      checkoutSessionId: null,
+      amountCents: 10890,
+    });
     const prop = (await memoryTramites.listProperties({ accountId: ctx.account.id }))[0]!;
     const res = (n: number) =>
       reportReservation(ctx, {
@@ -142,7 +181,9 @@ describe("reservas, viajeros y saldo", () => {
         checkOut: "2027-01-12",
         travellers: 2,
       });
-    expect((await res(1)).ok && (await memoryTramites.getAccount(ctx.account.id))!.reservationCredits).toBe(1);
+    expect(
+      (await res(1)).ok && (await memoryTramites.getAccount(ctx.account.id))!.reservationCredits,
+    ).toBe(1);
     await res(2);
     const third = await res(3);
     expect(third.ok && third.billing).toBe("pendiente");
@@ -150,7 +191,11 @@ describe("reservas, viajeros y saldo", () => {
 
     const credits = await createCreditsOrder(ctx, 3);
     expect(credits.ok).toBe(true);
-    await markOrderPaid(credits.ok ? credits.orderId : "", { paymentIntentId: "pi2", checkoutSessionId: null, amountCents: 5445 });
+    await markOrderPaid(credits.ok ? credits.orderId : "", {
+      paymentIntentId: "pi2",
+      checkoutSessionId: null,
+      amountCents: 5445,
+    });
     const reports = await memoryTramites.listReports({ accountId: ctx.account.id });
     expect(reports.every((r) => r.billing === "saldo")).toBe(true);
     expect((await memoryTramites.getAccount(ctx.account.id))!.reservationCredits).toBe(2);
@@ -158,7 +203,11 @@ describe("reservas, viajeros y saldo", () => {
 
   it("los datos de viajeros se guardan cifrados y solo se leen con permiso", async () => {
     const { ctx, orderId } = await newClient("u-a", "a@test.es");
-    await markOrderPaid(orderId, { paymentIntentId: "pi", checkoutSessionId: null, amountCents: 10890 });
+    await markOrderPaid(orderId, {
+      paymentIntentId: "pi",
+      checkoutSessionId: null,
+      amountCents: 10890,
+    });
     const prop = (await memoryTramites.listProperties({ accountId: ctx.account.id }))[0]!;
     const r = await reportReservation(ctx, {
       propertyId: prop.id,
@@ -255,7 +304,11 @@ describe("aislamiento entre clientes (A no ve a B)", () => {
 describe("gestión del expediente (panel)", () => {
   it("presentación manual, justificante y cierre con historial", async () => {
     const { ctx, orderId } = await newClient("u-a", "a@test.es");
-    await markOrderPaid(orderId, { paymentIntentId: "pi", checkoutSessionId: null, amountCents: 10890 });
+    await markOrderPaid(orderId, {
+      paymentIntentId: "pi",
+      checkoutSessionId: null,
+      amountCents: 10890,
+    });
     const f = (await memoryTramites.listFilings({ accountId: ctx.account.id }))[0]!;
 
     expect((await transition(f.id, "finalizado", admin)).ok).toBe(false);
@@ -263,12 +316,22 @@ describe("gestión del expediente (panel)", () => {
     expect((await transition(f.id, "listo_para_presentar", admin)).ok).toBe(true);
     expect((await transition(f.id, "presentado", admin)).ok).toBe(false);
 
-    const sub = await registerSubmission(f.id, { submittedAt: new Date().toISOString(), channel: "ses_hospedajes_web", ref: "SES-0001" }, admin);
+    const sub = await registerSubmission(
+      f.id,
+      { submittedAt: new Date().toISOString(), channel: "ses_hospedajes_web", ref: "SES-0001" },
+      admin,
+    );
     expect(sub.ok).toBe(true);
     expect((await memoryTramites.getFiling(f.id))!.status).toBe("presentado");
 
     expect(
-      (await registerSubmission(f.id, { submittedAt: "2999-01-01T00:00:00Z", channel: "ses_hospedajes_web", ref: "" }, admin)).ok,
+      (
+        await registerSubmission(
+          f.id,
+          { submittedAt: "2999-01-01T00:00:00Z", channel: "ses_hospedajes_web", ref: "" },
+          admin,
+        )
+      ).ok,
     ).toBe(false);
 
     const proof = await storeDocument({
@@ -289,5 +352,61 @@ describe("gestión del expediente (panel)", () => {
     expect(events.map((e) => e.kind)).toEqual(
       expect.arrayContaining(["creado", "solicitud", "estado", "presentacion", "documento"]),
     );
+  });
+  it("una reserva no se cierra hasta presentar reserva y entrada", async () => {
+    const { ctx, orderId } = await newClient("u-r", "r@test.es");
+    await markOrderPaid(orderId, {
+      paymentIntentId: "pi",
+      checkoutSessionId: null,
+      amountCents: 10890,
+    });
+    const prop = (await memoryTramites.listProperties({ accountId: ctx.account.id }))[0]!;
+    const rep = await reportReservation(ctx, {
+      propertyId: prop.id,
+      externalRef: "BK-R",
+      channel: "booking",
+      bookedAt: new Date().toISOString(),
+      checkIn: "2027-02-10",
+      checkOut: "2027-02-12",
+      travellers: 2,
+    });
+    expect(rep.ok).toBe(true);
+    const f = (await memoryTramites.listFilings({ accountId: ctx.account.id })).find(
+      (x) => x.reservationReportId,
+    )!;
+    const at = new Date().toISOString();
+    expect(
+      (
+        await registerSubmission(
+          f.id,
+          { submittedAt: at, channel: "ses_hospedajes_web", ref: "R1", reportEvent: "reserva" },
+          admin,
+        )
+      ).ok,
+    ).toBe(true);
+    expect((await memoryTramites.getFiling(f.id))!.status).toBe("presentado");
+    await storeDocument({
+      accountId: ctx.account.id,
+      propertyId: null,
+      filingId: f.id,
+      kind: "otro",
+      name: "acuse.pdf",
+      bytes: PDF,
+      actor: admin,
+      officialProof: true,
+    });
+    const early = await transition(f.id, "finalizado", admin);
+    expect(early.ok).toBe(false);
+    expect(!early.ok && early.error).toMatch(/entrada/);
+    expect(
+      (
+        await registerSubmission(
+          f.id,
+          { submittedAt: at, channel: "ses_hospedajes_web", ref: "E1", reportEvent: "entrada" },
+          admin,
+        )
+      ).ok,
+    ).toBe(true);
+    expect((await transition(f.id, "finalizado", admin)).ok).toBe(true);
   });
 });

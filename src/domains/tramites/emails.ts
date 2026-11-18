@@ -15,9 +15,18 @@ import type { ServiceOrder } from "./types";
 const site = () => env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
 const folder = (path = "") => `${site()}/mi-cuenta/tramites${path}`;
 
-function send(to: string, subject: string, heading: string, intro: string, rows: [string, string][], footer: string) {
+function send(
+  to: string,
+  subject: string,
+  heading: string,
+  intro: string,
+  rows: [string, string][],
+  footer: string,
+) {
   const html = brandedEmail({ heading, intro, rows, footer });
-  const text = [heading, "", intro, "", ...rows.map(([k, v]) => `${k}: ${v}`), "", footer].join("\n");
+  const text = [heading, "", intro, "", ...rows.map(([k, v]) => `${k}: ${v}`), "", footer].join(
+    "\n",
+  );
   return sendEmail(to, subject, html, text, { kind: "tramites" });
 }
 
@@ -78,7 +87,12 @@ export function emailDocumentsRequested(to: string, filingRef: string, filingId:
   );
 }
 
-export function emailFilingUpdate(to: string, filingRef: string, filingId: string, statusLabel: string) {
+export function emailFilingUpdate(
+  to: string,
+  filingRef: string,
+  filingId: string,
+  statusLabel: string,
+) {
   return send(
     to,
     `Tu trámite ${filingRef}: ${statusLabel.toLowerCase()}`,

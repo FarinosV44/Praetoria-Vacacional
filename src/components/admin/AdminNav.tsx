@@ -46,6 +46,7 @@ const PRIMARY: Item[] = [
   { href: "/admin/alojamientos", label: "Alojamientos", icon: "home2", match: ["/admin/contenido"] },
   { href: "/admin/clientes", label: "Clientes", icon: "users" },
   { href: "/admin/propietarios", label: "Propietarios", icon: "home2" },
+  { href: "/admin/tramites", label: "Servicios a propietarios", icon: "invoice" },
   { href: "/admin/facturas", label: "Facturas", icon: "invoice" },
   { href: "/admin/promociones", label: "Promociones", icon: "tag" },
   { href: "/admin/marketing", label: "Marketing", icon: "megaphone" },

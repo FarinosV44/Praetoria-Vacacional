@@ -133,7 +133,8 @@ export const FILING_STATUSES = [
 ] as const;
 export type FilingStatus = (typeof FILING_STATUSES)[number];
 
-export type SubmissionChannel = "ses_hospedajes_web" | "ses_hospedajes_fichero" | "registro_autonomico" | "otro";
+export type SubmissionChannel =
+  "ses_hospedajes_web" | "ses_hospedajes_fichero" | "registro_autonomico" | "otro";
 
 export interface ChecklistItem {
   key: string;
@@ -177,7 +178,8 @@ export interface Actor {
   label: string;
 }
 
-export type FilingEventKind = "creado" | "estado" | "nota" | "documento" | "solicitud" | "presentacion" | "mensaje";
+export type FilingEventKind =
+  "creado" | "estado" | "nota" | "documento" | "solicitud" | "presentacion" | "mensaje";
 
 /** Historial inmutable: solo se inserta, nunca se edita ni se borra. */
 export interface FilingEvent {

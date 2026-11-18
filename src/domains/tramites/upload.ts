@@ -13,7 +13,14 @@ export const ALLOWED_EXTENSIONS = ["pdf", "png", "jpg", "jpeg"] as const;
 export type AllowedMime = "application/pdf" | "image/png" | "image/jpeg";
 
 export function sniffMime(bytes: Uint8Array): AllowedMime | null {
-  if (bytes.length >= 5 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2d)
+  if (
+    bytes.length >= 5 &&
+    bytes[0] === 0x25 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x44 &&
+    bytes[3] === 0x46 &&
+    bytes[4] === 0x2d
+  )
     return "application/pdf"; // %PDF-
   if (
     bytes.length >= 8 &&
@@ -27,7 +34,8 @@ export function sniffMime(bytes: Uint8Array): AllowedMime | null {
     bytes[7] === 0x0a
   )
     return "image/png";
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)
+    return "image/jpeg";
   return null;
 }
 
@@ -44,8 +52,7 @@ export function sanitizeFilename(name: string): string {
 }
 
 export type UploadCheck =
-  | { ok: true; mime: AllowedMime; filename: string }
-  | { ok: false; error: string };
+  { ok: true; mime: AllowedMime; filename: string } | { ok: false; error: string };
 
 export function checkUpload(name: string, bytes: Uint8Array): UploadCheck {
   if (bytes.length === 0) return { ok: false, error: "El archivo está vacío." };
@@ -55,8 +62,15 @@ export function checkUpload(name: string, bytes: Uint8Array): UploadCheck {
   if (!(ALLOWED_EXTENSIONS as readonly string[]).includes(ext))
     return { ok: false, error: "Solo se admiten archivos PDF, PNG o JPG." };
   const mime = sniffMime(bytes);
-  if (!mime) return { ok: false, error: "El contenido del archivo no es un PDF, PNG o JPG válido." };
-  const expected: Record<string, AllowedMime> = { pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg" };
-  if (expected[ext] !== mime) return { ok: false, error: "La extensión no coincide con el contenido del archivo." };
+  if (!mime)
+    return { ok: false, error: "El contenido del archivo no es un PDF, PNG o JPG válido." };
+  const expected: Record<string, AllowedMime> = {
+    pdf: "application/pdf",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+  };
+  if (expected[ext] !== mime)
+    return { ok: false, error: "La extensión no coincide con el contenido del archivo." };
   return { ok: true, mime, filename };
 }

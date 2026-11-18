@@ -7,13 +7,17 @@ import { DOCUMENT_KINDS } from "./types";
  * importes: solo códigos, cantidades y datos del cliente.
  */
 
-const trimmed = (min: number, max: number, msg: string) => z.string().trim().min(min, msg).max(max, msg);
+const trimmed = (min: number, max: number, msg: string) =>
+  z.string().trim().min(min, msg).max(max, msg);
 const triState = z.enum(["si", "no", "no_se"]);
 
 export const propertyInputSchema = z.object({
   alias: trimmed(1, 80, "Pon un nombre corto a la vivienda."),
   street: trimmed(4, 160, "Indica la dirección."),
-  postalCode: z.string().trim().regex(/^\d{5}$/, "El código postal tiene 5 cifras."),
+  postalCode: z
+    .string()
+    .trim()
+    .regex(/^\d{5}$/, "El código postal tiene 5 cifras."),
   municipality: trimmed(2, 80, "Indica el municipio."),
   province: trimmed(2, 60, "Indica la provincia."),
   hasTourismRegistry: triState,
@@ -53,8 +57,12 @@ export const engagementSchema = z.object({
   owner: ownerInputSchema,
   password: z.string().max(128).optional().default(""),
   acceptTerms: z.literal(true, { message: "Tienes que aceptar las condiciones del servicio." }),
-  acceptPrivacy: z.literal(true, { message: "Tienes que aceptar el tratamiento de datos y el encargo." }),
-  acceptMandate: z.literal(true, { message: "Tienes que aceptar la autorización de representación." }),
+  acceptPrivacy: z.literal(true, {
+    message: "Tienes que aceptar el tratamiento de datos y el encargo.",
+  }),
+  acceptMandate: z.literal(true, {
+    message: "Tienes que aceptar la autorización de representación.",
+  }),
   marketingOptIn: z.boolean().default(false),
 });
 export type EngagementInput = z.infer<typeof engagementSchema>;
@@ -72,7 +80,10 @@ export const reservationReportSchema = z
     checkOut: isoDate,
     travellers: z.coerce.number().int().min(1).max(60),
   })
-  .refine((v) => v.checkOut > v.checkIn, { message: "La salida debe ser posterior a la entrada.", path: ["checkOut"] });
+  .refine((v) => v.checkOut > v.checkIn, {
+    message: "La salida debe ser posterior a la entrada.",
+    path: ["checkOut"],
+  });
 export type ReservationReportInput = z.infer<typeof reservationReportSchema>;
 
 /** Datos de cada viajero que exige el RD 933/2021 (Anexo I, hospedaje). */

@@ -54,10 +54,15 @@ export async function createOrderCheckout(
   const session = await s.checkout.sessions.create(
     {
       mode: "payment",
-      ...(account.stripeCustomerId ? { customer: account.stripeCustomerId } : { customer_email: account.email }),
+      ...(account.stripeCustomerId
+        ? { customer: account.stripeCustomerId }
+        : { customer_email: account.email }),
       line_items: lineItems,
       metadata,
-      payment_intent_data: { metadata, description: `Encargo ${order.reference} · ${company.tradeName}` },
+      payment_intent_data: {
+        metadata,
+        description: `Encargo ${order.reference} · ${company.tradeName}`,
+      },
       invoice_creation: {
         enabled: true,
         invoice_data: {
@@ -80,12 +85,15 @@ export async function createOrderCheckout(
 /** Plan mensual: no se usa hasta aprobación comercial (#173). */
 export async function createSubscriptionCheckout(): Promise<never> {
   const price = process.env.STRIPE_PRICE_TRAMITES_MENSUAL;
-  if (!price) throw new Error("Plan mensual no activado: falta aprobación y STRIPE_PRICE_TRAMITES_MENSUAL.");
+  if (!price)
+    throw new Error("Plan mensual no activado: falta aprobación y STRIPE_PRICE_TRAMITES_MENSUAL.");
   throw new Error("Plan mensual pendiente de aprobación comercial.");
 }
 
 /** URL pública de la factura de Stripe asociada a una sesión de Checkout. */
-export async function invoiceUrlForSession(session: Stripe.Checkout.Session): Promise<string | null> {
+export async function invoiceUrlForSession(
+  session: Stripe.Checkout.Session,
+): Promise<string | null> {
   const id = typeof session.invoice === "string" ? session.invoice : session.invoice?.id;
   if (!id) return null;
   try {
