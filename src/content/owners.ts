@@ -9,7 +9,7 @@ import type { FaqItem } from "@/domains/properties/types";
 export const ownerServices: { title: string; body: string }[] = [
   {
     title: "Licencia turística y trámites",
-    body: "Tramitamos la licencia de apartamento turístico, la inscripción en el registro de turismo, el número de registro único de arrendamientos y todo lo relacionado. Tu alojamiento, en regla desde el primer día.",
+    body: "Tramitamos la licencia de apartamento turístico, la inscripción en el registro de turismo, el alta en SES.HOSPEDAJES y todo lo relacionado. Tu alojamiento, en regla desde el primer día.",
   },
   {
     title: "Anuncio que vende",
@@ -88,7 +88,7 @@ export const ownerFaq: FaqItem[] = [
   {
     question: "¿Tramitáis la licencia de apartamento turístico?",
     answer:
-      "Sí. Tramitamos la licencia de apartamento turístico, la inscripción en el registro de turismo correspondiente, el número de registro único de arrendamientos y todo lo relacionado, tanto en la Comunitat Valenciana como en Aragón.",
+      "Sí. Tramitamos la licencia de apartamento turístico, la inscripción en el registro de turismo correspondiente, el alta en SES.HOSPEDAJES y todo lo relacionado, tanto en la Comunitat Valenciana como en Aragón.",
   },
   {
     question: "¿En qué zonas gestionáis apartamentos?",
