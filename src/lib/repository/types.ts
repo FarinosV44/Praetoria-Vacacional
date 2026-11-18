@@ -214,7 +214,9 @@ export interface EmailLogEntry {
     | "pre_arrival"
     | "checkin_info"
     | "checkout_reminder"
-    | "review_request";
+    | "review_request"
+    /** Servicio de trámites para propietarios (#173). Nunca lleva datos de viajeros. */
+    | "tramites";
   recipient: string;
   status: "sent" | "failed" | "skipped";
   providerId?: string | null;

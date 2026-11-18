@@ -14,7 +14,7 @@ import { InviteForm } from "./InviteForm";
 export const metadata = { title: "Usuarios" };
 export const dynamic = "force-dynamic";
 
-const ROLES: AdminRole[] = ["admin", "gestion", "lectura"];
+const ROLES: AdminRole[] = ["admin", "gestion", "tramites", "lectura"];
 
 function ago(iso: string | null): string {
   if (!iso) return "nunca";
