@@ -175,14 +175,17 @@ export default function PropietariosPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-8">
+          <p className="mt-8 flex flex-wrap gap-3">
+            <Link href="/gestion-tramites-alquiler-turistico" className="pv-btn pv-btn--lg pv-btn--ink">
+              Ver el servicio de trámites y precios
+            </Link>
             <a
               href={`https://wa.me/${wa}?text=${encodeURIComponent(PAPERWORK_WA)}`}
               target="_blank"
               rel="noopener"
-              className="pv-btn pv-btn--lg pv-btn--ink"
+              className="pv-btn pv-btn--lg pv-btn--secondary"
             >
-              Quiero que gestionéis los trámites de mi apartamento
+              Preguntar por WhatsApp
             </a>
           </p>
         </div>

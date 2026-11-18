@@ -137,6 +137,20 @@ export default async function BlogPostPage({
           dangerouslySetInnerHTML={{ __html: html }}
         />
 
+        {/* Artículos sobre obligaciones del propietario → servicio de trámites (#174). */}
+        {/SES\.?\s?HOSPEDAJES|registro de viajeros|parte de viajeros|NRUA|Registro Único/i.test(html) && (
+          <aside className="mx-auto mt-10 max-w-2xl rounded-[var(--radius-card)] border border-[var(--color-line)] bg-white p-6">
+            <p className="eyebrow">Para propietarios</p>
+            <p className="mt-2 text-lg font-semibold">Tú gestionas las reservas. Nosotros, el papeleo.</p>
+            <p className="mt-2 text-sm text-[var(--color-ink-soft)]">
+              Damos de alta tu vivienda en SES.HOSPEDAJES y comunicamos cada reserva y entrada de viajeros por ti, con justificante.
+            </p>
+            <Link href="/gestion-tramites-alquiler-turistico" className="pv-btn pv-btn--ink pv-btn--sm mt-4">
+              Ver el servicio de trámites
+            </Link>
+          </aside>
+        )}
+
         {post.tags.length > 0 && (
           <ul className="mx-auto mt-8 flex max-w-2xl flex-wrap gap-2">
             {post.tags.map((tag) => (

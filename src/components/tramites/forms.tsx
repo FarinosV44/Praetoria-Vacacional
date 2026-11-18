@@ -6,7 +6,8 @@ import { track } from "@/lib/analytics";
 
 /** Formularios del portal y del panel: estado, errores y botón con «enviando». */
 
-type Result = { ok: true; message?: string; demoUrl?: string } | { ok: false; error: string } | null;
+type Result =
+  { ok: true; message?: string; demoUrl?: string } | { ok: false; error: string } | null;
 
 export function ActionForm({
   action,
@@ -57,7 +58,12 @@ export function ActionForm({
 export function Submit({ label, variant = "ink" }: { label: string; variant?: "ink" | "ghost" }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className={`pv-btn pv-btn--${variant}`} disabled={pending} aria-busy={pending}>
+    <button
+      type="submit"
+      className={`pv-btn pv-btn--${variant}`}
+      disabled={pending}
+      aria-busy={pending}
+    >
       {pending ? "Enviando…" : label}
     </button>
   );
@@ -79,7 +85,13 @@ export function PayButton({ label }: { label: string }) {
 }
 
 /** Marca de conversión cuando el pedido aparece pagado. */
-export function TrackOnce({ event, params }: { event: "service_order_complete"; params?: Record<string, string | number> }) {
+export function TrackOnce({
+  event,
+  params,
+}: {
+  event: "service_order_complete";
+  params?: Record<string, string | number>;
+}) {
   const [done, setDone] = useState(false);
   useEffect(() => {
     if (!done) {

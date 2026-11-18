@@ -5,7 +5,7 @@
  * extensión ni por el `type` que manda el navegador. Solo PDF, PNG y JPEG, con
  * un tamaño máximo. No hay antivirus en el servidor: los ficheros quedan en un
  * bucket privado, nunca se sirven en línea (siempre como descarga) y el equipo
- * los revisa antes de validarlos (decisión D-050).
+ * los revisa antes de validarlos (decisión D-051).
  */
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB

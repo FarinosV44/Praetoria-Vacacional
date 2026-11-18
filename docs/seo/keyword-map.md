@@ -72,3 +72,20 @@ intents are prioritised. No two URLs target the same query.
 - `noindex`: `/admin/**`, `/reservar/**`, `/reserva/**`, `/api/**`.
 
 | `/guias/valencia-playa/el-tiempo-en-el-perello` | el tiempo en El Perelló | Informational, pre-trip |
+
+## Owner paperwork service (issues #174, #178)
+
+Noindex until legal and commercial sign-off (`TRAMITES_INDEXAR=on`, D-053). The owner-facing
+`/propietarios` keeps «gestión de apartamentos turísticos» (full management); these URLs target
+owners who run their own bookings and only want the paperwork done.
+
+| URL | Primary keyword | Secondary | Intent |
+|---|---|---|---|
+| `/gestion-tramites-alquiler-turistico` | gestión registro de viajeros SES.HOSPEDAJES | gestoría alquiler turístico, alta SES.HOSPEDAJES precio, parte de viajeros vivienda turística | Transactional (service) |
+| `/gestion-tramites-alquiler-turistico/registro-viajeros-ses-hospedajes` | registro de viajeros SES.HOSPEDAJES | plazo 24 horas parte de viajeros, multa no registrar viajeros, datos SES.HOSPEDAJES | Informational → service |
+| `/gestion-tramites-alquiler-turistico/registro-unico-nrua-anulado` | NRUA anulado Supremo | registro único de arrendamientos sentencia, depósito anual registradores | Informational (news) |
+
+Internal links: `/propietarios` («¿Ya alquilas por tu cuenta?» block), footer («Registro de
+viajeros y trámites»), and an automatic box at the end of any blog post that mentions
+SES.HOSPEDAJES, registro/parte de viajeros, NRUA or Registro Único. Guides link back to the
+landing; the landing links to both guides.

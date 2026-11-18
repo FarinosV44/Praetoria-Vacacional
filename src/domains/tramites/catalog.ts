@@ -15,7 +15,7 @@ import { z } from "zod";
  * procedimiento del Registro Único y la obligación de información periódica
  * (STS 620/2026; arts. 9 y 10 del RD 1312/2024). Quedan en el catálogo
  * DESACTIVADOS para poder reactivarlos si una norma nueva los recupera
- * (decisión D-048). Un servicio desactivado no se muestra ni se puede pedir.
+ * (decisión D-050). Un servicio desactivado no se muestra ni se puede pedir.
  */
 
 export const SERVICE_CODES = [

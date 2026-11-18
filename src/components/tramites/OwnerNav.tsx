@@ -19,7 +19,8 @@ export function OwnerNav({ unread }: { unread: number }) {
     <nav aria-label="Mi carpeta" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex min-w-max gap-1 border-b border-[var(--color-line)] text-sm">
         {NAV.map((n) => {
-          const active = n.href === "/mi-cuenta/tramites" ? current === n.href : current.startsWith(n.href);
+          const active =
+            n.href === "/mi-cuenta/tramites" ? current === n.href : current.startsWith(n.href);
           return (
             <li key={n.href}>
               <Link
@@ -29,7 +30,10 @@ export function OwnerNav({ unread }: { unread: number }) {
               >
                 {n.label}
                 {n.label === "Mensajes" && unread > 0 && (
-                  <span className="rounded-full bg-[var(--color-ink)] px-1.5 text-[0.6875rem] font-semibold text-white" aria-label={`${unread} sin leer`}>
+                  <span
+                    className="rounded-full bg-[var(--color-ink)] px-1.5 text-[0.6875rem] font-semibold text-white"
+                    aria-label={`${unread} sin leer`}
+                  >
                     {unread}
                   </span>
                 )}

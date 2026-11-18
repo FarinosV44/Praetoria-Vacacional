@@ -33,9 +33,18 @@ export function UploadForm({
   filingId?: string;
   suggested?: DocumentKind[];
 }) {
-  const list = suggested?.length ? KINDS.filter((k) => suggested.includes(k.v)).concat(KINDS.filter((k) => !suggested.includes(k.v))) : KINDS;
+  const list = suggested?.length
+    ? KINDS.filter((k) => suggested.includes(k.v)).concat(
+        KINDS.filter((k) => !suggested.includes(k.v)),
+      )
+    : KINDS;
   return (
-    <ActionForm action={uploadDocumentAction} submitLabel="Subir documento" encType="multipart/form-data" resetOnSuccess>
+    <ActionForm
+      action={uploadDocumentAction}
+      submitLabel="Subir documento"
+      encType="multipart/form-data"
+      resetOnSuccess
+    >
       {filingId && <input type="hidden" name="filingId" value={filingId} />}
       {propertyId && <input type="hidden" name="propertyId" value={propertyId} />}
       <label className="block">
@@ -63,8 +72,17 @@ export function UploadForm({
       )}
       <label className="block">
         <span className="pv-label">Archivo</span>
-        <input type="file" name="file" accept="application/pdf,image/png,image/jpeg" required className="block w-full text-sm" />
-        <span className="pv-hint block">PDF, JPG o PNG, hasta 10 MB. Se guarda en un espacio privado al que solo accedes tú y nuestro equipo.</span>
+        <input
+          type="file"
+          name="file"
+          accept="application/pdf,image/png,image/jpeg"
+          required
+          className="block w-full text-sm"
+        />
+        <span className="pv-hint block">
+          PDF, JPG o PNG, hasta 10 MB. Se guarda en un espacio privado al que solo accedes tú y
+          nuestro equipo.
+        </span>
       </label>
     </ActionForm>
   );
@@ -76,7 +94,9 @@ export function MessageForm() {
       <label className="block">
         <span className="pv-label">Tu mensaje</span>
         <textarea name="body" required maxLength={4000} className="pv-textarea !h-32" />
-        <span className="pv-hint block">No escribas aquí datos de tus viajeros ni números de documento.</span>
+        <span className="pv-hint block">
+          No escribas aquí datos de tus viajeros ni números de documento.
+        </span>
       </label>
     </ActionForm>
   );
@@ -89,19 +109,41 @@ export function PropertyEditForm({ p }: { p: ManagedProperty }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="pv-label">Número de registro turístico</span>
-          <input className="pv-input" name="tourismRegistryNumber" defaultValue={p.tourismRegistryNumber ?? ""} maxLength={60} />
+          <input
+            className="pv-input"
+            name="tourismRegistryNumber"
+            defaultValue={p.tourismRegistryNumber ?? ""}
+            maxLength={60}
+          />
         </label>
         <label className="block">
           <span className="pv-label">Referencia catastral (opcional)</span>
-          <input className="pv-input" name="cadastralRef" defaultValue={p.cadastralRef ?? ""} maxLength={30} />
+          <input
+            className="pv-input"
+            name="cadastralRef"
+            defaultValue={p.cadastralRef ?? ""}
+            maxLength={30}
+          />
         </label>
         <label className="block">
           <span className="pv-label">Código de establecimiento SES</span>
-          <input className="pv-input" name="sesEstablishmentCode" defaultValue={p.sesEstablishmentCode ?? ""} maxLength={40} />
+          <input
+            className="pv-input"
+            name="sesEstablishmentCode"
+            defaultValue={p.sesEstablishmentCode ?? ""}
+            maxLength={40}
+          />
         </label>
         <label className="block">
           <span className="pv-label">Plazas máximas</span>
-          <input className="pv-input" name="maxGuests" type="number" min={0} max={60} defaultValue={p.maxGuests ?? ""} />
+          <input
+            className="pv-input"
+            name="maxGuests"
+            type="number"
+            min={0}
+            max={60}
+            defaultValue={p.maxGuests ?? ""}
+          />
         </label>
       </div>
     </ActionForm>
@@ -122,7 +164,13 @@ export function AddPropertyForm({ sesPrice }: { sesPrice: string | null }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block">
           <span className="pv-label">Código postal</span>
-          <input className="pv-input" name="postalCode" inputMode="numeric" maxLength={5} required />
+          <input
+            className="pv-input"
+            name="postalCode"
+            inputMode="numeric"
+            maxLength={5}
+            required
+          />
         </label>
         <label className="block">
           <span className="pv-label">Municipio</span>
@@ -155,14 +203,20 @@ export function AddPropertyForm({ sesPrice }: { sesPrice: string | null }) {
       {sesPrice && (
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="wantsSesAlta" className="mt-1" />
-          <span>Quiero que hagáis el alta en SES.HOSPEDAJES ({sesPrice} + IVA). Te llevaremos al pago.</span>
+          <span>
+            Quiero que hagáis el alta en SES.HOSPEDAJES ({sesPrice} + IVA). Te llevaremos al pago.
+          </span>
         </label>
       )}
     </ActionForm>
   );
 }
 
-export function ReservationForm({ properties }: { properties: Pick<ManagedProperty, "id" | "alias">[] }) {
+export function ReservationForm({
+  properties,
+}: {
+  properties: Pick<ManagedProperty, "id" | "alias">[];
+}) {
   return (
     <ActionForm action={reportReservationAction} submitLabel="Comunicar la reserva">
       <label className="block">
@@ -194,7 +248,9 @@ export function ReservationForm({ properties }: { properties: Pick<ManagedProper
       <label className="block">
         <span className="pv-label">¿Cuándo se hizo la reserva?</span>
         <input className="pv-input" type="datetime-local" name="bookedAt" required />
-        <span className="pv-hint block">El plazo de 24 horas para comunicarla empieza en ese momento.</span>
+        <span className="pv-hint block">
+          El plazo de 24 horas para comunicarla empieza en ese momento.
+        </span>
       </label>
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block">
@@ -207,7 +263,15 @@ export function ReservationForm({ properties }: { properties: Pick<ManagedProper
         </label>
         <label className="block">
           <span className="pv-label">Viajeros</span>
-          <input className="pv-input" type="number" name="travellers" min={1} max={60} defaultValue={2} required />
+          <input
+            className="pv-input"
+            type="number"
+            name="travellers"
+            min={1}
+            max={60}
+            defaultValue={2}
+            required
+          />
         </label>
       </div>
     </ActionForm>
@@ -254,19 +318,34 @@ const blank = (): Traveller => ({
  * servidor los valida y cifra antes de guardarlos. No se piden escaneos.
  */
 export function TravellersForm({ reportId, count }: { reportId: string; count: number }) {
-  const [list, setList] = useState<Traveller[]>(() => Array.from({ length: Math.max(1, count) }, blank));
+  const [list, setList] = useState<Traveller[]>(() =>
+    Array.from({ length: Math.max(1, count) }, blank),
+  );
   const [paymentType, setPaymentType] = useState("plataforma");
   const [state, action] = useActionState<PortalResult | null, FormData>(saveTravellersAction, null);
-  const set = (i: number, patch: Partial<Traveller>) => setList((l) => l.map((t, j) => (j === i ? { ...t, ...patch } : t)));
+  const set = (i: number, patch: Partial<Traveller>) =>
+    setList((l) => l.map((t, j) => (j === i ? { ...t, ...patch } : t)));
 
-  if (state?.ok) return <p className="pv-note pv-note--info" role="status">{state.message}</p>;
+  if (state?.ok)
+    return (
+      <p className="pv-note pv-note--info" role="status">
+        {state.message}
+      </p>
+    );
 
   return (
     <form action={action} className="space-y-6">
       <input type="hidden" name="reportId" value={reportId} />
-      <input type="hidden" name="payload" value={JSON.stringify({ travellers: list, paymentType })} />
+      <input
+        type="hidden"
+        name="payload"
+        value={JSON.stringify({ travellers: list, paymentType })}
+      />
       {list.map((t, i) => (
-        <fieldset key={i} className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+        <fieldset
+          key={i}
+          className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-line)] p-4"
+        >
           <legend className="px-1 font-semibold">Viajero {i + 1}</legend>
           <div className="grid gap-3 sm:grid-cols-3">
             <In label="Nombre" v={t.firstName} on={(v) => set(i, { firstName: v })} />
@@ -276,7 +355,11 @@ export function TravellersForm({ reportId, count }: { reportId: string; count: n
           <div className="grid gap-3 sm:grid-cols-4">
             <label className="block">
               <span className="pv-label">Sexo</span>
-              <select className="pv-select" value={t.sex} onChange={(e) => set(i, { sex: e.target.value as Traveller["sex"] })}>
+              <select
+                className="pv-select"
+                value={t.sex}
+                onChange={(e) => set(i, { sex: e.target.value as Traveller["sex"] })}
+              >
                 <option value="M">Mujer</option>
                 <option value="H">Hombre</option>
                 <option value="O">Otro</option>
@@ -284,7 +367,11 @@ export function TravellersForm({ reportId, count }: { reportId: string; count: n
             </label>
             <label className="block">
               <span className="pv-label">Documento</span>
-              <select className="pv-select" value={t.docType} onChange={(e) => set(i, { docType: e.target.value as Traveller["docType"] })}>
+              <select
+                className="pv-select"
+                value={t.docType}
+                onChange={(e) => set(i, { docType: e.target.value as Traveller["docType"] })}
+              >
                 <option value="DNI">DNI</option>
                 <option value="NIE">NIE / TIE</option>
                 <option value="PAS">Pasaporte</option>
@@ -292,12 +379,21 @@ export function TravellersForm({ reportId, count }: { reportId: string; count: n
                 <option value="NINGUNO">Sin documento (menor)</option>
               </select>
             </label>
-            {t.docType !== "NINGUNO" && <In label="Número" v={t.docNumber} on={(v) => set(i, { docNumber: v })} />}
-            {(t.docType === "DNI" || t.docType === "NIE") && <In label="N.º de soporte" v={t.docSupport} on={(v) => set(i, { docSupport: v })} />}
+            {t.docType !== "NINGUNO" && (
+              <In label="Número" v={t.docNumber} on={(v) => set(i, { docNumber: v })} />
+            )}
+            {(t.docType === "DNI" || t.docType === "NIE") && (
+              <In label="N.º de soporte" v={t.docSupport} on={(v) => set(i, { docSupport: v })} />
+            )}
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <In label="Nacionalidad" v={t.nationality} on={(v) => set(i, { nationality: v })} />
-            <In label="Fecha de nacimiento" type="date" v={t.birthDate} on={(v) => set(i, { birthDate: v })} />
+            <In
+              label="Fecha de nacimiento"
+              type="date"
+              v={t.birthDate}
+              on={(v) => set(i, { birthDate: v })}
+            />
             <In label="Parentesco (si es menor)" v={t.kinship} on={(v) => set(i, { kinship: v })} />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -310,19 +406,31 @@ export function TravellersForm({ reportId, count }: { reportId: string; count: n
             <In label="Correo" v={t.email} on={(v) => set(i, { email: v })} />
           </div>
           {list.length > 1 && (
-            <button type="button" className="text-sm underline" onClick={() => setList(list.filter((_, j) => j !== i))}>
+            <button
+              type="button"
+              className="text-sm underline"
+              onClick={() => setList(list.filter((_, j) => j !== i))}
+            >
               Quitar este viajero
             </button>
           )}
         </fieldset>
       ))}
       <div className="flex flex-wrap items-end gap-4">
-        <button type="button" className="pv-btn pv-btn--ghost" onClick={() => setList([...list, blank()])}>
+        <button
+          type="button"
+          className="pv-btn pv-btn--ghost"
+          onClick={() => setList([...list, blank()])}
+        >
           Añadir viajero
         </button>
         <label className="block">
           <span className="pv-label">Forma de pago de la reserva</span>
-          <select className="pv-select" value={paymentType} onChange={(e) => setPaymentType(e.target.value)}>
+          <select
+            className="pv-select"
+            value={paymentType}
+            onChange={(e) => setPaymentType(e.target.value)}
+          >
             <option value="plataforma">A través de la plataforma</option>
             <option value="tarjeta">Tarjeta</option>
             <option value="transferencia">Transferencia</option>
@@ -331,20 +439,41 @@ export function TravellersForm({ reportId, count }: { reportId: string; count: n
           </select>
         </label>
       </div>
-      {state && !state.ok && <p className="pv-note pv-note--error" role="alert">{state.error}</p>}
+      {state && !state.ok && (
+        <p className="pv-note pv-note--error" role="alert">
+          {state.error}
+        </p>
+      )}
       <p className="text-xs text-[var(--color-ink-faint)]">
-        Los datos se guardan cifrados, solo los ve la persona del equipo que presenta la comunicación y no se usan para nada más.
+        Los datos se guardan cifrados, solo los ve la persona del equipo que presenta la
+        comunicación y no se usan para nada más.
       </p>
       <Submit label="Guardar datos de viajeros" />
     </form>
   );
 }
 
-function In({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
+function In({
+  label,
+  v,
+  on,
+  type = "text",
+}: {
+  label: string;
+  v: string;
+  on: (v: string) => void;
+  type?: string;
+}) {
   return (
     <label className="block">
       <span className="pv-label">{label}</span>
-      <input className="pv-input" type={type} value={v} onChange={(e) => on(e.target.value)} autoComplete="off" />
+      <input
+        className="pv-input"
+        type={type}
+        value={v}
+        onChange={(e) => on(e.target.value)}
+        autoComplete="off"
+      />
     </label>
   );
 }
